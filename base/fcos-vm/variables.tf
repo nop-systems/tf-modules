@@ -6,6 +6,7 @@ variable "name" {
 variable "domain" {
   type        = string
   description = "domain part of fqdn"
+  default     = "guests.nop.systems"
 }
 
 variable "desc" {
