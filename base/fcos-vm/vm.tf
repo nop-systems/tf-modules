@@ -44,8 +44,7 @@ resource "macaddress" "mac" {
 }
 
 locals {
-  globals  = yamldecode(file("${path.root}/tfglobals.yaml"))
-  matchbox = provider.matchbox.endpoint
+  globals = yamldecode(file("${path.root}/tfglobals.yaml"))
 }
 
 resource "matchbox_group" "mapbymac" {
