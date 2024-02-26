@@ -1,0 +1,91 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Relativ-IT/Butane-Schemas/Release/Butane-Schema.json
+variant: fcos
+version: "1.5.0"
+storage:
+  directories:
+    - path: /etc/ssh/certs
+      mode: 0644
+    - path: /var/containers/metrics
+      mode: 644
+  files:
+    - path: /etc/ssh/sshd_config.d/41-certificates.conf
+      overwrite: true
+      contents:
+        inline: |
+          TrustedUserCAKeys /var/containers/secrets/ssh/trusted-user-ca-keys.pem
+          HostKey /etc/ssh/ssh_host_ed25519_key
+          HostCertificate /etc/ssh/certs/ssh_host_ed25519_key-cert.pub
+    - path: /var/containers/vault-agent/config.d/ssh-ca.hcl
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          template {
+            contents = "{{ with secret \"ssh/config/ca\" }}{{ .Data.public_key }}{{ end }}"
+            destination = "/vault/secrets/ssh/trusted-user-ca-keys.pem"
+            error_on_missing_key = true
+          }
+    - path: /var/containers/vault-ssh-signer.yaml
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          vault-address: https://vault.internal.nop.systems
+          vault-ssh-mount: ssh-host
+          vault-ssh-role: approle
+          pub-key-file: /data/ssh_host_ed25519_key.pub
+          signed-key-file: /data/certs/ssh_host_ed25519_key-cert.pub
+          metrics-file: /data/metrics/vault-ssh-signer.prom
+          vault-auth-implicit: true
+          debug: true
+    - path: /etc/containers/systemd/vault-ssh-signer.container
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          [Unit]
+          Description=Sign SSH Host Certificate with Vault
+
+          Requires=vault-agent.service
+          Wants=sshd-keygen.target
+          After=vault-agent.service
+          After=network-online.target local-fs.target
+          # disable unit start rate limiting
+          StartLimitIntervalSec=0
+
+          [Container]
+          Image=ghcr.io/soerenschneider/vault-ssh-cli:${vault-ssh-cli_version}
+          Exec=sign-host-key
+          LogDriver=journald
+
+          Volume=/etc/ssh/ssh_host_ed25519_key.pub:/data/ssh_host_ed25519_key.pub:z,ro
+          Volume=/etc/ssh/certs/:/data/certs/:z
+          Volume=/var/containers/vault-agent/token/vault-token:/root/.vault-token:z,ro
+          Volume=/var/containers/metrics/:/data/metrics:z
+          Volume=/var/containers/vault-ssh-signer.yaml:/etc/vault-ssh-cli/config.yaml:Z,ro
+
+          Network=vault-agent.network
+
+          [Service]
+          Type=oneshot
+          Restart=on-failure
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
+
+          [Install]
+          WantedBy=multi-user.target default.target
+systemd:
+  units:
+    - name: vault-ssh-signer.timer
+      enabled: true
+      contents: |
+        [Unit]
+        Description=SSH Host Certificate Renewal
+
+        [Timer]
+        OnUnitActiveSec=1h
+        Persistent=true
+
+        [Install]
+        WantedBy=timers.target

@@ -1,0 +1,138 @@
+variant: fcos
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Relativ-IT/Butane-Schemas/Release/Butane-Schema.json
+version: "1.5.0"
+storage:
+  directories:
+    - path: /var/containers/secrets
+      user:
+        id: 100
+      group:
+        id: 1000
+    - path: /var/containers/vault-agent/config.d
+      user:
+        id: 1000
+      group:
+        id: 1000
+    - path: /var/containers/vault-agent/token
+      user:
+        id: 100
+      group:
+        id: 1000
+    - path: /var/containers/vault-agent/unwrapper
+  files:
+    - path: /var/containers/vault-agent/approle/roleid
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: ${vault_roleid}
+    - path: /var/containers/vault-agent/unwrapper/vault-unwrap-secretid.env
+      mode: 0600
+      overwrite: true
+      contents:
+        inline: |
+          VAULT_TOKEN=${vault_wrapped_secretid}
+          VAULT_ADDR=https://vault.internal.nop.systems
+    - path: /var/containers/vault-agent/config.d/agent.hcl
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          vault {
+            address = "https://vault.internal.nop.systems"
+          }
+
+          auto_auth {
+            method "approle" {
+              config = {
+                role_id_file_path = "/vault/approle/roleid"
+                secret_id_file_path = "/vault/approle/secretid"
+                remove_secret_id_file_after_reading = false
+              }
+            }
+
+            sinks {
+              sink {
+                type = "file"
+                config = {
+                  path = "/vault/token/vault-token"
+                  mode = 600
+                }
+              }
+            }
+          }
+    - path: /etc/containers/systemd/vault-agent.container
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          [Unit]
+          Description=Vault Agent
+          After=network-online.target local-fs.target vault-unwrap-secretid.service
+          Requires=vault-unwrap-secretid.service
+          # disable unit start rate limiting
+          StartLimitIntervalSec=0
+
+          [Container]
+          Image=docker.io/hashicorp/vault:${vault_version}
+          Exec=agent -config=/vault/config/
+          LogDriver=journald
+
+          Volume=/var/containers/secrets:/vault/secrets:z
+          Volume=/var/containers/vault-agent/config.d:/vault/config:Z
+          Volume=/var/containers/vault-agent/token:/vault/token:z
+          Volume=/var/containers/vault-agent/approle:/vault/approle:z
+
+          AddCapability=IPC_LOCK
+
+          Network=vault-agent.network
+
+          [Service]
+          Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
+
+          [Install]
+          WantedBy=multi-user.target default.target
+    - path: /etc/containers/systemd/vault-unwrap-secretid.container
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          [Unit]
+          Description=Vault: unwrap secretid before starting vault-agent
+
+          ConditionPathExists=/var/containers/vault-agent/unwrapper/vault-unwrap-secretid.env
+          Before=vault-agent.service
+          After=network-online.target local-fs.target
+          # disable unit start rate limiting
+          StartLimitIntervalSec=0
+
+          [Container]
+          Image=docker.io/hashicorp/vault:${vault_version}
+          Exec=sh -c 'vault unwrap --field secret_id > /vault/approle/secretid'
+          LogDriver=journald
+
+          EnvironmentFile=/var/containers/vault-agent/unwrapper/vault-unwrap-secretid.env
+          Volume=/var/containers/vault-agent/approle:/vault/approle:z
+
+          AddCapability=IPC_LOCK
+          Network=vault-agent.network
+
+          [Service]
+          Type=oneshot
+          ExecStartPost=rm /var/containers/vault-agent/unwrapper/vault-unwrap-secretid.env
+          Restart=on-failure
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
+
+          [Install]
+          WantedBy=multi-user.target default.target
+    - path: /etc/containers/systemd/vault-agent.network
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          [Network]
+          IPv6=true

@@ -1,0 +1,75 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Relativ-IT/Butane-Schemas/Release/Butane-Schema.json
+variant: fcos
+version: "1.5.0"
+storage:
+  directories:
+    - path: /var/containers/secrets/tls
+      user:
+        id: 100
+      group:
+        id: 1000
+  files:
+    - path: /etc/pki/ca-trust/source/anchors/nop.systems_Root_X1.pem
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          -----BEGIN CERTIFICATE-----
+          MIICmzCCAiCgAwIBAgIUAOHIc6FWUo9UUmIoQ0oLKEQ+9HowCgYIKoZIzj0EAwMw
+          fDELMAkGA1UEBhMCREUxDzANBgNVBAgTBkJlcmxpbjEPMA0GA1UEBxMGQmVybGlu
+          MRQwEgYDVQQKEwtub3Auc3lzdGVtczEXMBUGA1UECxMOVHJ1c3QgU2VydmljZXMx
+          HDAaBgNVBAMTE25vcC5zeXN0ZW1zIFJvb3QgWDEwHhcNMjQwMjIxMDQwNTA5WhcN
+          MzYwMjIxMDQwNTM5WjB8MQswCQYDVQQGEwJERTEPMA0GA1UECBMGQmVybGluMQ8w
+          DQYDVQQHEwZCZXJsaW4xFDASBgNVBAoTC25vcC5zeXN0ZW1zMRcwFQYDVQQLEw5U
+          cnVzdCBTZXJ2aWNlczEcMBoGA1UEAxMTbm9wLnN5c3RlbXMgUm9vdCBYMTB2MBAG
+          ByqGSM49AgEGBSuBBAAiA2IABA29DLmFUczKHC6THaDJz3zV4SQ4+HWA8U+OOTyF
+          CL7lM+dOW5u2qKevCKhJNfHH3b1PlnuxdXv2k5E29/LdLHvrn4/TpCJrLQ+N2YnC
+          YUpmApcFS7aJjCaUPLdTTR1kk6NjMGEwDgYDVR0PAQH/BAQDAgEGMA8GA1UdEwEB
+          /wQFMAMBAf8wHQYDVR0OBBYEFCnF/ZA6JsgvdQcWuon9byPrqGftMB8GA1UdIwQY
+          MBaAFCnF/ZA6JsgvdQcWuon9byPrqGftMAoGCCqGSM49BAMDA2kAMGYCMQCTS6A6
+          xEnYOzXDvYKC40GhkPX+tZdZVv8pj8kOYpLxDrY99BKI368tO0MgJA32dn0CMQCk
+          G8JTRS7Ym1GdJIfAvaeedF68cbOZDxRJD3Ee2k4Rqd2wtNucwsbUdDCPw29Bd5Q=
+          -----END CERTIFICATE-----
+    - path: /var/containers/vault-agent/config.d/pki.hcl
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          template {
+            contents = "{{ with pkiCert \"pki-servers/issue/entity-hostname\" \"common_name=${fqdn}\" }}{{ .Data.Cert }}{{ .Data.CA }}{{ end }}"
+            destination = "/vault/secrets/tls/${fqdn}/fullchain.pem"
+            error_on_missing_key = true
+          }
+
+          template {
+            contents = "{{ with pkiCert \"pki-servers/issue/entity-hostname\" \"common_name=${fqdn}\" }}{{ .Data.CA }}{{ end }}"
+            destination = "/vault/secrets/tls/${fqdn}/chain.pem"
+            error_on_missing_key = true
+          }
+
+          template {
+            contents = "{{ with pkiCert \"pki-servers/issue/entity-hostname\" \"common_name=${fqdn}\" }}{{ .Data.Cert }}{{ end }}"
+            destination = "/vault/secrets/tls/${fqdn}/cert.pem"
+            error_on_missing_key = true
+          }
+
+          template {
+            contents = "{{ with pkiCert \"pki-servers/issue/entity-hostname\" \"common_name=${fqdn}\" }}{{ .Data.Key }}{{ end }}"
+            destination = "/vault/secrets/tls/${fqdn}/privkey.pem"
+            error_on_missing_key = true
+          }
+
+          template {
+            contents = "{{ with pkiCert \"pki-servers/issue/entity-hostname\" \"common_name=${fqdn}\" }}{{ .Data.Cert }}{{ .Data.CA }}{{ .Data.Key }}{{ end }}"
+            destination = "/vault/secrets/tls/${fqdn}/fullchain+privkey.pem"
+            error_on_missing_key = true
+          }
+
+          template {
+            contents = "{{ with secret \"pki-root/cert/ca\" }}{{ .Data.certificate }}{{ end }}"
+            destination = "/vault/secrets/tls/${fqdn}/root_ca.pem"
+            error_on_missing_key = true
+          }
+  links:
+    - path: /var/containers/secrets/tls/this
+      target: ${fqdn}
