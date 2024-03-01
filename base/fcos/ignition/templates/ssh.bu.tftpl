@@ -30,7 +30,7 @@ storage:
       overwrite: true
       contents:
         inline: |
-          vault-address: https://vault.internal.nop.systems
+          vault-address: ${vault_url}
           vault-ssh-mount: ssh-host
           vault-ssh-role: approle
           pub-key-file: /data/ssh_host_ed25519_key.pub
@@ -54,7 +54,8 @@ storage:
           StartLimitIntervalSec=0
 
           [Container]
-          Image=ghcr.io/soerenschneider/vault-ssh-cli:${vault-ssh-cli_version}
+          Image=ghcr.io/soerenschneider/vault-ssh-cli:latest
+          AutoUpdate=registry
           Exec=sign-host-key
           LogDriver=journald
 
@@ -75,6 +76,7 @@ storage:
 
           [Install]
           WantedBy=multi-user.target default.target
+          Wants=podman-auto-update.timer
 systemd:
   units:
     - name: vault-ssh-signer.timer

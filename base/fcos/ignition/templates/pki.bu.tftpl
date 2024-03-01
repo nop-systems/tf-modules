@@ -9,27 +9,12 @@ storage:
       group:
         id: 1000
   files:
-    - path: /etc/pki/ca-trust/source/anchors/nop.systems_Root_X1.pem
+    - path: /etc/pki/ca-trust/source/anchors/ignition_root-ca.pem
       mode: 0644
       overwrite: true
       contents:
         inline: |
-          -----BEGIN CERTIFICATE-----
-          MIICmzCCAiCgAwIBAgIUAOHIc6FWUo9UUmIoQ0oLKEQ+9HowCgYIKoZIzj0EAwMw
-          fDELMAkGA1UEBhMCREUxDzANBgNVBAgTBkJlcmxpbjEPMA0GA1UEBxMGQmVybGlu
-          MRQwEgYDVQQKEwtub3Auc3lzdGVtczEXMBUGA1UECxMOVHJ1c3QgU2VydmljZXMx
-          HDAaBgNVBAMTE25vcC5zeXN0ZW1zIFJvb3QgWDEwHhcNMjQwMjIxMDQwNTA5WhcN
-          MzYwMjIxMDQwNTM5WjB8MQswCQYDVQQGEwJERTEPMA0GA1UECBMGQmVybGluMQ8w
-          DQYDVQQHEwZCZXJsaW4xFDASBgNVBAoTC25vcC5zeXN0ZW1zMRcwFQYDVQQLEw5U
-          cnVzdCBTZXJ2aWNlczEcMBoGA1UEAxMTbm9wLnN5c3RlbXMgUm9vdCBYMTB2MBAG
-          ByqGSM49AgEGBSuBBAAiA2IABA29DLmFUczKHC6THaDJz3zV4SQ4+HWA8U+OOTyF
-          CL7lM+dOW5u2qKevCKhJNfHH3b1PlnuxdXv2k5E29/LdLHvrn4/TpCJrLQ+N2YnC
-          YUpmApcFS7aJjCaUPLdTTR1kk6NjMGEwDgYDVR0PAQH/BAQDAgEGMA8GA1UdEwEB
-          /wQFMAMBAf8wHQYDVR0OBBYEFCnF/ZA6JsgvdQcWuon9byPrqGftMB8GA1UdIwQY
-          MBaAFCnF/ZA6JsgvdQcWuon9byPrqGftMAoGCCqGSM49BAMDA2kAMGYCMQCTS6A6
-          xEnYOzXDvYKC40GhkPX+tZdZVv8pj8kOYpLxDrY99BKI368tO0MgJA32dn0CMQCk
-          G8JTRS7Ym1GdJIfAvaeedF68cbOZDxRJD3Ee2k4Rqd2wtNucwsbUdDCPw29Bd5Q=
-          -----END CERTIFICATE-----
+          ${root_ca_pem}
     - path: /var/containers/vault-agent/config.d/pki.hcl
       mode: 0644
       overwrite: true

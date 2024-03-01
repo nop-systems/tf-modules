@@ -31,14 +31,14 @@ storage:
       contents:
         inline: |
           VAULT_TOKEN=${vault_wrapped_secretid}
-          VAULT_ADDR=https://vault.internal.nop.systems
+          VAULT_ADDR=${vault_url}
     - path: /var/containers/vault-agent/config.d/agent.hcl
       mode: 0644
       overwrite: true
       contents:
         inline: |
           vault {
-            address = "https://vault.internal.nop.systems"
+            address = "${vault_url}"
           }
 
           auto_auth {
@@ -73,8 +73,10 @@ storage:
           StartLimitIntervalSec=0
 
           [Container]
-          Image=docker.io/hashicorp/vault:${vault_version}
+          Image=docker.io/hashicorp/vault:latest
+          AutoUpdate=registry
           Exec=agent -config=/vault/config/
+          Notify=true
           LogDriver=journald
 
           Volume=/var/containers/secrets:/vault/secrets:z
@@ -94,6 +96,7 @@ storage:
 
           [Install]
           WantedBy=multi-user.target default.target
+          Wants=podman-auto-update.timer
     - path: /etc/containers/systemd/vault-unwrap-secretid.container
       mode: 0644
       overwrite: true
@@ -109,7 +112,7 @@ storage:
           StartLimitIntervalSec=0
 
           [Container]
-          Image=docker.io/hashicorp/vault:${vault_version}
+          Image=docker.io/hashicorp/vault:latest
           Exec=sh -c 'vault unwrap --field secret_id > /vault/approle/secretid'
           LogDriver=journald
 
@@ -129,6 +132,7 @@ storage:
 
           [Install]
           WantedBy=multi-user.target default.target
+          Wants=podman-auto-update.timer
     - path: /etc/containers/systemd/vault-agent.network
       mode: 0644
       overwrite: true
