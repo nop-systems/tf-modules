@@ -15,7 +15,7 @@ variable "fcos_version" {
   default     = null
 }
 
-variable "macaddress" {
+variable "mac_address" {
   type        = string
   description = "MAC address of VM"
 }

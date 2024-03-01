@@ -36,7 +36,7 @@ No modules.
 | <a name="input_fcos_version"></a> [fcos\_version](#input\_fcos\_version) | Fedora CoreOS version (defaults to latest) | `string` | `null` | no |
 | <a name="input_fqdn"></a> [fqdn](#input\_fqdn) | FQDN of the new Virtual Machine | `string` | n/a | yes |
 | <a name="input_ignition"></a> [ignition](#input\_ignition) | compiled ignition config | `string` | n/a | yes |
-| <a name="input_macaddress"></a> [macaddress](#input\_macaddress) | MAC address of VM | `string` | n/a | yes |
+| <a name="input_mac_address"></a> [mac\_address](#input\_mac\_address) | MAC address of VM | `string` | n/a | yes |
 | <a name="input_matchbox_http_endpoint"></a> [matchbox\_http\_endpoint](#input\_matchbox\_http\_endpoint) | matchbox http endpoint | `string` | n/a | yes |
 
 ## Outputs

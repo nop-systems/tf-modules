@@ -31,6 +31,6 @@ resource "matchbox_group" "mapbymac" {
   name    = var.fqdn
   profile = matchbox_profile.fedora-coreos-install.name
   selector = {
-    mac = var.macaddress
+    mac = var.mac_address
   }
 }
