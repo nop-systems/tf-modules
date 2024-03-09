@@ -1,5 +1,7 @@
 # matchbox
 
+This is an internal module for fcos and doesn’t get versioned independently.
+
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 
