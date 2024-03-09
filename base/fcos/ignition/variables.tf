@@ -3,9 +3,9 @@ variable "fqdn" {
   description = "FQDN of the new Virtual Machine"
 }
 
-variable "butane" {
-  type        = string
-  description = "(application specific) butane config"
+variable "butane_snippets" {
+  type        = list(string)
+  description = "(application specific) butane configs"
   # reduce extensive printouts
   sensitive = true
 }
