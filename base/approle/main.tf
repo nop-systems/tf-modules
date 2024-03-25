@@ -12,7 +12,8 @@ resource "vault_approle_auth_backend_role_secret_id" "this" {
   backend   = "approle"
   role_name = vault_approle_auth_backend_role.role.role_name
 
-  wrapping_ttl = var.wrapping_ttl
+  wrapping_ttl          = var.wrapping_ttl
+  with_wrapped_accessor = true
 }
 
 #
