@@ -32,7 +32,10 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_role_name"></a> [role\_name](#input\_role\_name) | The name of the application | `string` | n/a | yes |
+| <a name="input_additional_token_policies"></a> [additional\_token\_policies](#input\_additional\_token\_policies) | List of additional Policies assigned to tokens created with the Approle | `list(string)` | `[]` | no |
+| <a name="input_cnames"></a> [cnames](#input\_cnames) | List of altnatives Names as FQDN to include in metadata | `list(string)` | `[]` | no |
+| <a name="input_fqdn"></a> [fqdn](#input\_fqdn) | The FQDN of the VM, will be used as role\_name and for metadata | `string` | n/a | yes |
+| <a name="input_services"></a> [services](#input\_services) | List of services to include in metdata (to access common secrets) | `list(string)` | n/a | yes |
 | <a name="input_wrapping_ttl"></a> [wrapping\_ttl](#input\_wrapping\_ttl) | TTL for wrapped secret-id, unwrapped if set to null (duration string) | `string` | n/a | yes |
 
 ## Outputs

@@ -8,5 +8,5 @@ output "secretid" {
 }
 
 output "secretid_retriaval_path" {
-  value = "auth/approle/role/${var.role_name}/secret-id"
+  value = "auth/approle/role/${var.fqdn}/secret-id"
 }
