@@ -2,9 +2,9 @@ resource "vault_approle_auth_backend_role" "this" {
   backend   = "approle"
   role_name = var.fqdn
   token_policies = concat([
-    "entity-hostname-kv-read",
-    "entity-hostname-ssh-host",
-    "entity-hostname-pki-servers"
+    "entity-metadata-kv-read",
+    "entity-metadata-ssh-host",
+    "entity-metadata-pki-servers"
   ], var.additional_token_policies)
 }
 
