@@ -16,6 +16,7 @@ variable "cnames" {
 variable "services" {
   type        = list(string)
   description = "List of services to include in metdata (to access common secrets)"
+  default     = []
   validation {
     condition     = length(var.services) <= 5
     error_message = "Maximum of 5 Services supported for approle metadata"
