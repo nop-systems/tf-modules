@@ -28,8 +28,9 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_record_name"></a> [record\_name](#input\_record\_name) | DNS record name | `string` | n/a | yes |
-| <a name="input_records"></a> [records](#input\_records) | DNS record type and value | <pre>map(object({<br>    type  = string<br>    value = string<br>  }))</pre> | n/a | yes |
+| <a name="input_name"></a> [name](#input\_name) | DNS record name | `string` | n/a | yes |
+| <a name="input_type"></a> [type](#input\_type) | record type (e.g. A, AAAA) | `string` | n/a | yes |
+| <a name="input_value"></a> [value](#input\_value) | record value (e.g. IP address) | `string` | n/a | yes |
 | <a name="input_zone_id"></a> [zone\_id](#input\_zone\_id) | Cloudflare Zone ID | `string` | n/a | yes |
 
 ## Outputs
@@ -37,5 +38,5 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_fqdn"></a> [fqdn](#output\_fqdn) | n/a |
-| <a name="output_record_id"></a> [record\_id](#output\_record\_id) | n/a |
+| <a name="output_record_id"></a> [record\_id](#output\_record\_id) | ID of the cloudflare record resource |
 <!-- END_TF_DOCS -->

@@ -3,17 +3,17 @@ variable "zone_id" {
   type        = string
 }
 
-variable "record_name" {
+variable "name" {
   description = "DNS record name"
   type        = string
 }
 
-variable "records" {
-  description = "DNS record type and value"
-  type = map(object({
-    type  = string
-    value = string
-  }))
+variable "type" {
+  description = "record type (e.g. A, AAAA)"
+  type        = string
 }
 
-
+variable "value" {
+  description = "record value (e.g. IP address)"
+  type        = string
+}
