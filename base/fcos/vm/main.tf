@@ -10,9 +10,9 @@ resource "xenorchestra_vm" "this" {
   affinity_host = var.affinity_host_id
 
   network {
-    network_id          = var.network_id
-    mac_address         = var.mac_address
-    expected_cidr_range = "0.0.0.0/0"
+    network_id       = var.network_id
+    mac_address      = var.mac_address
+    expected_ip_cidr = "0.0.0.0/0"
   }
 
   disk {
