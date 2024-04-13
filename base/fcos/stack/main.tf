@@ -16,7 +16,7 @@ module "approle" {
 }
 
 module "ignition" {
-  source = "./ignition"
+  source = "../ignition"
 
   approle_role_id           = module.approle.roleid
   approle_wrapped_secret_id = module.approle.secretid
@@ -27,7 +27,7 @@ module "ignition" {
 }
 
 module "matchbox" {
-  source = "./matchbox"
+  source = "../matchbox"
 
   fqdn                   = var.fqdn
   ignition               = module.ignition.ignition
@@ -36,7 +36,7 @@ module "matchbox" {
 }
 
 module "vm" {
-  source = "./vm"
+  source = "../vm"
 
   name = module.domain.record
   desc = var.desc

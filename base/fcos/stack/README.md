@@ -1,4 +1,6 @@
-# fcos
+# fcos-stack
+
+Combined Ignition + Matchbox + VM modules for standard deployments
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
@@ -12,7 +14,7 @@
 
 | Name | Version |
 |------|---------|
-| <a name="provider_macaddress"></a> [macaddress](#provider\_macaddress) | 0.3.2 |
+| <a name="provider_macaddress"></a> [macaddress](#provider\_macaddress) | >= 0.3.2 |
 
 ## Modules
 
@@ -22,9 +24,9 @@
 | <a name="module_dns-record_A"></a> [dns-record\_A](#module\_dns-record\_A) | git@github.com:nop-systems/terraform-modules.git//base/approle | dns-record/v0.1.0 |
 | <a name="module_dns-record_AAAA"></a> [dns-record\_AAAA](#module\_dns-record\_AAAA) | git@github.com:nop-systems/terraform-modules.git//base/approle | dns-record/v0.1.0 |
 | <a name="module_domain"></a> [domain](#module\_domain) | git@github.com:nop-systems/terraform-modules.git//helpers/parse-domain | parse-domain/v1.0.0 |
-| <a name="module_ignition"></a> [ignition](#module\_ignition) | ./ignition | n/a |
-| <a name="module_matchbox"></a> [matchbox](#module\_matchbox) | ./matchbox | n/a |
-| <a name="module_vm"></a> [vm](#module\_vm) | ./vm | n/a |
+| <a name="module_ignition"></a> [ignition](#module\_ignition) | ../ignition | n/a |
+| <a name="module_matchbox"></a> [matchbox](#module\_matchbox) | ../matchbox | n/a |
+| <a name="module_vm"></a> [vm](#module\_vm) | ../vm | n/a |
 
 ## Resources
 
