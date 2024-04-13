@@ -1,0 +1,51 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Relativ-IT/Butane-Schemas/Release/Butane-Schema.json
+variant: fcos
+version: "1.5.0"
+storage:
+  directories:
+    - path: /var/containers/caddy/config
+    - path: /var/containers/caddy/data
+  files:
+    - path: /etc/containers/systemd/caddy.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=caddy
+          After=network-online.target local-fs.target
+
+          [Container]
+          Image=docker.io/library/caddy:latest
+          LogDriver=journald
+
+          PublishPort=80:80
+          PublishPort=443:443
+          PublishPort=443:443/udp
+
+          Volume=/var/containers/caddy/config:/config:Z,U
+          Volume=/var/containers/caddy/data:/data:Z,U
+          Volume=/var/containers/caddy/Caddyfile:/etc/caddy/Caddyfile:Z,ro
+
+          Network=container.network
+
+          [Service]
+          Restart=always
+
+          [Install]
+          WantedBy=multi-user.target default.target
+    - path: /var/containers/caddy/Caddyfile
+      contents:
+        inline: |
+          {
+            local_certs
+            #acme_ca https://vault.internal.nop.systems/v1/pki-servers/acme/directory
+          }
+
+          hello-world.guests.nop.systems {
+            root * /usr/share/caddy
+            file_server
+          }
+
+          :443, :80 {
+            respond hello-world.guests.nop.systems
+          }
