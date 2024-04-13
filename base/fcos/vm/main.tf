@@ -6,13 +6,13 @@ resource "xenorchestra_vm" "this" {
   hvm_boot_firmware = "uefi"
   template          = var.template_id
   auto_poweron      = true
-  wait_for_ip       = true
 
   affinity_host = var.affinity_host_id
 
   network {
-    network_id  = var.network_id
-    mac_address = var.mac_address
+    network_id          = var.network_id
+    mac_address         = var.mac_address
+    expected_cidr_range = "0.0.0.0/0"
   }
 
   disk {
