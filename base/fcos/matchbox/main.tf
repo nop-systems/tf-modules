@@ -29,7 +29,7 @@ resource "matchbox_profile" "this" {
 
 resource "matchbox_group" "this" {
   name    = var.fqdn
-  profile = matchbox_profile.fedora-coreos-install.name
+  profile = matchbox_profile.this.name
   selector = {
     mac = var.mac_address
   }
