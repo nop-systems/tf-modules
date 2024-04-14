@@ -8,7 +8,7 @@ locals {
 }
 
 // Fedora CoreOS profile
-resource "matchbox_profile" "fedora-coreos-install" {
+resource "matchbox_profile" "this" {
   name   = var.fqdn
   kernel = "https://builds.coreos.fedoraproject.org/prod/streams/${var.fcos_stream}/builds/${local.fcos_version}/x86_64/fedora-coreos-${local.fcos_version}-live-kernel-x86_64"
 
@@ -27,7 +27,7 @@ resource "matchbox_profile" "fedora-coreos-install" {
   raw_ignition = sensitive(var.ignition)
 }
 
-resource "matchbox_group" "mapbymac" {
+resource "matchbox_group" "this" {
   name    = var.fqdn
   profile = matchbox_profile.fedora-coreos-install.name
   selector = {
