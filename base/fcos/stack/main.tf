@@ -65,7 +65,7 @@ module "dns-record_A" {
 
   name  = module.domain.record_name
   type  = "A"
-  value = module.vm.ipv4_addresses[0]
+  value = try(module.vm.ipv4_addresses[0], null)
 
   zone_id = var.cloudflare_zone_id
 }
@@ -75,7 +75,7 @@ module "dns-record_AAAA" {
 
   name  = module.domain.record_name
   type  = "AAAA"
-  value = local.ipv6_addresses[0]
+  value = try(local.ipv6_addresses[0], null)
 
   zone_id = var.cloudflare_zone_id
 }
