@@ -21,8 +21,8 @@ Combined Ignition + Matchbox + VM modules for standard deployments
 | Name | Source | Version |
 |------|--------|---------|
 | <a name="module_approle"></a> [approle](#module\_approle) | git@github.com:nop-systems/terraform-modules.git//base/approle | approle/v0.1.2 |
-| <a name="module_dns-record_A"></a> [dns-record\_A](#module\_dns-record\_A) | git@github.com:nop-systems/terraform-modules.git//base/approle | dns-record/v0.1.0 |
-| <a name="module_dns-record_AAAA"></a> [dns-record\_AAAA](#module\_dns-record\_AAAA) | git@github.com:nop-systems/terraform-modules.git//base/approle | dns-record/v0.1.0 |
+| <a name="module_dns-record_A"></a> [dns-record\_A](#module\_dns-record\_A) | git@github.com:nop-systems/terraform-modules.git//base/dns-record | dns-record/v0.1.0 |
+| <a name="module_dns-record_AAAA"></a> [dns-record\_AAAA](#module\_dns-record\_AAAA) | git@github.com:nop-systems/terraform-modules.git//base/dns-record | dns-record/v0.1.0 |
 | <a name="module_domain"></a> [domain](#module\_domain) | git@github.com:nop-systems/terraform-modules.git//helpers/parse-domain | parse-domain/v1.0.0 |
 | <a name="module_ignition"></a> [ignition](#module\_ignition) | ../ignition | n/a |
 | <a name="module_matchbox"></a> [matchbox](#module\_matchbox) | ../matchbox | n/a |

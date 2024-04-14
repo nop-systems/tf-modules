@@ -61,7 +61,7 @@ locals {
 }
 
 module "dns-record_A" {
-  source   = "git@github.com:nop-systems/terraform-modules.git//base/approle?ref=dns-record/v0.1.0"
+  source   = "git@github.com:nop-systems/terraform-modules.git//base/dns-record?ref=dns-record/v0.1.0"
   for_each = toset(vm.ipv4_addresses)
 
   name  = module.domain.record_name
@@ -72,7 +72,7 @@ module "dns-record_A" {
 }
 
 module "dns-record_AAAA" {
-  source   = "git@github.com:nop-systems/terraform-modules.git//base/approle?ref=dns-record/v0.1.0"
+  source   = "git@github.com:nop-systems/terraform-modules.git//base/dns-record?ref=dns-record/v0.1.0"
   for_each = toset(local.ipv6_addresses)
 
   name  = module.domain.record_name
