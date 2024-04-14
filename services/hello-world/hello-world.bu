@@ -34,6 +34,7 @@ storage:
           [Install]
           WantedBy=multi-user.target default.target
     - path: /var/containers/caddy/Caddyfile
+      overwrite: true
       contents:
         inline: |
           {
