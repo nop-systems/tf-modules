@@ -13,7 +13,7 @@ module "approle" {
   cnames                    = var.cnames
   services                  = var.services
   additional_token_policies = var.additional_token_policies
-  wrapping_ttl              = "10min"
+  wrapping_ttl              = "10m"
 }
 
 module "ignition" {
