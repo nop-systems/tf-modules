@@ -15,7 +15,7 @@ data "ct_config" "this" {
     templatefile("${path.module}/templates/pki.bu.tftpl", {
       fqdn        = var.fqdn
       vault_url   = var.vault_url
-      root_ca_pem = var.root_ca_pem
+      root_ca_pem = jsonencode(var.root_ca_pem)
     })
   ], var.butane_snippets)
   # pretty_print = true
