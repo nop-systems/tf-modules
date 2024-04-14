@@ -32,7 +32,7 @@ module "matchbox" {
 
   fqdn                   = var.fqdn
   ignition               = module.ignition.ignition
-  mac_address            = module.macaddress.mac.address
+  mac_address            = macaddress.mac.address
   matchbox_http_endpoint = var.matchbox_http_endpoint
 }
 
