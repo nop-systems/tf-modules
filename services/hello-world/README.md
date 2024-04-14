@@ -15,7 +15,7 @@ No providers.
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_hello-world"></a> [hello-world](#module\_hello-world) | git@github.com:nop-systems/terraform-modules.git//base/fcos/stack | fcos/v0.1.0 |
+| <a name="module_hello-world"></a> [hello-world](#module\_hello-world) | git@github.com:nop-systems/tf-modules.git//base/fcos/stack | fcos/v0.1.0 |
 
 ## Resources
 
