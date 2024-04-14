@@ -38,6 +38,7 @@ Combined Ignition + Matchbox + VM modules for standard deployments
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_additional_token_policies"></a> [additional\_token\_policies](#input\_additional\_token\_policies) | List of additional Policies assigned to the VM’s approle | `list(string)` | `[]` | no |
 | <a name="input_butane_snippets"></a> [butane\_snippets](#input\_butane\_snippets) | (application specific) butane config | `list(string)` | n/a | yes |
 | <a name="input_cloudflare_zone_id"></a> [cloudflare\_zone\_id](#input\_cloudflare\_zone\_id) | Cloudflare Zone ID | `string` | n/a | yes |
 | <a name="input_cnames"></a> [cnames](#input\_cnames) | List of CNAMEs as FQDNs | `list(string)` | `[]` | no |

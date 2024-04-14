@@ -72,6 +72,12 @@ variable "vault_url" {
   description = "Vault URL"
 }
 
+variable "additional_token_policies" {
+  type        = list(string)
+  description = "List of additional Policies assigned to the VM’s approle"
+  default     = []
+}
+
 variable "root_ca_pem" {
   type        = string
   description = "Private Root Certificate (PEM)"

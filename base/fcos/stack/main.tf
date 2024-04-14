@@ -39,7 +39,7 @@ module "matchbox" {
 module "vm" {
   source = "../vm"
 
-  name = module.domain.record
+  name = module.domain.record_name
   desc = var.desc
   tags = var.xo_tags
 
@@ -57,12 +57,12 @@ module "vm" {
 
 locals {
   # filter out link-local
-  ipv6_addresses = [for ip in vm.ipv6_addresses : ip if !startswith(ip, "fe80")]
+  ipv6_addresses = [for ip in module.vm.ipv6_addresses : ip if !startswith(ip, "fe80")]
 }
 
 module "dns-record_A" {
   source   = "git@github.com:nop-systems/tf-modules.git//base/dns-record?ref=dns-record/v0.1.0"
-  for_each = toset(vm.ipv4_addresses)
+  for_each = toset(module.vm.ipv4_addresses)
 
   name  = module.domain.record_name
   type  = "A"

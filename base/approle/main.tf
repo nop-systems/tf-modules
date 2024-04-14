@@ -10,7 +10,7 @@ resource "vault_approle_auth_backend_role" "this" {
 
 resource "vault_approle_auth_backend_role_secret_id" "this" {
   backend   = "approle"
-  role_name = vault_approle_auth_backend_role.role.role_name
+  role_name = vault_approle_auth_backend_role.this.role_name
 
   wrapping_ttl          = var.wrapping_ttl
   with_wrapped_accessor = true
@@ -52,7 +52,7 @@ data "vault_generic_secret" "approle_mount" {
 }
 
 resource "vault_identity_entity_alias" "this" {
-  canonical_id   = vault_identity_entity.identity.id
+  canonical_id   = vault_identity_entity.this.id
   mount_accessor = data.vault_generic_secret.approle_mount.data.accessor
-  name           = vault_approle_auth_backend_role.role.role_id
+  name           = vault_approle_auth_backend_role.this.role_id
 }
