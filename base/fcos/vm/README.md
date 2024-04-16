@@ -49,4 +49,24 @@ No modules.
 | <a name="output_id"></a> [id](#output\_id) | UUID of created VM |
 | <a name="output_ipv4_addresses"></a> [ipv4\_addresses](#output\_ipv4\_addresses) | IPv4 addresses of VM |
 | <a name="output_ipv6_addresses"></a> [ipv6\_addresses](#output\_ipv6\_addresses) | IPv6 addresses of VM |
+
+## Usage
+
+```hcl
+module "???" {
+  source = "git@github.com:nop-systems/tf-modules.git//<module-path>?ref=<tag>"
+  #affinity_host_id = <no value> # The preferred host you would like the VM to run on. If changed on an existing VM it will require a reboot for the VM to be rescheduled.
+  #cpu_cores = 1 # Number of CPU cores
+  #desc =  # Description of the VM visible in XenOrchestra
+  #disk_size = 8 # Disk Size in GB for var partition disk (eg. 32)
+  mac_address = ??? # MAC address to use for VM NIC
+  #memory = 2048 # Memory in MB
+  name = ??? # Name of the new Virtual Machine
+  network_id = ??? # XenOrchestra Network UUID
+  sr_id = ??? # XenOrchestra Storage Repository UUID
+  #tags = [] # List of additional tags that should be attached to the VM
+  template_id = ??? # XenOrchestra Template UUID
+    
+}
+```
 <!-- END_TF_DOCS -->

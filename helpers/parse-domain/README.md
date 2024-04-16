@@ -35,4 +35,14 @@ No resources.
 | <a name="output_record_name"></a> [record\_name](#output\_record\_name) | everything below the second-level-domain |
 | <a name="output_subzone"></a> [subzone](#output\_subzone) | the parts between second level domain and host |
 | <a name="output_tld"></a> [tld](#output\_tld) | Top Level Domain |
+
+## Usage
+
+```hcl
+module "???" {
+  source = "git@github.com:nop-systems/tf-modules.git//<module-path>?ref=<tag>"
+  domain = ??? # domain to parse
+    
+}
+```
 <!-- END_TF_DOCS -->

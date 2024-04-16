@@ -41,4 +41,15 @@ No modules.
 ## Outputs
 
 No outputs.
+
+## Usage
+
+```hcl
+module "???" {
+  source = "git@github.com:nop-systems/tf-modules.git//<module-path>?ref=<tag>"
+  allowed_users = ??? # Allowed usernames as SSH principal
+  default_user = ??? # Default username as SSH principal
+    
+}
+```
 <!-- END_TF_DOCS -->

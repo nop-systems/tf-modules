@@ -45,4 +45,18 @@ No modules.
 | <a name="output_roleid"></a> [roleid](#output\_roleid) | n/a |
 | <a name="output_secretid"></a> [secretid](#output\_secretid) | secret-id, wrapped if TTL set |
 | <a name="output_secretid_retriaval_path"></a> [secretid\_retriaval\_path](#output\_secretid\_retriaval\_path) | n/a |
+
+## Usage
+
+```hcl
+module "???" {
+  source = "git@github.com:nop-systems/tf-modules.git//<module-path>?ref=<tag>"
+  #additional_token_policies = [] # List of additional Policies assigned to tokens created with the Approle
+  #cnames = [] # List of altnatives Names as FQDN to include in metadata
+  fqdn = ??? # The hostname of the VM as FQDN, will be used as role_name and for metadata. Must be unique.
+  #services = [] # List of service FQDNs the host is instance of to include in metdata (to access common secrets)
+  wrapping_ttl = ??? # TTL for wrapped secret-id (duration string or null for unwrapped)
+    
+}
+```
 <!-- END_TF_DOCS -->

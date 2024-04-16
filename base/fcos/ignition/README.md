@@ -42,4 +42,19 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_ignition"></a> [ignition](#output\_ignition) | Ignition config |
+
+## Usage
+
+```hcl
+module "???" {
+  source = "git@github.com:nop-systems/tf-modules.git//<module-path>?ref=<tag>"
+  approle_role_id = ??? # Vault Approle role_id
+  approle_wrapped_secret_id = ??? # Vault Approle secret_id
+  butane_snippets = ??? # (application specific) butane configs
+  fqdn = ??? # FQDN of the new Virtual Machine
+  root_ca_pem = ??? # Private Root Certificate (PEM)
+  vault_url = ??? # Vault URL
+    
+}
+```
 <!-- END_TF_DOCS -->

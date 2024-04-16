@@ -45,4 +45,18 @@
 ## Outputs
 
 No outputs.
+
+## Usage
+
+```hcl
+module "???" {
+  source = "git@github.com:nop-systems/tf-modules.git//<module-path>?ref=<tag>"
+  acme_allowed_domains = ??? # Allowed domains for ACME role (only subdomains)
+  allow_root_issuing_ttl = ??? # temporarily increase max TTL of root issuer to 12 years to allow issuing of a new long term root CA
+  organization = ??? # Organization to inlcude in leaf certificates
+  servers_issuer_ref = ??? # Issuer ref of current PKI servers Issuer
+  vault_url = ??? # Main HA URL to vault cluster
+    
+}
+```
 <!-- END_TF_DOCS -->

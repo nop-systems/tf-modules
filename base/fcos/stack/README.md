@@ -63,4 +63,30 @@ Combined Ignition + Matchbox + VM modules for standard deployments
 | <a name="output_ipv4_addresses"></a> [ipv4\_addresses](#output\_ipv4\_addresses) | List of IPv4 addresses reported by the guest agent |
 | <a name="output_ipv6_addresses"></a> [ipv6\_addresses](#output\_ipv6\_addresses) | List of IPv6 addresses reported by the guest agent |
 | <a name="output_vm_id"></a> [vm\_id](#output\_vm\_id) | UUID of created VM |
+
+## Usage
+
+```hcl
+module "???" {
+  source = "git@github.com:nop-systems/tf-modules.git//<module-path>?ref=<tag>"
+  #additional_token_policies = [] # List of additional Policies assigned to the VM’s approle
+  butane_snippets = ??? # (application specific) butane config
+  cloudflare_zone_id = ??? # Cloudflare Zone ID
+  #cnames = [] # List of CNAMEs as FQDNs
+  #cpu_cores = 1 # Number of CPU cores
+  #desc =  # Description of the VM visible in XenOrchestra
+  #disk_size = 8 # Disk Size in GB for var partition disk (eg. 32)
+  fqdn = ??? # Fully Qualified Domain Name of VM
+  matchbox_http_endpoint = ??? # matchbox http endpoint
+  #memory = 2048 # Memory in MB
+  root_ca_pem = ??? # Private Root Certificate (PEM)
+  #services = [] # List of Services as FQDNs (services are shared CNAMES, possibly with shared secrets)
+  vault_url = ??? # Vault URL
+  xo_network_id = ??? # XenOrchestra Network UUID
+  xo_sr_id = ??? # XenOrchestra Storage Repository UUID
+  #xo_tags = [] # List of additional tags that should be attached to the VM
+  xo_template_id = ??? # XenOrchestra Template UUID
+    
+}
+```
 <!-- END_TF_DOCS -->

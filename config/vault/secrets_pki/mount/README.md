@@ -43,4 +43,17 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_path"></a> [path](#output\_path) | n/a |
+
+## Usage
+
+```hcl
+module "???" {
+  source = "git@github.com:nop-systems/tf-modules.git//<module-path>?ref=<tag>"
+  max_ttl = ??? # max TTL for issued certificates in seconds
+  path = ??? # Path of PKI mount
+  ttl = ??? # default TTL for issued certificates in seconds
+  vault_url = ??? # Vault URI of Cluster
+    
+}
+```
 <!-- END_TF_DOCS -->

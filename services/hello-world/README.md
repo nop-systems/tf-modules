@@ -38,4 +38,22 @@ No resources.
 ## Outputs
 
 No outputs.
+
+## Usage
+
+```hcl
+module "???" {
+  source = "git@github.com:nop-systems/tf-modules.git//<module-path>?ref=<tag>"
+  cloudflare_zone_id = ??? # Cloudflare Zone ID
+  fqdn = ??? # Fully Qualified Domain Name of VM
+  matchbox_http_endpoint = ??? # matchbox http endpoint
+  root_ca_pem = ??? # Private Root Certificate (PEM)
+  vault_url = ??? # Vault URL
+  xo_network_id = ??? # XenOrchestra Network UUID
+  xo_sr_id = ??? # XenOrchestra Storage Repository UUID
+  #xo_tags = [] # List of additional tags that should be attached to the VM
+  xo_template_id = ??? # XenOrchestra Template UUID
+    
+}
+```
 <!-- END_TF_DOCS -->

@@ -9,6 +9,9 @@ repos:
           - --hook-config=--add-to-existing-file=true
           - --hook-config=--create-file-if-not-exist=true
           - --hook-config=--use-standard-markers=true
+          - --args=--config=.terraform-docs.yml
       - id: terraform_tflint
       - id: terraform_trivy
+      # - id: tfupdate
+      #   name: Autoupdate Terraform versions
       #      - id: terrascan

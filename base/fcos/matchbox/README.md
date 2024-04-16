@@ -44,4 +44,19 @@ No modules.
 ## Outputs
 
 No outputs.
+
+## Usage
+
+```hcl
+module "???" {
+  source = "git@github.com:nop-systems/tf-modules.git//<module-path>?ref=<tag>"
+  #fcos_stream = stable # Fedora CoreOS stream
+  #fcos_version = <no value> # Fedora CoreOS version (defaults to latest)
+  fqdn = ??? # FQDN of the new Virtual Machine
+  ignition = ??? # compiled ignition config
+  mac_address = ??? # MAC address of VM
+  matchbox_http_endpoint = ??? # matchbox http endpoint
+    
+}
+```
 <!-- END_TF_DOCS -->

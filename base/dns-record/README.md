@@ -39,4 +39,17 @@ No modules.
 |------|-------------|
 | <a name="output_fqdn"></a> [fqdn](#output\_fqdn) | n/a |
 | <a name="output_record_id"></a> [record\_id](#output\_record\_id) | ID of the cloudflare record resource |
+
+## Usage
+
+```hcl
+module "???" {
+  source = "git@github.com:nop-systems/tf-modules.git//<module-path>?ref=<tag>"
+  name = ??? # DNS record name
+  type = ??? # record type (e.g. A, AAAA)
+  value = ??? # record value (e.g. IP address)
+  zone_id = ??? # Cloudflare Zone ID
+    
+}
+```
 <!-- END_TF_DOCS -->

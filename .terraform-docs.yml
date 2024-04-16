@@ -1,0 +1,25 @@
+formatter: "md"
+
+content: |-
+  {{ .Requirements }}
+
+  {{ .Providers }}
+
+  {{ .Modules }}
+
+  {{ .Resources }}
+
+  {{ .Inputs }}
+
+  {{ .Outputs }}
+
+  ## Usage
+
+  ```hcl
+  module "???" {
+    source = "git@github.com:nop-systems/tf-modules.git//<module-path>?ref=<tag>"
+    {{ range .Module.Inputs -}}
+    {{if not .Required }}#{{ end }}{{ .Name }} = {{if .Required }}???{{ else }}{{ .Default.Raw }}{{ end }} # {{ .Description }}
+    {{ end }}  
+  }
+  ```

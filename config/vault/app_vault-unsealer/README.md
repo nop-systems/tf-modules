@@ -33,4 +33,13 @@ No inputs.
 ## Outputs
 
 No outputs.
+
+## Usage
+
+```hcl
+module "???" {
+  source = "git@github.com:nop-systems/tf-modules.git//<module-path>?ref=<tag>"
+    
+}
+```
 <!-- END_TF_DOCS -->

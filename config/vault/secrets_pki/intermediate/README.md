@@ -49,4 +49,25 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_issuer_ref"></a> [issuer\_ref](#output\_issuer\_ref) | n/a |
+
+## Usage
+
+```hcl
+module "???" {
+  source = "git@github.com:nop-systems/tf-modules.git//<module-path>?ref=<tag>"
+  cn = ??? # Certificate Name
+  #country = DE # 
+  issuing_active = ??? # Set to true allow issuing, else only crl-signing and ocsp-signing allowed
+  #locality = Berlin # 
+  #organization = nop.systems # 
+  #ou = Trust Services # 
+  pki_mount = ??? # PKI secret engine mount point
+  #province = Berlin # 
+  root_issuer_ref = ??? # Issuer to use for signing
+  root_pki_mount = ??? # PKI secret engine mount point containing root certificate
+  slug = ??? # slug name used for ressource names
+  #ttl = 3.1536e+07 # TTL of intermediate in seconds
+    
+}
+```
 <!-- END_TF_DOCS -->
