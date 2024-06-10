@@ -1,0 +1,46 @@
+---
+- name: "Create Fedora CoreOS ISO for bootstrap-matchbox"
+  hosts: localhost
+  vars:
+    module_name: bootstrap-matchbox
+    fcos_stream: stable
+    workdir: /tmp/ansible-fcos-iso
+    ignition_file: "{{workdir}}/{{ module_name }}.ign"
+  tasks:
+    - name: "Create {{ workdir }}"
+      ansible.builtin.file:
+        path: "{{ workdir }}"
+        state: directory
+        mode: 0755
+      delegate_to: localhost
+    - name: Transpile butane to ignition
+      ansible.builtin.command:
+        cmd: "butane --strict {{ module_name }}.bu -d . -o {{ ignition_file }}"
+      delegate_to: localhost
+      changed_when: false # Are you happy now, ansible-lint?
+    - name: Validate ignition file
+      ansible.builtin.command:
+        cmd: "ignition-validate {{ ignition_file }}"
+      delegate_to: localhost
+      changed_when: false
+    - name: Download Fedora CoreOS
+      ansible.builtin.command:
+        cmd: "coreos-installer download -s {{ fcos_stream }} -p metal -a x86_64 -f iso -C {{ workdir }}"
+      register: iso_download
+      delegate_to: localhost
+      changed_when: false
+    - name: Build ISO filename
+      ansible.builtin.set_fact:
+        iso: "{{ iso_download.stdout }}"
+        iso_ignition_embedded: "{{ iso_download.stdout | splitext | first }}.{{ module_name }}.iso"
+      delegate_to: localhost
+    - name: Delete old modified ISO
+      ansible.builtin.file:
+        path: "{{ iso_ignition_embedded }}"
+        state: absent
+      delegate_to: localhost
+    - name: Embed Ignition File into ISO
+      ansible.builtin.command:
+        cmd: "coreos-installer iso customize --dest-device /dev/xvda --dest-ignition {{ ignition_file }} -f -o {{ iso_ignition_embedded }} {{ iso }}"
+      delegate_to: localhost
+      changed_when: false

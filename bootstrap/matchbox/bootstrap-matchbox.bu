@@ -1,0 +1,116 @@
+variant: fcos
+version: 1.5.0
+passwd:
+  users:
+    - name: core
+      ssh_authorized_keys:
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICRdT8nh6dfPZiEXPze5iCbO+UV3qcoI9jgE7DqvGBA0 kjk@prometheus-linux
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIJ3+w1JpAgWh0QoXCxH0Eo7r2kyHttgXXCV0N2MEP25 id_ed25519@simon
+storage:
+  directories:
+    - path: /var/containers/matchbox/config
+    - path: /var/containers/matchbox/data
+  files:
+    - path: /etc/hostname
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: bootstrap-matchbox
+    - path: /etc/containers/systemd/matchbox.container
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          [Unit]
+          Description=Matchbox
+          After=network-online.target local-fs.target
+
+          [Container]
+          Image=quay.io/poseidon/matchbox:v0.11.0
+          LogDriver=journald
+
+          PublishPort=8080:8080
+          PublishPort=8081:8081
+          Volume=/var/containers/matchbox/data:/var/lib/matchbox:Z,U
+          Volume=/var/containers/matchbox/config:/etc/matchbox:Z,U
+          Volume=/var/containers/secrets/tls/this:/etc/tls:z,U,ro
+
+          Environment=MATCHBOX_ADDRESS=0.0.0.0:8080
+          Environment=MATCHBOX_RPC_ADDRESS=0.0.0.0:8081
+          Environment=MATCHBOX_CERT_FILE=/etc/tls/fullchain.pem
+          Environment=MATCHBOX_KEY_FILE=/etc/tls/privkey.pem
+
+          Network=container.network
+
+          [Service]
+          Restart=always
+
+          [Install]
+          WantedBy=multi-user.target default.target
+    - path: /var/containers/secrets/tls/this/fullchain.pem
+      contents:
+        local: ./bootstrap-tls/server.crt
+    - path: /var/containers/secrets/tls/this/privkey.pem
+      contents:
+        local: ./bootstrap-tls/server.key
+    - path: /var/containers/matchbox/config/ca.crt
+      mode: 0644
+      overwrite: true
+      contents:
+        local: ./bootstrap-tls/ca.crt
+
+    - path: /etc/containers/systemd/container.network
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          [Network]
+          IPv6=true
+    - path: /etc/NetworkManager/conf.d/90-ipv6-eui64.conf
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          # see https://developer-old.gnome.org/NetworkManager/stable/NetworkManager.conf.html#connection-sections
+          [connection-90-ipv6-eui64]
+          ipv6.ip6-privacy=0
+          # 0=eui64
+          ipv6.addr-gen-mode=0
+    - path: /etc/containers/registries.conf.d/dockerio-gcr-mirror.toml
+      # use mirror.gcr.io to avoid docker.io rate limiting
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          [[registry]]
+          location = "docker.io"
+          [[registry.mirror]]
+          location = "mirror.gcr.io"
+systemd:
+  units:
+    # Installing layered packages with rpm-ostree
+    - name: rpm-ostree-install.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Layer packages with rpm-ostree
+        Wants=network-online.target
+        After=network-online.target
+        # We run before `zincati.service` to avoid conflicting rpm-ostree
+        # transactions.
+        Before=zincati.service
+        ConditionPathExists=!/etc/%N.stamp
+
+        [Service]
+        Type=oneshot
+        RemainAfterExit=yes
+        # `--allow-inactive` ensures that rpm-ostree does not return an error
+        # if the package is already installed. This is useful if the package is
+        # added to the root image in a future Fedora CoreOS release as it will
+        # prevent the service from failing.
+        ExecStart=/usr/bin/rpm-ostree install --apply-live --allow-inactive xe-guest-utilities-latest kitty-terminfo vim jq bat
+        ExecStart=/bin/touch /etc/%N.stamp
+        ExecStart=/bin/systemctl enable --now xe-linux-distribution.service
+
+        [Install]
+        WantedBy=multi-user.target
