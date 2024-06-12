@@ -1,8 +1,8 @@
 ---
-- name: "Create Fedora CoreOS ISO for bootstrap-matchbox"
+- name: "Create Fedora CoreOS ISO for bootstrap"
   hosts: localhost
   vars:
-    module_name: bootstrap-matchbox
+    module_name: bootstrap
     fcos_stream: stable
     workdir: /tmp/ansible-fcos-iso
     ignition_file: "{{workdir}}/{{ module_name }}.ign"

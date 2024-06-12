@@ -10,12 +10,16 @@ storage:
   directories:
     - path: /var/containers/matchbox/config
     - path: /var/containers/matchbox/data
+    - path: /var/containers/matchbox/data/assets
+    - path: /var/containers/vault/logs
+    - path: /var/containers/vault/raft
+    - path: /var/containers/vault/config
   files:
     - path: /etc/hostname
       mode: 0644
       overwrite: true
       contents:
-        inline: bootstrap-matchbox
+        inline: bootstrap
     - path: /etc/containers/systemd/matchbox.container
       mode: 0644
       overwrite: true
@@ -33,7 +37,7 @@ storage:
           PublishPort=8081:8081
           Volume=/var/containers/matchbox/data:/var/lib/matchbox:Z,U
           Volume=/var/containers/matchbox/config:/etc/matchbox:Z,U
-          Volume=/var/containers/secrets/tls/this:/etc/tls:z,U,ro
+          Volume=/var/containers/secrets/tls/this:/etc/tls:z,ro
 
           Environment=MATCHBOX_ADDRESS=0.0.0.0:8080
           Environment=MATCHBOX_RPC_ADDRESS=0.0.0.0:8081
@@ -47,10 +51,75 @@ storage:
 
           [Install]
           WantedBy=multi-user.target default.target
+    - path: /etc/containers/systemd/vault.container
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          [Unit]
+          Description=vault server
+          After=network-online.target local-fs.target
+          # disable unit start rate limiting
+          StartLimitIntervalSec=0
+
+          [Container]
+          Image=docker.io/hashicorp/vault:1.15
+          Exec=server
+          LogDriver=journald
+
+          Volume=/var/containers/vault/raft:/vault/file:Z,U
+          Volume=/var/containers/vault/logs:/vault/logs:Z,U
+          Volume=/var/containers/vault/config:/vault/config:Z,U
+          Volume=/var/containers/secrets/tls/this:/vault/certs:z,ro
+
+          AddCapability=IPC_LOCK
+
+          PublishPort=8200:8200
+          PublishPort=8201:8201
+          Network=container.network
+
+          [Service]
+          Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
+
+          [Install]
+          WantedBy=multi-user.target default.target
+    - path: /var/containers/vault/config/vault.hcl
+      overwrite: true
+      contents:
+        inline: |
+          storage "raft" {
+            path    = "/vault/file"
+            node_id = "bootstrap"
+          }
+
+          listener "tcp" {
+            address       = "[::]:8200"
+            cluster_address = "[::]:8201"
+
+            tls_cert_file = "/vault/certs/fullchain.pem"
+            tls_key_file = "/vault/certs/privkey.pem"
+
+            telemetry {
+              unauthenticated_metrics_access = true
+            }
+          }
+
+          api_addr     = "https://localhost:8200"
+          cluster_addr = "https://localhost:8201"
+          ui           = true
+
+          telemetry {
+            prometheus_retention_time = "24h"
+          }
     - path: /var/containers/secrets/tls/this/fullchain.pem
+      mode: 0644
       contents:
         local: ./bootstrap-tls/server.crt
     - path: /var/containers/secrets/tls/this/privkey.pem
+      mode: 0644
       contents:
         local: ./bootstrap-tls/server.key
     - path: /var/containers/matchbox/config/ca.crt
