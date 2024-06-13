@@ -27,6 +27,15 @@ storage:
         inline: |
           [Network]
           IPv6=true
+    # allocate a lot of subuids and subgids for podman’s UserNS=auto
+    - path: /etc/subuid
+      append:
+        - inline: |
+            containers:2147483647:2147483648
+    - path: /etc/subgid
+      append:
+        - inline: |
+            containers:2147483647:2147483648
     - path: /etc/NetworkManager/conf.d/90-ipv6-eui64.conf
       mode: 0644
       overwrite: true
@@ -37,8 +46,8 @@ storage:
           ipv6.ip6-privacy=0
           # 0=eui64
           ipv6.addr-gen-mode=0
+    # use mirror.gcr.io to avoid docker.io rate limiting
     - path: /etc/containers/registries.conf.d/dockerio-gcr-mirror.toml
-      # use mirror.gcr.io to avoid docker.io rate limiting
       mode: 0644
       overwrite: true
       contents:
