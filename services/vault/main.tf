@@ -32,10 +32,23 @@ module "fcos" {
   })]
 }
 
-module "cnames" {
+module "cluster_node_cname" {
   source  = "git@github.com:nop-systems/tf-modules.git//base/dns-record?ref=dns-record/v0.1.0"
   name    = local.cluster_node_fqdn # DNS record name
   type    = "CNAME"                 # record type (e.g. A, AAAA)
   value   = var.fqdn                # record value (e.g. IP address)
   zone_id = var.cloudflare_zone_id  # Cloudflare Zone ID
+}
+
+moved {
+  from = module.cnames
+  to   = module.cluster_node_cname
+}
+
+module "cluster_cname" {
+  source  = "git@github.com:nop-systems/tf-modules.git//base/dns-record?ref=dns-record/v0.1.0"
+  name    = local.cluster_fqdn     # DNS record name
+  type    = "CNAME"                # record type (e.g. A, AAAA)
+  value   = var.fqdn               # record value (e.g. IP address)
+  zone_id = var.cloudflare_zone_id # Cloudflare Zone ID
 }
