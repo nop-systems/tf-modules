@@ -47,7 +47,7 @@ moved {
 
 module "cluster_cname" {
   source  = "git@github.com:nop-systems/tf-modules.git//base/dns-record?ref=dns-record/v0.1.0"
-  name    = local.cluster_fqdn     # DNS record name
+  name    = var.cluster_fqdn       # DNS record name
   type    = "CNAME"                # record type (e.g. A, AAAA)
   value   = var.fqdn               # record value (e.g. IP address)
   zone_id = var.cloudflare_zone_id # Cloudflare Zone ID
