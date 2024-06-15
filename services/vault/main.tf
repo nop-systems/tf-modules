@@ -3,7 +3,7 @@ module "fcos" {
   #source = "../../base/fcos/stack"
 
   fqdn      = var.fqdn
-  desc      = "HashiCorp Vault Node ${fqdn}"
+  desc      = "HashiCorp Vault Node ${var.fqdn}"
   xo_tags   = var.xo_tags
   memory    = 4069
   cpu_cores = 2
