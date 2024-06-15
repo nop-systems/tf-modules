@@ -23,5 +23,6 @@ module "fcos" {
     cloudflare_zone_id    = var.cloudflare_zone_id
     cluster_fqdn          = var.cluster_fqdn
     cluster_members_fqdns = var.cluster_members_fqdns
+    acme_email            = var.acme_email
   })]
 }

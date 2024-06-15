@@ -67,7 +67,7 @@ storage:
           StartLimitIntervalSec=0
 
           [Container]
-          Image=docker.io/hashicorp/vault:1.15
+          Image=docker.io/hashicorp/vault:1.17
           Exec=server
           LogDriver=journald
 
@@ -78,6 +78,7 @@ storage:
 
           UserNS=auto
           AddCapability=IPC_LOCK
+          Ulimit=memlock=-1:-1
 
           PublishPort=8200:8200
           PublishPort=8201:8201
@@ -100,7 +101,7 @@ storage:
           Description=dnsrobocert for vault
           After=network-online.target local-fs.target
           Before=vault.service
-          AssertPathExists=/var/containers/dnsrobocert/dnsrobocert.env
+          AssertPathExists=/var/containers/dnsrobocert/dnsrobocert_token.env
           # disable unit start rate limiting
           StartLimitIntervalSec=0
 
@@ -134,7 +135,7 @@ storage:
       contents:
         inline: |
           acme:
-            email_account: {acme_email}
+            email_account: ${acme_email}
             certs_permissions:
               files_mode: 0600
               user: 100

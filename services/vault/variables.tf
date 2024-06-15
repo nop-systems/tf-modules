@@ -34,6 +34,11 @@ variable "root_ca_pem" {
   description = "Private Root Certificate (PEM)"
 }
 
+variable "acme_email" {
+  type        = string
+  description = "E-Mail address for ACME account"
+}
+
 variable "matchbox_http_endpoint" {
   type        = string
   description = "matchbox http endpoint"
@@ -56,5 +61,10 @@ variable "cluster_members_fqdns" {
 
 variable "cluster_fqdn" {
   description = "round-robin fqdn"
+  type        = string
+}
+
+variable "acme_email" {
+  description = "E-Mail-Address for ACME account"
   type        = string
 }
