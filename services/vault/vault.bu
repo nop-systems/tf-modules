@@ -234,6 +234,7 @@ storage:
 systemd:
   units:
     - name: dnsrobocert.timer
+      enabled: true
       contents: |
         [Unit]
         Description=Renew Certificate with dnsrobocert
