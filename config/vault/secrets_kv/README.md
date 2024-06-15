@@ -23,7 +23,6 @@ No modules.
 | Name | Type |
 |------|------|
 | [vault_mount.kv](https://registry.terraform.io/providers/hashicorp/vault/latest/docs/resources/mount) | resource |
-| [vault_policy.approle-kv-read](https://registry.terraform.io/providers/hashicorp/vault/latest/docs/resources/policy) | resource |
 | [vault_policy.entity-metadata-kv-read](https://registry.terraform.io/providers/hashicorp/vault/latest/docs/resources/policy) | resource |
 | [vault_policy_document.entity-metadata-kv-read](https://registry.terraform.io/providers/hashicorp/vault/latest/docs/data-sources/policy_document) | data source |
 

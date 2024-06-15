@@ -13,11 +13,6 @@ resource "vault_mount" "kv" {
 ## Policy: Allow approles to read own kv path
 #####
 
-resource "vault_policy" "approle-kv-read" {
-  name   = "approle-kv-read"
-  policy = data.vault_policy_document.approle-kv-read.hcl
-}
-
 data "vault_policy_document" "entity-metadata-kv-read" {
   rule {
     path         = "kv/data/host/{{identity.entity.metadata.fqdn}}/*"
