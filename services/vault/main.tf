@@ -8,7 +8,7 @@ module "fcos" {
 
   fqdn      = var.fqdn
   desc      = "HashiCorp Vault Node ${var.node}"
-  xo_tags   = [var.xo_tags, "vault"]
+  xo_tags   = concat(var.xo_tags, ["vault"])
   memory    = 4069
   cpu_cores = 2
   disk_size = 100
