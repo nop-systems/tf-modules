@@ -17,9 +17,9 @@ module "pki_servers" {
   source    = "./mount"
   vault_url = var.vault_url
   path      = "pki-servers"
-  # max 1 day ttl for leaf certificates
+  # max 3 day ttl for leaf certificates
   ttl     = 86400
-  max_ttl = 86400
+  max_ttl = 86400 * 3
 }
 
 #####
@@ -69,7 +69,7 @@ resource "vault_pki_secret_backend_role" "entity_metadata" {
   key_bits = 256
 
   ttl     = 86400 / 2
-  max_ttl = 86400
+  max_ttl = 86400 * 3
 
   organization = [var.organization]
   ou           = ["Servers (Approle)"]

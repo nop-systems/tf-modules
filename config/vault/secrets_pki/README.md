@@ -44,7 +44,10 @@
 
 ## Outputs
 
-No outputs.
+| Name | Description |
+|------|-------------|
+| <a name="output_pki_root_path"></a> [pki\_root\_path](#output\_pki\_root\_path) | Path to PKI mount with root issuer |
+| <a name="output_pki_servers_path"></a> [pki\_servers\_path](#output\_pki\_servers\_path) | Path to PKI mount with servers issuer |
 
 ## Usage
 
@@ -56,7 +59,7 @@ module "???" {
   organization = ??? # Organization to inlcude in leaf certificates
   servers_issuer_ref = ??? # Issuer ref of current PKI servers Issuer
   vault_url = ??? # Main HA URL to vault cluster
-    
+  
 }
 ```
 <!-- END_TF_DOCS -->
