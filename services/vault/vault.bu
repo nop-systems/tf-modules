@@ -148,9 +148,9 @@ storage:
                 zone_id: ${cloudflare_zone_id}
           certificates:
             - name: vault
-              domains:
-              - ${cluster_fqdn}
-              - ${fqdn}
+              domains: 
+                - ${cluster_fqdn}
+                - ${cluster_node_fqdn}
               profile: cf
     # replace after deployment so it does not end in state
     - path: /var/containers/dnsrobocert/dnsrobocert_token.env.example
@@ -217,13 +217,13 @@ storage:
               acl unreachable nbsrv lt 1
               tcp-request connection reject if unreachable
 
-              %{ for member in cluster_members_fqdns }
-              server ${member} ${member}:8200 check send-proxy ca-file @system-ca inter 500ms fastinter 200ms rise 1
-              %{ endfor }
+              %{ for node, member in cluster_members_fqdns ~}
+              server ${node} ${node}.${cluster_fqdn}:8200 check send-proxy ca-file @system-ca inter 500ms fastinter 200ms rise 1
+              %{ endfor ~}
 
           frontend stats
               mode http
-              bind  :8404
+              bind :8404
               http-request use-service prometheus-exporter if { path /metrics }
               stats enable
               stats uri /stats

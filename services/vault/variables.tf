@@ -3,6 +3,11 @@ variable "fqdn" {
   description = "Fully Qualified Domain Name of VM"
 }
 
+variable "node" {
+  type        = string
+  description = "Vault node name"
+}
+
 variable "xo_network_id" {
   type        = string
   description = "XenOrchestra Network UUID"
@@ -54,9 +59,9 @@ variable "ssh_authorized_keys" {
   type        = list(string)
 }
 
-variable "cluster_members_fqdns" {
-  description = "FQDNs of all cluster members"
-  type        = list(string)
+variable "cluster_members" {
+  description = "map of node name to FQDNs of all cluster members"
+  type        = map(string)
 }
 
 variable "cluster_fqdn" {
