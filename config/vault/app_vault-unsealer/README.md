@@ -28,7 +28,9 @@ No modules.
 
 ## Inputs
 
-No inputs.
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:--------:|
+| <a name="input_transit_mount_path"></a> [transit\_mount\_path](#input\_transit\_mount\_path) | Mount path to transit engine | `string` | n/a | yes |
 
 ## Outputs
 
@@ -39,7 +41,8 @@ No outputs.
 ```hcl
 module "???" {
   source = "git@github.com:nop-systems/tf-modules.git//<module-path>?ref=<tag>"
-    
+  transit_mount_path = ??? # Mount path to transit engine
+  
 }
 ```
 <!-- END_TF_DOCS -->

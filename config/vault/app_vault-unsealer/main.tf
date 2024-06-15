@@ -3,7 +3,7 @@
 #####
 
 resource "vault_transit_secret_backend_key" "seal_key" {
-  backend = vault_mount.transit.path
+  backend = var.transit_mount_path
   name    = "seal"
   type    = "aes256-gcm96"
 }
