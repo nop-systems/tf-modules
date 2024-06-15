@@ -40,7 +40,10 @@ No modules.
 
 ## Outputs
 
-No outputs.
+| Name | Description |
+|------|-------------|
+| <a name="output_client_signer_path"></a> [client\_signer\_path](#output\_client\_signer\_path) | ssh client signer mount path |
+| <a name="output_host_signer_path"></a> [host\_signer\_path](#output\_host\_signer\_path) | ssh host signer mount path |
 
 ## Usage
 
@@ -49,7 +52,7 @@ module "???" {
   source = "git@github.com:nop-systems/tf-modules.git//<module-path>?ref=<tag>"
   allowed_users = ??? # Allowed usernames as SSH principal
   default_user = ??? # Default username as SSH principal
-    
+  
 }
 ```
 <!-- END_TF_DOCS -->

@@ -33,14 +33,16 @@ No inputs.
 
 ## Outputs
 
-No outputs.
+| Name | Description |
+|------|-------------|
+| <a name="output_path"></a> [path](#output\_path) | kv mount path |
 
 ## Usage
 
 ```hcl
 module "???" {
   source = "git@github.com:nop-systems/tf-modules.git//<module-path>?ref=<tag>"
-    
+  
 }
 ```
 <!-- END_TF_DOCS -->

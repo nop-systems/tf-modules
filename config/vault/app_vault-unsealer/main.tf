@@ -8,7 +8,6 @@ resource "vault_transit_secret_backend_key" "seal_key" {
   type    = "aes256-gcm96"
 }
 
-
 #####
 ## Policy: vault-unsealre
 #####

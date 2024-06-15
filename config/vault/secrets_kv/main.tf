@@ -51,7 +51,6 @@ data "vault_policy_document" "entity-metadata-kv-read" {
   }
 }
 
-
 resource "vault_policy" "entity-metadata-kv-read" {
   name   = "entity-metadata-kv-read"
   policy = data.vault_policy_document.entity-metadata-kv-read.hcl
