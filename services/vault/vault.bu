@@ -217,7 +217,7 @@ storage:
               acl unreachable nbsrv lt 1
               tcp-request connection reject if unreachable
 
-              %{ for node, member in cluster_members_fqdns ~}
+              %{ for node, member in cluster_members ~}
               server ${node} ${node}.${cluster_fqdn}:8200 check send-proxy ca-file @system-ca inter 500ms fastinter 200ms rise 1
               %{ endfor ~}
 
