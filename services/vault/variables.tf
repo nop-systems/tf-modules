@@ -50,26 +50,20 @@ variable "matchbox_http_endpoint" {
 }
 
 variable "cloudflare_zone_id" {
-  description = "Cloudflare Zone ID"
   type        = string
+  description = "Cloudflare Zone ID"
 }
 
 variable "ssh_authorized_keys" {
-  description = "SSH authorized keys for VM"
   type        = list(string)
+  description = "SSH authorized keys for VM"
 }
 
 variable "cluster_members" {
-  description = "map of node name to FQDNs of all cluster members"
   type        = map(string)
+  description = "map of node name to FQDNs of all cluster members"
 }
 
 variable "cluster_fqdn" {
-  description = "round-robin fqdn"
-  type        = string
-}
-
-variable "acme_email" {
-  description = "E-Mail-Address for ACME account"
-  type        = string
+  type = string
 }

@@ -26,9 +26,9 @@ No resources.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_acme_email"></a> [acme\_email](#input\_acme\_email) | E-Mail-Address for ACME account | `string` | n/a | yes |
+| <a name="input_acme_email"></a> [acme\_email](#input\_acme\_email) | E-Mail address for ACME account | `string` | n/a | yes |
 | <a name="input_cloudflare_zone_id"></a> [cloudflare\_zone\_id](#input\_cloudflare\_zone\_id) | Cloudflare Zone ID | `string` | n/a | yes |
-| <a name="input_cluster_fqdn"></a> [cluster\_fqdn](#input\_cluster\_fqdn) | round-robin fqdn | `string` | n/a | yes |
+| <a name="input_cluster_fqdn"></a> [cluster\_fqdn](#input\_cluster\_fqdn) | n/a | `string` | n/a | yes |
 | <a name="input_cluster_members"></a> [cluster\_members](#input\_cluster\_members) | map of node name to FQDNs of all cluster members | `map(string)` | n/a | yes |
 | <a name="input_fqdn"></a> [fqdn](#input\_fqdn) | Fully Qualified Domain Name of VM | `string` | n/a | yes |
 | <a name="input_matchbox_http_endpoint"></a> [matchbox\_http\_endpoint](#input\_matchbox\_http\_endpoint) | matchbox http endpoint | `string` | n/a | yes |
@@ -50,9 +50,9 @@ No outputs.
 ```hcl
 module "???" {
   source = "git@github.com:nop-systems/tf-modules.git//<module-path>?ref=<tag>"
-  acme_email = ??? # E-Mail-Address for ACME account
+  acme_email = ??? # E-Mail address for ACME account
   cloudflare_zone_id = ??? # Cloudflare Zone ID
-  cluster_fqdn = ??? # round-robin fqdn
+  cluster_fqdn = ??? # 
   cluster_members = ??? # map of node name to FQDNs of all cluster members
   fqdn = ??? # Fully Qualified Domain Name of VM
   matchbox_http_endpoint = ??? # matchbox http endpoint
