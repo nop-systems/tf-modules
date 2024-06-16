@@ -32,7 +32,7 @@ storage:
         inline: |
           vault-address: ${vault_url}
           vault-ssh-mount: ssh-host
-          vault-ssh-role: approle
+          vault-ssh-role: entity-metadata
           pub-key-file: /data/ssh_host_ed25519_key.pub
           signed-key-file: /data/certs/ssh_host_ed25519_key-cert.pub
           metrics-file: /data/metrics/vault-ssh-signer.prom
@@ -61,7 +61,7 @@ storage:
 
           Volume=/etc/ssh/ssh_host_ed25519_key.pub:/data/ssh_host_ed25519_key.pub:z,ro,idmap
           Volume=/etc/ssh/certs/:/data/certs/:z,idmap
-          Volume=/var/containers/vault-agent/token/vault-token:/root/.vault-token:ro,idmap
+          Volume=/var/containers/vault-agent/token/vault-token:/root/.vault-token:ro
           Volume=/var/containers/metrics:/data/metrics:z,idmap
           Volume=/var/containers/vault-ssh-signer.yaml:/etc/vault-ssh-cli/config.yaml:Z,ro
 
