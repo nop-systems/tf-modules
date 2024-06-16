@@ -43,7 +43,9 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_client_signer_path"></a> [client\_signer\_path](#output\_client\_signer\_path) | ssh client signer mount path |
+| <a name="output_client_signer_public_key"></a> [client\_signer\_public\_key](#output\_client\_signer\_public\_key) | public key used for signing client certificates |
 | <a name="output_host_signer_path"></a> [host\_signer\_path](#output\_host\_signer\_path) | ssh host signer mount path |
+| <a name="output_host_signer_public_key"></a> [host\_signer\_public\_key](#output\_host\_signer\_public\_key) | public key used for signing host certificates |
 
 ## Usage
 

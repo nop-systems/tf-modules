@@ -27,6 +27,7 @@ resource "vault_generic_endpoint" "ssh_client_ca" {
     "generate_signing_key" : true,
     "key_type" : "ed25519"
   })
+  write_fields = ["public_key"]
   lifecycle {
     ignore_changes = [data_json]
   }
@@ -39,6 +40,7 @@ resource "vault_generic_endpoint" "ssh_host_ca" {
     "generate_signing_key" : true,
     "key_type" : "ed25519"
   })
+  write_fields = ["public_key"]
   lifecycle {
     ignore_changes = [data_json]
   }
