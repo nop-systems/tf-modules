@@ -79,6 +79,7 @@ storage:
           AutoUpdate=registry
           Entrypoint=
           Exec=vault agent -config=/vault/config.d/
+          PodmanArgs=--image-volume=ignore
           Notify=true
           LogDriver=journald
 
@@ -111,6 +112,7 @@ storage:
           Pull=newer
           Entrypoint=
           Exec=sh -c 'if secret_id=$(vault unwrap --field secret_id); then echo "$secret_id" > /vault/approle/secretid; fi'
+          PodmanArgs=--image-volume=ignore
           LogDriver=journald
 
           EnvironmentFile=/var/containers/vault-agent/unwrapper/vault-unwrap-secretid.env
