@@ -21,31 +21,31 @@ storage:
       contents:
         inline: |
           template {
-            contents = "{{ with pkiCert \"pki-servers/issue/entity-hostname\" \"common_name=${fqdn}\" }}{{ .Data.Cert }}{{ .Data.CA }}{{ end }}"
+            contents = "{{ with pkiCert \"pki-servers/issue/entity-metadata\" \"common_name=${fqdn}\" }}{{ .Data.Cert }}{{ .Data.CA }}{{ end }}"
             destination = "/vault/secrets/tls/${fqdn}/fullchain.pem"
             error_on_missing_key = true
           }
 
           template {
-            contents = "{{ with pkiCert \"pki-servers/issue/entity-hostname\" \"common_name=${fqdn}\" }}{{ .Data.CA }}{{ end }}"
+            contents = "{{ with pkiCert \"pki-servers/issue/entity-metadata\" \"common_name=${fqdn}\" }}{{ .Data.CA }}{{ end }}"
             destination = "/vault/secrets/tls/${fqdn}/chain.pem"
             error_on_missing_key = true
           }
 
           template {
-            contents = "{{ with pkiCert \"pki-servers/issue/entity-hostname\" \"common_name=${fqdn}\" }}{{ .Data.Cert }}{{ end }}"
+            contents = "{{ with pkiCert \"pki-servers/issue/entity-metadata\" \"common_name=${fqdn}\" }}{{ .Data.Cert }}{{ end }}"
             destination = "/vault/secrets/tls/${fqdn}/cert.pem"
             error_on_missing_key = true
           }
 
           template {
-            contents = "{{ with pkiCert \"pki-servers/issue/entity-hostname\" \"common_name=${fqdn}\" }}{{ .Data.Key }}{{ end }}"
+            contents = "{{ with pkiCert \"pki-servers/issue/entity-metadata\" \"common_name=${fqdn}\" }}{{ .Data.Key }}{{ end }}"
             destination = "/vault/secrets/tls/${fqdn}/privkey.pem"
             error_on_missing_key = true
           }
 
           template {
-            contents = "{{ with pkiCert \"pki-servers/issue/entity-hostname\" \"common_name=${fqdn}\" }}{{ .Data.Cert }}{{ .Data.CA }}{{ .Data.Key }}{{ end }}"
+            contents = "{{ with pkiCert \"pki-servers/issue/entity-metadata\" \"common_name=${fqdn}\" }}{{ .Data.Cert }}{{ .Data.CA }}{{ .Data.Key }}{{ end }}"
             destination = "/vault/secrets/tls/${fqdn}/fullchain+privkey.pem"
             error_on_missing_key = true
           }
