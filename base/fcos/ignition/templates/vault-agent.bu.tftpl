@@ -141,10 +141,11 @@ storage:
 
           [Pod]
           Network=vault-agent.network
-          PodmanArgs=--userns=auto
+          PodmanArgs=--userns=auto --exit-policy=continue
 
           Volume=/var/containers/secrets:/vault/secrets:z,idmap
           Volume=/var/containers/vault-agent:/vault:Z,U
+
     - path: /etc/containers/systemd/vault-agent.network
       mode: 0644
       overwrite: true
