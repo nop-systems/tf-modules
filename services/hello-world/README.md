@@ -15,7 +15,7 @@ No providers.
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_hello-world"></a> [hello-world](#module\_hello-world) | git@github.com:nop-systems/tf-modules.git//base/fcos/stack | fcos/v0.1.0 |
+| <a name="module_hello-world"></a> [hello-world](#module\_hello-world) | git@github.com:nop-systems/tf-modules.git//base/fcos/stack | fcos/v0.2.0 |
 
 ## Resources
 
@@ -53,7 +53,7 @@ module "???" {
   xo_sr_id = ??? # XenOrchestra Storage Repository UUID
   #xo_tags = [] # List of additional tags that should be attached to the VM
   xo_template_id = ??? # XenOrchestra Template UUID
-    
+  
 }
 ```
 <!-- END_TF_DOCS -->
