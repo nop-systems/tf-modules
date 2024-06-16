@@ -47,8 +47,8 @@ storage:
             }
           }
 
-          api_addr     = "https://${fqdn}:8200"
-          cluster_addr = "https://${fqdn}:8201"
+          api_addr     = "https://${cluster_node_fqdn}:8200"
+          cluster_addr = "https://${cluster_node_fqdn}:8201"
           ui           = true
 
           telemetry {
