@@ -9,7 +9,14 @@ storage:
   directories:
     - path: /var/containers/caddy/config
     - path: /var/containers/caddy/data
+    - path: /var/containers/credentials/
   files:
+    - path: /var/containers/credentials/test
+      contents:
+        inline: Dies ist ein Test
+    - path: /var/containers/credentials/foo
+      contents:
+        inline: bar
     - path: /etc/containers/systemd/caddy.container
       mode: 0644
       contents:
@@ -29,10 +36,14 @@ storage:
           Volume=/var/containers/caddy/config:/config:Z,U
           Volume=/var/containers/caddy/data:/data:Z,U
           Volume=/var/containers/caddy/Caddyfile:/etc/caddy/Caddyfile:Z,ro
+          Volume=%d:/credentials:ro
 
           Network=container.network
 
           [Service]
+          LoadCredential=test:/var/containers/credentials/test
+          LoadCredential=foo:/var/containers/credentials/foo
+
           Restart=always
 
           [Install]
@@ -46,6 +57,6 @@ storage:
           }
 
            :443, :80 {
-            root * /usr/share/caddy
+            root * /credentials
             file_server
           }
