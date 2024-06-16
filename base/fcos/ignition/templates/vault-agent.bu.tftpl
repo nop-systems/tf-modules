@@ -77,7 +77,8 @@ storage:
           Image=docker.io/hashicorp/vault:latest
           Pull=newer
           AutoUpdate=registry
-          Exec=agent -config=/vault/config.d/
+          Entrypoint=
+          Exec=vault agent -config=/vault/config.d/
           Notify=true
           LogDriver=journald
 
@@ -110,6 +111,7 @@ storage:
           [Container]
           Image=docker.io/hashicorp/vault:latest
           Pull=newer
+          Entrypoint=
           Exec=sh -c 'vault unwrap --field secret_id > /vault/approle/secretid'
           LogDriver=journald
 
@@ -135,7 +137,7 @@ storage:
       contents:
         inline: |
           [Unit]
-          Description=Vault: unwrap secretid before starting vault-agent
+          Description=Pod for all vault-agent related containers
 
           [Pod]
           Network=vault-agent.network
@@ -143,15 +145,6 @@ storage:
 
           Volume=/var/containers/secrets:/vault/secrets:z,idmap
           Volume=/var/containers/vault-agent:/vault:Z,U
-
-          [Service]
-          Restart=on-failure
-          RestartSec=1s
-          RestartSteps=10
-          RestartMaxDelaySec=5m
-
-          [Install]
-          WantedBy=multi-user.target default.target
     - path: /etc/containers/systemd/vault-agent.network
       mode: 0644
       overwrite: true
