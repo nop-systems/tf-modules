@@ -69,12 +69,13 @@ storage:
           Description=Vault Agent
           After=network-online.target local-fs.target vault-unwrap-secretid.service
           Requires=vault-unwrap-secretid.service
+          Wants=podman-auto-update.timer
           # disable unit start rate limiting
           StartLimitIntervalSec=0
 
           [Container]
           Image=docker.io/hashicorp/vault:latest
-          AutoUpdate=registry
+          Pull=newer
           Exec=agent -config=/vault/config/
           Notify=true
           LogDriver=journald
@@ -96,7 +97,6 @@ storage:
 
           [Install]
           WantedBy=multi-user.target default.target
-          Wants=podman-auto-update.timer
     - path: /etc/containers/systemd/vault-unwrap-secretid.container
       mode: 0644
       overwrite: true
@@ -113,6 +113,7 @@ storage:
 
           [Container]
           Image=docker.io/hashicorp/vault:latest
+          Pull=newer
           Exec=sh -c 'vault unwrap --field secret_id > /vault/approle/secretid'
           LogDriver=journald
 
@@ -132,7 +133,6 @@ storage:
 
           [Install]
           WantedBy=multi-user.target default.target
-          Wants=podman-auto-update.timer
     - path: /etc/containers/systemd/vault-agent.network
       mode: 0644
       overwrite: true

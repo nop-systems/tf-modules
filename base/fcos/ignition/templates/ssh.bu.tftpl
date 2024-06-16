@@ -55,7 +55,7 @@ storage:
 
           [Container]
           Image=ghcr.io/soerenschneider/vault-ssh-cli:latest
-          AutoUpdate=registry
+          Pull=newer
           Exec=sign-host-key
           LogDriver=journald
 
@@ -76,7 +76,6 @@ storage:
 
           [Install]
           WantedBy=multi-user.target default.target
-          Wants=podman-auto-update.timer
 systemd:
   units:
     - name: vault-ssh-signer.timer
