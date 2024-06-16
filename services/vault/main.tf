@@ -40,15 +40,18 @@ module "cluster_node_cname" {
   zone_id = var.cloudflare_zone_id  # Cloudflare Zone ID
 }
 
-moved {
-  from = module.cnames
-  to   = module.cluster_node_cname
+module "cluster_A_record" {
+  source  = "git@github.com:nop-systems/tf-modules.git//base/dns-record?ref=dns-record/v0.1.0"
+  name    = var.cluster_fqdn                         # DNS record name
+  type    = "A"                                      # record type (e.g. A, AAAA)
+  value   = try(module.fcos.ipv4_addresses[0], null) # record value (e.g. IP address)
+  zone_id = var.cloudflare_zone_id                   # Cloudflare Zone ID
 }
 
-module "cluster_cname" {
+module "cluster_AAAA_record" {
   source  = "git@github.com:nop-systems/tf-modules.git//base/dns-record?ref=dns-record/v0.1.0"
-  name    = var.cluster_fqdn       # DNS record name
-  type    = "CNAME"                # record type (e.g. A, AAAA)
-  value   = var.fqdn               # record value (e.g. IP address)
-  zone_id = var.cloudflare_zone_id # Cloudflare Zone ID
+  name    = var.cluster_fqdn
+  type    = "AAAA"
+  value   = try([for ip in module.fcos.ipv6_addresses : ip if !startswith(ip, "fe80")][0], null)
+  zone_id = var.cloudflare_zone_id
 }
