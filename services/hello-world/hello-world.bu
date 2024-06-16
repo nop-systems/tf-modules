@@ -9,7 +9,7 @@ storage:
   directories:
     - path: /var/containers/caddy/config
     - path: /var/containers/caddy/data
-    - path: /var/containers/credentials/
+    - path: /var/containers/credentials
   files:
     - path: /var/containers/credentials/test
       contents:
