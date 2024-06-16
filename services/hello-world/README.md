@@ -29,6 +29,7 @@ No resources.
 | <a name="input_fqdn"></a> [fqdn](#input\_fqdn) | Fully Qualified Domain Name of VM | `string` | n/a | yes |
 | <a name="input_matchbox_http_endpoint"></a> [matchbox\_http\_endpoint](#input\_matchbox\_http\_endpoint) | matchbox http endpoint | `string` | n/a | yes |
 | <a name="input_root_ca_pem"></a> [root\_ca\_pem](#input\_root\_ca\_pem) | Private Root Certificate (PEM) | `string` | n/a | yes |
+| <a name="input_ssh_authorized_keys"></a> [ssh\_authorized\_keys](#input\_ssh\_authorized\_keys) | SSH authorized keys for VM | `list(string)` | n/a | yes |
 | <a name="input_vault_url"></a> [vault\_url](#input\_vault\_url) | Vault URL | `string` | n/a | yes |
 | <a name="input_xo_network_id"></a> [xo\_network\_id](#input\_xo\_network\_id) | XenOrchestra Network UUID | `string` | n/a | yes |
 | <a name="input_xo_sr_id"></a> [xo\_sr\_id](#input\_xo\_sr\_id) | XenOrchestra Storage Repository UUID | `string` | n/a | yes |
@@ -48,6 +49,7 @@ module "???" {
   fqdn = ??? # Fully Qualified Domain Name of VM
   matchbox_http_endpoint = ??? # matchbox http endpoint
   root_ca_pem = ??? # Private Root Certificate (PEM)
+  ssh_authorized_keys = ??? # SSH authorized keys for VM
   vault_url = ??? # Vault URL
   xo_network_id = ??? # XenOrchestra Network UUID
   xo_sr_id = ??? # XenOrchestra Storage Repository UUID

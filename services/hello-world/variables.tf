@@ -43,3 +43,8 @@ variable "cloudflare_zone_id" {
   description = "Cloudflare Zone ID"
   type        = string
 }
+
+variable "ssh_authorized_keys" {
+  type        = list(string)
+  description = "SSH authorized keys for VM"
+}

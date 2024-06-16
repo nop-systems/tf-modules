@@ -9,7 +9,9 @@ module "hello-world" {
   cpu_cores = 1
   disk_size = 10
 
-  butane_snippets = [file("${path.module}/hello-world.bu")]
+  butane_snippets = [templatefile("${path.module}/hello-world.bu", {
+    ssh_authorized_keys = jsonencode(var.ssh_authorized_keys)
+  })]
 
   cloudflare_zone_id     = var.cloudflare_zone_id
   xo_sr_id               = var.xo_sr_id

@@ -1,6 +1,10 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/Relativ-IT/Butane-Schemas/Release/Butane-Schema.json
 variant: fcos
 version: "1.5.0"
+passwd:
+  users:
+    - name: core
+      ssh_authorized_keys: ${ssh_authorized_keys}
 storage:
   directories:
     - path: /var/containers/caddy/config
@@ -39,14 +43,9 @@ storage:
         inline: |
           {
             local_certs
-            #acme_ca https://vault.internal.nop.systems/v1/pki-servers/acme/directory
           }
 
-          hello-world.guests.nop.systems {
+           :443, :80 {
             root * /usr/share/caddy
             file_server
-          }
-
-          :443, :80 {
-            respond hello-world.guests.nop.systems
           }
