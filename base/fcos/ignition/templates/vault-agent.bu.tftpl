@@ -77,18 +77,13 @@ storage:
           Image=docker.io/hashicorp/vault:latest
           Pull=newer
           AutoUpdate=registry
-          Exec=agent -config=/vault/config/
+          Exec=agent -config=/vault/config.d/
           Notify=true
           LogDriver=journald
 
-          Volume=/var/containers/secrets:/vault/secrets:z
-          Volume=/var/containers/vault-agent/config.d:/vault/config:Z
-          Volume=/var/containers/vault-agent/token:/vault/token:z
-          Volume=/var/containers/vault-agent/approle:/vault/approle:z
-
           AddCapability=IPC_LOCK
 
-          Network=vault-agent.network
+          Pod=vault-agent.pod
 
           [Service]
           Restart=always
@@ -119,14 +114,37 @@ storage:
           LogDriver=journald
 
           EnvironmentFile=/var/containers/vault-agent/unwrapper/vault-unwrap-secretid.env
-          Volume=/var/containers/vault-agent/approle:/vault/approle:z
 
           AddCapability=IPC_LOCK
-          Network=vault-agent.network
+
+          Pod=vault-agent.pod
 
           [Service]
           Type=oneshot
           ExecStartPost=rm /var/containers/vault-agent/unwrapper/vault-unwrap-secretid.env
+          Restart=on-failure
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
+
+          [Install]
+          WantedBy=multi-user.target default.target
+    - path: /etc/containers/systemd/vault-agent.pod
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          [Unit]
+          Description=Vault: unwrap secretid before starting vault-agent
+
+          [Pod]
+          Network=vault-agent.network
+          PodmanArgs=--userns=auto
+
+          Volume=/var/containers/secrets:/vault/secrets:z,idmap
+          Volume=/var/containers/vault-agent:/vault:Z,U
+
+          [Service]
           Restart=on-failure
           RestartSec=1s
           RestartSteps=10

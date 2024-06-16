@@ -6,7 +6,7 @@ storage:
     - path: /etc/ssh/certs
       mode: 0644
     - path: /var/containers/metrics
-      mode: 644
+      mode: 0644
   files:
     - path: /etc/ssh/sshd_config.d/41-certificates.conf
       overwrite: true
@@ -59,13 +59,13 @@ storage:
           Exec=sign-host-key
           LogDriver=journald
 
-          Volume=/etc/ssh/ssh_host_ed25519_key.pub:/data/ssh_host_ed25519_key.pub:z,ro
-          Volume=/etc/ssh/certs/:/data/certs/:z
-          Volume=/var/containers/vault-agent/token/vault-token:/root/.vault-token:z,ro
-          Volume=/var/containers/metrics/:/data/metrics:z
+          Volume=/etc/ssh/ssh_host_ed25519_key.pub:/data/ssh_host_ed25519_key.pub:z,ro,idmap
+          Volume=/etc/ssh/certs/:/data/certs/:z,idmap
+          Volume=/var/containers/vault-agent/token/vault-token:/root/.vault-token:ro,idmap
+          Volume=/var/containers/metrics:/data/metrics:z,idmap
           Volume=/var/containers/vault-ssh-signer.yaml:/etc/vault-ssh-cli/config.yaml:Z,ro
 
-          Network=vault-agent.network
+          Pod=vault-agent.pod
 
           [Service]
           Type=oneshot
