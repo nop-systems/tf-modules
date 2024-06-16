@@ -67,8 +67,8 @@ storage:
         inline: |
           [Unit]
           Description=Vault Agent
-          After=network-online.target local-fs.target vault-unwrap-secretid.service
-          Requires=vault-unwrap-secretid.service
+          After=network-online.target local-fs.target
+          Wants=vault-unwrap-secretid.service
           Wants=podman-auto-update.timer
           # disable unit start rate limiting
           StartLimitIntervalSec=0
@@ -102,8 +102,6 @@ storage:
           [Unit]
           Description=Vault: unwrap secretid before starting vault-agent
 
-          ConditionPathExists=/var/containers/vault-agent/unwrapper/vault-unwrap-secretid.env
-          Before=vault-agent.service
           After=network-online.target local-fs.target
           # disable unit start rate limiting
           StartLimitIntervalSec=0
@@ -112,7 +110,7 @@ storage:
           Image=docker.io/hashicorp/vault:latest
           Pull=newer
           Entrypoint=
-          Exec=sh -c 'vault unwrap --field secret_id > /vault/approle/secretid'
+          Exec=sh -c 'if secret_id=$(vault unwrap --field secret_id); then echo "$secret_id" > /vault/approle/secretid; fi'
           LogDriver=journald
 
           EnvironmentFile=/var/containers/vault-agent/unwrapper/vault-unwrap-secretid.env
@@ -123,7 +121,6 @@ storage:
 
           [Service]
           Type=oneshot
-          ExecStartPost=rm /var/containers/vault-agent/unwrapper/vault-unwrap-secretid.env
           Restart=on-failure
           RestartSec=1s
           RestartSteps=10
