@@ -76,6 +76,7 @@ storage:
           [Container]
           Image=docker.io/hashicorp/vault:latest
           Pull=newer
+          AutoUpdate=registry
           Exec=agent -config=/vault/config/
           Notify=true
           LogDriver=journald
