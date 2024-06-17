@@ -10,13 +10,8 @@ storage:
     - path: /var/containers/caddy/config
     - path: /var/containers/caddy/data
     - path: /var/containers/credentials
+    - path: /etc/containers/systemd/vault-agent.container.d/
   files:
-    - path: /var/containers/credentials/test
-      contents:
-        inline: Dies ist ein Test
-    - path: /var/containers/credentials/foo
-      contents:
-        inline: bar
     - path: /etc/containers/systemd/caddy.container
       mode: 0644
       contents:
@@ -36,18 +31,44 @@ storage:
           Volume=/var/containers/caddy/config:/config:Z,U
           Volume=/var/containers/caddy/data:/data:Z,U
           Volume=/var/containers/caddy/Caddyfile:/etc/caddy/Caddyfile:Z,ro
-          Volume=%d:/credentials:ro
+          Volume=secrets.volume:/secrets:z,idmap,ro
 
           Network=container.network
 
           [Service]
-          LoadCredential=test:/var/containers/credentials/test
-          LoadCredential=foo:/var/containers/credentials/foo
-
           Restart=always
 
           [Install]
           WantedBy=multi-user.target default.target
+    - path: /var/containers/systemd/secrets.volume
+      overwrite: true
+      contents:
+        inline: |
+          [Volume]
+          Device=tmpfs
+          Options=noswap,size=10M,nosuid,nodev,noexec
+    - path: /etc/containers/systemd/vault-agent.container.d/41-hello-world.conf
+      overwrite: true
+      contents:
+        inline: |
+          [Container]
+          Volume=secrets.volume:/secrets:z,idmap
+    - path: /var/containers/vault-agent/config.d/hello-world.hcl
+      contents:
+        inline: |
+          template {
+            contents <<-EOT
+              {{ with secret "kv/data/host/hello-world.base.panke.studis-bht.de/test" }}{{ .Data.data.password }}{{ end }}
+            EOT
+            destination = /secrets/password
+          }
+
+          template {
+            contents <<-EOT
+              {{ with secret "kv/data/host/hello-world.base.panke.studis-bht.de/test" }}{{ .Data.data.fortune }}{{ end }}
+            EOT
+            destination = /secrets/fortune
+          }
     - path: /var/containers/caddy/Caddyfile
       overwrite: true
       contents:
@@ -57,6 +78,6 @@ storage:
           }
 
            :443, :80 {
-            root * /credentials
+            root * /secrets
             file_server
           }
