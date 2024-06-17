@@ -10,7 +10,7 @@ storage:
     - path: /var/containers/caddy/config
     - path: /var/containers/caddy/data
     - path: /var/containers/credentials
-    - path: /etc/containers/systemd/vault-agent.container.d/
+    - path: /etc/containers/systemd/vault-agent.container.d
   files:
     - path: /etc/containers/systemd/caddy.container
       mode: 0644
