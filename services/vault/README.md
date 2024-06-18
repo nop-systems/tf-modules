@@ -18,7 +18,7 @@ No providers.
 | <a name="module_cluster_AAAA_record"></a> [cluster\_AAAA\_record](#module\_cluster\_AAAA\_record) | git@github.com:nop-systems/tf-modules.git//base/dns-record | dns-record/v0.1.0 |
 | <a name="module_cluster_A_record"></a> [cluster\_A\_record](#module\_cluster\_A\_record) | git@github.com:nop-systems/tf-modules.git//base/dns-record | dns-record/v0.1.0 |
 | <a name="module_cluster_node_cname"></a> [cluster\_node\_cname](#module\_cluster\_node\_cname) | git@github.com:nop-systems/tf-modules.git//base/dns-record | dns-record/v0.1.0 |
-| <a name="module_fcos"></a> [fcos](#module\_fcos) | git@github.com:nop-systems/tf-modules.git//base/fcos/stack | fcos/v0.2.3 |
+| <a name="module_fcos"></a> [fcos](#module\_fcos) | git@github.com:nop-systems/tf-modules.git//base/fcos/stack | fcos/v0.2.4 |
 
 ## Resources
 
