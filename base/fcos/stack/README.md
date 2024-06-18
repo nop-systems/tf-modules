@@ -49,7 +49,7 @@ Combined Ignition + Matchbox + VM modules for standard deployments
 | <a name="input_matchbox_http_endpoint"></a> [matchbox\_http\_endpoint](#input\_matchbox\_http\_endpoint) | matchbox http endpoint | `string` | n/a | yes |
 | <a name="input_memory"></a> [memory](#input\_memory) | Memory in MB | `number` | `2048` | no |
 | <a name="input_root_ca_pem"></a> [root\_ca\_pem](#input\_root\_ca\_pem) | Private Root Certificate (PEM) | `string` | n/a | yes |
-| <a name="input_services"></a> [services](#input\_services) | List of Services as FQDNs (services are shared CNAMES, possibly with shared secrets) | `list(string)` | `[]` | no |
+| <a name="input_services"></a> [services](#input\_services) | List of Services as shared FQDNs (possibly with shared secrets) | `list(string)` | `[]` | no |
 | <a name="input_vault_url"></a> [vault\_url](#input\_vault\_url) | Vault URL | `string` | n/a | yes |
 | <a name="input_xo_network_id"></a> [xo\_network\_id](#input\_xo\_network\_id) | XenOrchestra Network UUID | `string` | n/a | yes |
 | <a name="input_xo_sr_id"></a> [xo\_sr\_id](#input\_xo\_sr\_id) | XenOrchestra Storage Repository UUID | `string` | n/a | yes |
@@ -80,13 +80,13 @@ module "???" {
   matchbox_http_endpoint = ??? # matchbox http endpoint
   #memory = 2048 # Memory in MB
   root_ca_pem = ??? # Private Root Certificate (PEM)
-  #services = [] # List of Services as FQDNs (services are shared CNAMES, possibly with shared secrets)
+  #services = [] # List of Services as shared FQDNs (possibly with shared secrets)
   vault_url = ??? # Vault URL
   xo_network_id = ??? # XenOrchestra Network UUID
   xo_sr_id = ??? # XenOrchestra Storage Repository UUID
   #xo_tags = [] # List of additional tags that should be attached to the VM
   xo_template_id = ??? # XenOrchestra Template UUID
-    
+  
 }
 ```
 <!-- END_TF_DOCS -->

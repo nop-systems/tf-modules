@@ -11,7 +11,7 @@ variable "cnames" {
 
 variable "services" {
   type        = list(string)
-  description = "List of Services as FQDNs (services are shared CNAMES, possibly with shared secrets)"
+  description = "List of Services as shared FQDNs (possibly with shared secrets)"
   default     = []
 }
 
