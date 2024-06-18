@@ -1,0 +1,281 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Relativ-IT/Butane-Schemas/Release/Butane-Schema.json
+variant: fcos
+version: "1.5.0"
+storage:
+  directories:
+    - path: /var/containers/authentik/media
+    - path: /var/containers/authentik/custom-templates
+    - path: /var/containers/postgres/data
+    - path: /vault/secrets/authentik
+    - path: /vault/secrets/authentik/email
+    - path: /vault/secrets/authentik/postgres
+    - path: /vault/secrets/authentik_ldap
+  files:
+    - path: /etc/containers/systemd/authentik.image
+      mode: 0644
+      contents:
+        inline: |
+          [Image]
+          Image=ghcr.io/goauthentik/server:2024.4.2
+    - path: /etc/containers/systemd/authentik-ldap-outpost.image
+      mode: 0644
+      contents:
+        inline: |
+          [Image]
+          Image=ghcr.io/goauthentik/ldap:2024.4.2
+    - path: /etc/containers/systemd/authentik.pod
+      mode: 0644
+      contents:
+        inline: |
+          [Pod]
+          Network=container.network
+          UserNS=auto
+
+          Environment=AUTHENTIK_POSTGRESQL__HOST=systemd-postgres
+          Environment=AUTHENTIK_POSTGRESQL__NAME=authentik
+          Environment=AUTHENTIK_POSTGRESQL__USER=authentik
+          Environment=AUTHENTIK_REDIS__HOST=systemd-redis
+
+          Environment=AUTHENTIK_POSTGRESQL__PASSWORD=file:///secrets/postgres/password
+          Environment=AUTHENTIK_EMAIL__USERNAME=file:///secrets/email/username
+          Environment=AUTHENTIK_EMAIL__PASSWORD=file:///secrets/email/password
+          Environment=AUTHENTIK_EMAIL__HOST=file:///secrets/email/host
+          Environment=AUTHENTIK_EMAIL__PORT=file:///secrets/email/port
+          Environment=AUTHENTIK_EMAIL__USE_TLS=file:///secrets/email/use_tls
+          Environment=AUTHENTIK_SECRET_KEY=file:///secrets/secret_key
+
+          Environment=AUTHENTIK_LISTEN__TRUSTED_PROXY_CIDRS=${ join(",", trusted_proxy_cidrs) }
+
+          Volume=/var/containers/authentik/media:/media:Z,U
+          Volume=/var/containers/authentik/custom-templates:/custom-templates:Z,U
+          Volume=/var/containers/secrets/authentik:/secrets:z,idmap
+
+    - path: /etc/containers/systemd/authentik-server.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=authentik server
+          After=network-online.target local-fs.target vault-agent.service
+          Wants=postgres.service
+          Wants=redis.service
+
+          [Container]
+          Image=authentik.image
+          Exec=server
+          Pull=newer
+          LogDriver=journald
+
+          PublishPort=80:9000
+          PublishPort=443:9443
+
+          Pod=authentik.pod
+
+          [Service]
+          Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
+
+          [Service]
+          Restart=always
+
+          [Install]
+          WantedBy=multi-user.target default.target
+    - path: /etc/containers/systemd/authentik-worker.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=authentik worker
+          After=network-online.target local-fs.target vault-agent.service
+          Wants=postgres.service
+          Wants=redis.service
+
+          [Container]
+          Image=authentik.image
+          Exec=worker
+          Pull=newer
+          LogDriver=journald
+
+          Volume=/var/containers/secrets/tls/this:/certs:z,idmap
+
+          Pod=authentik.pod
+
+          [Service]
+          Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
+
+          [Service]
+          Restart=always
+
+          [Install]
+          WantedBy=multi-user.target default.target
+    - path: /etc/containers/systemd/postgres.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=PostgreSQL database
+          After=network-online.target local-fs.target vault-agent.service
+
+          [Container]
+          Image=docker.io/library/postgres:16-alpine
+          Exec=worker
+          Pull=newer
+          AutoUpdate=registry
+          LogDriver=journald
+          UserNS=auto
+          Notify=true
+
+          Environment=POSTGRES_PASSWORD_FILE=/secrets/password
+          Environment=POSTGRES_USER=authentik
+          Environment=POSTGRES_DB=authentik
+
+          Volume=/var/containers/postgres/data:/var/lib/postgresql/data:Z,U
+          Volume=/var/containers/secrets/authentik/postgres:/secrets:z,idmap
+
+          HealthCmd=pg_isready -d authentik -U authentik
+          HealthInterval=30s
+          HealthRetries=5
+          HealthStartPeriod=20s
+          HealthTimeout=5s
+          Network=container.network
+
+          [Service]
+          Restart=always
+
+          [Install]
+          WantedBy=multi-user.target default.target
+    - path: /etc/containers/systemd/redis.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=Redis Cache
+          After=network-online.target local-fs.target vault-agent.service
+
+          [Container]
+          Image=docker.io/library/redis:alpine
+          Exec=--save 60 1 --loglevel warning
+
+          Pull=newer
+          AutoUpdate=registry
+          LogDriver=journald
+          UserNS=auto
+          Notify=healthy
+
+          Volume=/var/containers/redis/data:/data:Z,U
+
+          HealthCmd=redis-cli ping | grep PONG
+          HealthInterval=30s
+          HealthRetries=5
+          HealthStartPeriod=20s
+          HealthTimeout=3s
+
+          [Service]
+          Restart=always
+
+          [Install]
+          WantedBy=multi-user.target default.target
+    - path: /etc/containers/systemd/authentik-ldap.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=authentik LDAP outpost
+          After=network-online.target local-fs.target vault-agent.service
+
+          [Container]
+          Image=authentik-ldap-outpost.image
+          Pull=newer
+          LogDriver=journald
+
+          PublishPort=389:3389
+          PublishPort=636:6636
+
+          Environment=AUTHENTIK_HOST= https://systemd-authentik:9443
+          Environment=AUTHENTIK_INSECURE=true
+          Environment=AUTHENTIK_TOKEN=file:///secrets/token
+
+          Volume=/var/containers/secrets/authentik_ldap:/secrets:z,idmap
+
+          Network=containers.network
+
+          [Service]
+          Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
+
+          [Service]
+          Restart=always
+
+          [Install]
+          WantedBy=multi-user.target default.target
+    - path: /var/containers/vault-agent/config.d/authentik.hcl
+      contents:
+        inline: |
+          template {
+            contents = <<-EOT
+              {{ with secret "kv/data/service/${ service_fqdn }/postgres" }}{{ .Data.data.password }}{{ end }}
+            EOT
+            destination = "/vault/secrets/authentik/postgres/password"
+          }
+
+            contents = <<-EOT
+              {{ with secret "kv/data/service/${ service_fqdn }/postgres" }}{{ .Data.data.database }}{{ end }}
+            EOT
+            destination = "/vault/secrets/authentik/postgres/database"
+          }
+
+          template {
+            contents = <<-EOT
+              {{ with secret "kv/data/service/${ service_fqdn }/email" }}{{ .Data.data.username }}{{ end }}
+            EOT
+            destination = "/vault/secrets/authentik/email/username"
+          }
+
+          template {
+            contents = <<-EOT
+              {{ with secret "kv/data/service/${ service_fqdn }/email" }}{{ .Data.data.password }}{{ end }}
+            EOT
+            destination = "/vault/secrets/authentik/email/password"
+          }
+
+          template {
+            contents = <<-EOT
+              {{ with secret "kv/data/service/${ service_fqdn }/email" }}{{ .Data.data.host }}{{ end }}
+            EOT
+            destination = "/vault/secrets/authentik/email/host"
+          }
+
+          template {
+            contents = <<-EOT
+              {{ with secret "kv/data/service/${ service_fqdn }/email" }}{{ .Data.data.port }}{{ end }}
+            EOT
+            destination = "/vault/secrets/authentik/email/port"
+          }
+
+          template {
+            contents = <<-EOT
+              {{ with secret "kv/data/service/${ service_fqdn }/email" }}{{ .Data.data.use_tls }}{{ end }}
+            EOT
+            destination = "/vault/secrets/authentik/email/use_tls"
+          }
+
+          template {
+            contents = <<-EOT
+              {{ with secret "kv/data/service/${ service_fqdn }/authentik" }}{{ .Data.data.secret_key }}{{ end }}
+            EOT
+            destination = "/vault/secrets/authentik/secret_key"
+          }
+
+          template {
+            contents = <<-EOT
+              {{ with secret "kv/data/service/${ service_fqdn }/authentik_ldap" }}{{ .Data.data.token }}{{ end }}
+            EOT
+            destination = "/vault/secrets/authentik_ldap"
+          }
