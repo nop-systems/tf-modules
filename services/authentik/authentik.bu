@@ -44,6 +44,8 @@ storage:
           Network=container.network
           PodmanArgs=--userns=auto
 
+          PublishPort=80:9000
+          PublishPort=443:9443
 
           Volume=/var/containers/authentik/media:/media:Z,U
           Volume=/var/containers/authentik/custom-templates:/custom-templates:Z,U
@@ -79,9 +81,6 @@ storage:
           Environment=AUTHENTIK_SECRET_KEY=file:///secrets/secret_key
 
           Environment=AUTHENTIK_LISTEN__TRUSTED_PROXY_CIDRS=${ join(",", trusted_proxy_cidrs) }
-
-          PublishPort=80:9000
-          PublishPort=443:9443
 
           Pod=authentik.pod
 
@@ -125,7 +124,7 @@ storage:
           Environment=AUTHENTIK_EMAIL__USE_TLS=file:///secrets/email/use_tls
           Environment=AUTHENTIK_SECRET_KEY=file:///secrets/secret_key
 
-          Volume=/var/containers/secrets/tls/this:/certs:z,idmap
+          Volume=/var/containers/secrets/tls:/certs:z,idmap
 
           Pod=authentik.pod
 
@@ -245,64 +244,41 @@ storage:
       contents:
         inline: |
           template {
-            contents = <<-EOT
-              {{ with secret "kv/data/service/${ service_fqdn }/postgres" }}{{ .Data.data.password }}{{ end }}
-            EOT
+            contents = "{{ with secret \"kv/data/service/${ service_fqdn }/postgres\" }}{{ .Data.data.password }}{{ end }}"
             destination = "/vault/secrets/authentik/postgres/password"
           }
 
           template {
-            contents = <<-EOT
-              {{ with secret "kv/data/service/${ service_fqdn }/postgres" }}{{ .Data.data.database }}{{ end }}
-            EOT
-            destination = "/vault/secrets/authentik/postgres/database"
-          }
-
-          template {
-            contents = <<-EOT
-              {{ with secret "kv/data/service/${ service_fqdn }/email" }}{{ .Data.data.username }}{{ end }}
-            EOT
+            contents = "{{ with secret \"kv/data/service/${ service_fqdn }/email\" }}{{ .Data.data.username }}{{ end }}"
             destination = "/vault/secrets/authentik/email/username"
           }
 
           template {
-            contents = <<-EOT
-              {{ with secret "kv/data/service/${ service_fqdn }/email" }}{{ .Data.data.password }}{{ end }}
-            EOT
+            contents = "{{ with secret \"kv/data/service/${ service_fqdn }/email\" }}{{ .Data.data.password }}{{ end }}"
             destination = "/vault/secrets/authentik/email/password"
           }
 
           template {
-            contents = <<-EOT
-              {{ with secret "kv/data/service/${ service_fqdn }/email" }}{{ .Data.data.host }}{{ end }}
-            EOT
+            contents = "{{ with secret \"kv/data/service/${ service_fqdn }/email\" }}{{ .Data.data.host }}{{ end }}"
             destination = "/vault/secrets/authentik/email/host"
           }
 
           template {
-            contents = <<-EOT
-              {{ with secret "kv/data/service/${ service_fqdn }/email" }}{{ .Data.data.port }}{{ end }}
-            EOT
+            contents = "{{ with secret \"kv/data/service/${ service_fqdn }/email\" }}{{ .Data.data.port }}{{ end }}"
             destination = "/vault/secrets/authentik/email/port"
           }
 
           template {
-            contents = <<-EOT
-              {{ with secret "kv/data/service/${ service_fqdn }/email" }}{{ .Data.data.use_tls }}{{ end }}
-            EOT
+            contents = "{{ with secret \"kv/data/service/${ service_fqdn }/email\" }}{{ .Data.data.use_tls }}{{ end }}"
             destination = "/vault/secrets/authentik/email/use_tls"
           }
 
           template {
-            contents = <<-EOT
-              {{ with secret "kv/data/service/${ service_fqdn }/authentik" }}{{ .Data.data.secret_key }}{{ end }}
-            EOT
+            contents = "{{ with secret \"kv/data/service/${ service_fqdn }/authentik\" }}{{ .Data.data.secret_key }}{{ end }}"
             destination = "/vault/secrets/authentik/secret_key"
           }
 
           template {
-            contents = <<-EOT
-              {{ with secret "kv/data/service/${ service_fqdn }/authentik_ldap" }}{{ .Data.data.token }}{{ end }}
-            EOT
+            contents = "{{ with secret \"kv/data/service/${ service_fqdn }/authentik_ldap\" }}{{ .Data.data.token }}{{ end }}"
             destination = "/vault/secrets/authentik_ldap"
           }
