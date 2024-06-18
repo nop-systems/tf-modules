@@ -35,26 +35,26 @@ variable "issuing_active" {
 }
 
 variable "organization" {
-  type    = string
-  default = "nop.systems"
+  description = "Value for Organization field"
+  type        = string
 }
 
 variable "ou" {
-  type    = string
-  default = "Trust Services"
+  description = "Value for Organization field"
+  type        = string
 }
 
 variable "country" {
-  type    = string
-  default = "DE"
+  description = "Value for Organizational Unit field"
+  type        = string
 }
 
 variable "locality" {
-  type    = string
-  default = "Berlin"
+  description = "Value for Locality field"
+  type        = string
 }
 
 variable "province" {
-  type    = string
-  default = "Berlin"
+  description = "Value for province field"
+  type        = string
 }

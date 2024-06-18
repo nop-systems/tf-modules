@@ -32,13 +32,13 @@ No modules.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_cn"></a> [cn](#input\_cn) | Certificate Name | `string` | n/a | yes |
-| <a name="input_country"></a> [country](#input\_country) | n/a | `string` | `"DE"` | no |
+| <a name="input_country"></a> [country](#input\_country) | Value for Organizational Unit field | `string` | n/a | yes |
 | <a name="input_issuing_active"></a> [issuing\_active](#input\_issuing\_active) | Set to true allow issuing, else only crl-signing and ocsp-signing allowed | `bool` | n/a | yes |
-| <a name="input_locality"></a> [locality](#input\_locality) | n/a | `string` | `"Berlin"` | no |
-| <a name="input_organization"></a> [organization](#input\_organization) | n/a | `string` | `"nop.systems"` | no |
-| <a name="input_ou"></a> [ou](#input\_ou) | n/a | `string` | `"Trust Services"` | no |
+| <a name="input_locality"></a> [locality](#input\_locality) | Value for Locality field | `string` | n/a | yes |
+| <a name="input_organization"></a> [organization](#input\_organization) | Value for Organization field | `string` | n/a | yes |
+| <a name="input_ou"></a> [ou](#input\_ou) | Value for Organization field | `string` | n/a | yes |
 | <a name="input_pki_mount"></a> [pki\_mount](#input\_pki\_mount) | PKI secret engine mount point | `string` | n/a | yes |
-| <a name="input_province"></a> [province](#input\_province) | n/a | `string` | `"Berlin"` | no |
+| <a name="input_province"></a> [province](#input\_province) | Value for province field | `string` | n/a | yes |
 | <a name="input_root_issuer_ref"></a> [root\_issuer\_ref](#input\_root\_issuer\_ref) | Issuer to use for signing | `string` | n/a | yes |
 | <a name="input_root_pki_mount"></a> [root\_pki\_mount](#input\_root\_pki\_mount) | PKI secret engine mount point containing root certificate | `string` | n/a | yes |
 | <a name="input_slug"></a> [slug](#input\_slug) | slug name used for ressource names | `string` | n/a | yes |
@@ -56,18 +56,18 @@ No modules.
 module "???" {
   source = "git@github.com:nop-systems/tf-modules.git//<module-path>?ref=<tag>"
   cn = ??? # Certificate Name
-  #country = DE # 
+  country = ??? # Value for Organizational Unit field
   issuing_active = ??? # Set to true allow issuing, else only crl-signing and ocsp-signing allowed
-  #locality = Berlin # 
-  #organization = nop.systems # 
-  #ou = Trust Services # 
+  locality = ??? # Value for Locality field
+  organization = ??? # Value for Organization field
+  ou = ??? # Value for Organization field
   pki_mount = ??? # PKI secret engine mount point
-  #province = Berlin # 
+  province = ??? # Value for province field
   root_issuer_ref = ??? # Issuer to use for signing
   root_pki_mount = ??? # PKI secret engine mount point containing root certificate
   slug = ??? # slug name used for ressource names
   #ttl = 3.1536e+07 # TTL of intermediate in seconds
-    
+  
 }
 ```
 <!-- END_TF_DOCS -->
