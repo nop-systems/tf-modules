@@ -20,32 +20,17 @@ storage:
       overwrite: true
       contents:
         inline: |
+          # https://github.com/hashicorp/consul-template/blob/main/docs/templating-language.md#pkicert
           template {
-            contents = "{{ with pkiCert \"pki-servers/issue/entity-metadata\" \"common_name=${fqdn}\" }}{{ .Data.Cert }}{{ .Data.CA }}{{ end }}"
-            destination = "/vault/secrets/tls/${fqdn}/fullchain.pem"
-            error_on_missing_key = true
-          }
-
-          template {
-            contents = "{{ with pkiCert \"pki-servers/issue/entity-metadata\" \"common_name=${fqdn}\" }}{{ .Data.CA }}{{ end }}"
-            destination = "/vault/secrets/tls/${fqdn}/chain.pem"
-            error_on_missing_key = true
-          }
-
-          template {
-            contents = "{{ with pkiCert \"pki-servers/issue/entity-metadata\" \"common_name=${fqdn}\" }}{{ .Data.Cert }}{{ end }}"
-            destination = "/vault/secrets/tls/${fqdn}/cert.pem"
-            error_on_missing_key = true
-          }
-
-          template {
-            contents = "{{ with pkiCert \"pki-servers/issue/entity-metadata\" \"common_name=${fqdn}\" }}{{ .Data.Key }}{{ end }}"
-            destination = "/vault/secrets/tls/${fqdn}/privkey.pem"
-            error_on_missing_key = true
-          }
-
-          template {
-            contents = "{{ with pkiCert \"pki-servers/issue/entity-metadata\" \"common_name=${fqdn}\" }}{{ .Data.Cert }}{{ .Data.CA }}{{ .Data.Key }}{{ end }}"
+            contents = <<-EOT
+              {{ with pkiCert "pki-servers/issue/entity-metadata" "common_name=${fqdn}" -}}
+              {{ .Cert }}{{ .CA }}{{ .Key }}
+              {{- .Cert | writeToFile "/vault/secrets/tls/${fqdn}/fullchain.pem" "" "" "0644" -}}
+              {{- .CA | writeToFile "/vault/secrets/tls/${fqdn}/fullchain.pem" "" "" "0644" "append" -}}
+              {{- .Key | writeToFile "/vault/secrets/tls/${fqdn}/privkey.pem" "" "" "0644" -}}
+              {{- .Cert | writeToFile "/vault/secrets/tls/${fqdn}/cert.pem" "" "" "0644" -}}
+              {{- end }}
+            EOT
             destination = "/vault/secrets/tls/${fqdn}/fullchain+privkey.pem"
             error_on_missing_key = true
           }
