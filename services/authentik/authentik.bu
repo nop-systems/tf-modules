@@ -1,6 +1,11 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/Relativ-IT/Butane-Schemas/Release/Butane-Schema.json
 variant: fcos
 version: "1.5.0"
+passwd:
+  users:
+    - name: core
+      ssh_authorized_keys:
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIJ3+w1JpAgWh0QoXCxH0Eo7r2kyHttgXXCV0N2MEP25 id_ed25519
 storage:
   directories:
     - path: /var/containers/authentik/media
