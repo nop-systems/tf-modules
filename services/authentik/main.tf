@@ -10,7 +10,7 @@ module "fcos" {
   disk_size = 100
 
   butane_snippets = [templatefile("${path.module}/authentik.bu", {
-    service             = var.service_fqdn
+    service_fqdn        = var.service_fqdn
     trusted_proxy_cidrs = var.trusted_proxy_cidrs
   })]
 
