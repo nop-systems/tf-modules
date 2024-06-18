@@ -21,5 +21,6 @@ module "fcos" {
   vault_url              = var.vault_url
   root_ca_pem            = var.root_ca_pem
   matchbox_http_endpoint = var.matchbox_http_endpoint
+  services               = [var.service_fqdn]
 }
 
