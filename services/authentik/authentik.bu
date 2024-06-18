@@ -12,9 +12,9 @@ storage:
     - path: /var/containers/authentik/custom-templates
     - path: /var/containers/postgres/data
     - path: /var/containers/secrets/authentik
-    - path: /var/containers/vault/secrets/authentik/email
-    - path: /var/containers/vault/secrets/authentik/postgres
-    - path: /var/containers/vault/secrets/authentik_ldap
+    - path: /var/containers/secrets/authentik/email
+    - path: /var/containers/secrets/authentik/postgres
+    - path: /var/containers/secrets/authentik_ldap
   files:
     - path: /etc/containers/systemd/authentik.image
       mode: 0644
