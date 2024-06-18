@@ -15,7 +15,7 @@ No providers.
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_hello-world"></a> [hello-world](#module\_hello-world) | git@github.com:nop-systems/tf-modules.git//base/fcos/stack | fcos/v0.2.3 |
+| <a name="module_hello-world"></a> [hello-world](#module\_hello-world) | git@github.com:nop-systems/tf-modules.git//base/fcos/stack | fcos/v0.2.4 |
 
 ## Resources
 
@@ -25,6 +25,7 @@ No resources.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_acme_url"></a> [acme\_url](#input\_acme\_url) | URL to ACME directory | `string` | n/a | yes |
 | <a name="input_cloudflare_zone_id"></a> [cloudflare\_zone\_id](#input\_cloudflare\_zone\_id) | Cloudflare Zone ID | `string` | n/a | yes |
 | <a name="input_fqdn"></a> [fqdn](#input\_fqdn) | Fully Qualified Domain Name of VM | `string` | n/a | yes |
 | <a name="input_matchbox_http_endpoint"></a> [matchbox\_http\_endpoint](#input\_matchbox\_http\_endpoint) | matchbox http endpoint | `string` | n/a | yes |
@@ -45,6 +46,7 @@ No outputs.
 ```hcl
 module "???" {
   source = "git@github.com:nop-systems/tf-modules.git//<module-path>?ref=<tag>"
+  acme_url = ??? # URL to ACME directory
   cloudflare_zone_id = ??? # Cloudflare Zone ID
   fqdn = ??? # Fully Qualified Domain Name of VM
   matchbox_http_endpoint = ??? # matchbox http endpoint

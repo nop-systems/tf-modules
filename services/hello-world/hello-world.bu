@@ -31,7 +31,7 @@ storage:
           Volume=/var/containers/caddy/config:/config:Z,U
           Volume=/var/containers/caddy/data:/data:Z,U
           Volume=/var/containers/caddy/Caddyfile:/etc/caddy/Caddyfile:Z,ro
-          Volume=secrets.volume:/secrets:z,idmap,ro
+          # Volume=secrets.volume:/secrets:z,idmap,ro
 
           Network=container.network
 
@@ -40,44 +40,49 @@ storage:
 
           [Install]
           WantedBy=multi-user.target default.target
-    - path: /var/containers/systemd/secrets.volume
-      overwrite: true
-      contents:
-        inline: |
-          [Volume]
-          Device=tmpfs
-          Options=noswap,size=10M,nosuid,nodev,noexec
-    - path: /etc/containers/systemd/vault-agent.container.d/41-hello-world.conf
-      overwrite: true
-      contents:
-        inline: |
-          [Container]
-          Volume=secrets.volume:/secrets:z,idmap
-    - path: /var/containers/vault-agent/config.d/hello-world.hcl
-      contents:
-        inline: |
-          template {
-            contents <<-EOT
-              {{ with secret "kv/data/host/hello-world.base.panke.studis-bht.de/test" }}{{ .Data.data.password }}{{ end }}
-            EOT
-            destination = /secrets/password
-          }
+    # - path: /etc/containers/systemd/secrets.volume
+    #   overwrite: true
+    #   contents:
+    #     inline: |
+    #       [Volume]
+    #       Device=tmpfs
+    #       Type=tmpfs
+    #       Options=noswap,size=10M,nosuid,nodev,noexec
+    # - path: /etc/containers/systemd/vault-agent.container.d/41-hello-world.conf
+    #   overwrite: true
+    #   contents:
+    #     inline: |
+    #       [Container]
+    #       Volume=secrets.volume:/secrets:z,idmap
+    # - path: /var/containers/vault-agent/config.d/hello-world.hcl
+    #   contents:
+    #     inline: |
+    #       template {
+    #         contents = <<-EOT
+    #           {{ with secret "kv/data/host/hello-world.base.panke.studis-bht.de/test" }}{{ .Data.data.password }}{{ end }}
+    #         EOT
+    #         destination = "/secrets/password"
+    #       }
 
-          template {
-            contents <<-EOT
-              {{ with secret "kv/data/host/hello-world.base.panke.studis-bht.de/test" }}{{ .Data.data.fortune }}{{ end }}
-            EOT
-            destination = /secrets/fortune
-          }
+    #       template {
+    #         contents = <<-EOT
+    #           {{ with secret "kv/data/host/hello-world.base.panke.studis-bht.de/test" }}{{ .Data.data.fortune }}{{ end }}
+    #         EOT
+    #         destination = "/secrets/fortune"
+    #       }
     - path: /var/containers/caddy/Caddyfile
       overwrite: true
       contents:
         inline: |
           {
-            local_certs
+            acme_ca ${acme_url}
           }
 
-           :443, :80 {
-            root * /secrets
+          ${fqdn} {
+            root * /usr/share/caddy
             file_server
+          }
+
+          :443, :80 {
+            respond ${fqdn}
           }

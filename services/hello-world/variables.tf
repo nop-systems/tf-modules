@@ -48,3 +48,8 @@ variable "ssh_authorized_keys" {
   type        = list(string)
   description = "SSH authorized keys for VM"
 }
+
+variable "acme_url" {
+  type        = string
+  description = "URL to ACME directory"
+}
