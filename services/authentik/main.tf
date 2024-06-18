@@ -5,9 +5,9 @@ module "fcos" {
   fqdn      = var.fqdn
   desc      = "authentik"
   xo_tags   = concat(var.xo_tags, ["authentik"])
-  memory    = 2048
-  cpu_cores = 2
-  disk_size = 10
+  memory    = 4096
+  cpu_cores = 4
+  disk_size = 100
 
   butane_snippets = [templatefile("${path.module}/authentik.bu", {
     service             = var.service_fqdn
