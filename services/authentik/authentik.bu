@@ -1,11 +1,6 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/Relativ-IT/Butane-Schemas/Release/Butane-Schema.json
 variant: fcos
 version: "1.5.0"
-passwd:
-  users:
-    - name: core
-      ssh_authorized_keys:
-        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIJ3+w1JpAgWh0QoXCxH0Eo7r2kyHttgXXCV0N2MEP25 id_ed25519
 storage:
   directories:
     - path: /var/containers/authentik/media
@@ -44,13 +39,11 @@ storage:
           Network=container.network
           PodmanArgs=--userns=auto
 
-          PublishPort=80:9000
           PublishPort=443:9443
 
           Volume=/var/containers/authentik/media:/media:Z,U
           Volume=/var/containers/authentik/custom-templates:/custom-templates:Z,U
           Volume=/var/containers/secrets/authentik:/secrets:z,idmap
-
     - path: /etc/containers/systemd/authentik-server.container
       mode: 0644
       contents:
@@ -167,6 +160,7 @@ storage:
           HealthRetries=5
           HealthStartPeriod=20s
           HealthTimeout=5s
+
           Network=container.network
 
           [Service]
@@ -200,6 +194,8 @@ storage:
           HealthStartPeriod=20s
           HealthTimeout=3s
 
+          Network=container.network
+
           [Service]
           Restart=always
 
@@ -227,7 +223,7 @@ storage:
 
           Volume=/var/containers/secrets/authentik_ldap:/secrets:z,idmap
 
-          Network=containers.network
+          Network=container.network
 
           [Service]
           Restart=always
@@ -280,5 +276,5 @@ storage:
 
           template {
             contents = "{{ with secret \"kv/data/service/${ service_fqdn }/authentik_ldap\" }}{{ .Data.data.token }}{{ end }}"
-            destination = "/vault/secrets/authentik_ldap"
+            destination = "/vault/secrets/authentik_ldap/token"
           }
