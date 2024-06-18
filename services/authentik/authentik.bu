@@ -230,6 +230,7 @@ storage:
             destination = "/vault/secrets/authentik/postgres/password"
           }
 
+          template {
             contents = <<-EOT
               {{ with secret "kv/data/service/${ service_fqdn }/postgres" }}{{ .Data.data.database }}{{ end }}
             EOT
