@@ -23,7 +23,7 @@ storage:
           # https://github.com/hashicorp/consul-template/blob/main/docs/templating-language.md#pkicert
           template {
             contents = <<-EOT
-              {{ with pkiCert "pki-servers/issue/entity-metadata" "common_name=${fqdn}" -}}
+              {{ with pkiCert "pki-servers/issue/entity-metadata" "common_name=${fqdn}" "alt_names=${alt_names}" -}}
               {{ .Cert }}{{ .CA }}{{ .Key }}
               {{- .Cert | writeToFile "/vault/secrets/tls/${fqdn}/fullchain.pem" "" "" "0644" -}}
               {{- .CA | writeToFile "/vault/secrets/tls/${fqdn}/fullchain.pem" "" "" "0644" "append" -}}

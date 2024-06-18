@@ -14,6 +14,7 @@ data "ct_config" "this" {
     }),
     templatefile("${path.module}/templates/pki.bu.tftpl", {
       fqdn        = var.fqdn
+      alt_names   = join(",", concat(var.cnames, var.services))
       vault_url   = var.vault_url
       root_ca_pem = jsonencode(var.root_ca_pem)
     })

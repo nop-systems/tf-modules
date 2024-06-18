@@ -33,8 +33,10 @@ No modules.
 | <a name="input_approle_role_id"></a> [approle\_role\_id](#input\_approle\_role\_id) | Vault Approle role\_id | `string` | n/a | yes |
 | <a name="input_approle_wrapped_secret_id"></a> [approle\_wrapped\_secret\_id](#input\_approle\_wrapped\_secret\_id) | Vault Approle secret\_id | `string` | n/a | yes |
 | <a name="input_butane_snippets"></a> [butane\_snippets](#input\_butane\_snippets) | (application specific) butane configs | `list(string)` | n/a | yes |
+| <a name="input_cnames"></a> [cnames](#input\_cnames) | List of CNAMEs as FQDNs | `list(string)` | `[]` | no |
 | <a name="input_fqdn"></a> [fqdn](#input\_fqdn) | FQDN of the new Virtual Machine | `string` | n/a | yes |
 | <a name="input_root_ca_pem"></a> [root\_ca\_pem](#input\_root\_ca\_pem) | Private Root Certificate (PEM) | `string` | n/a | yes |
+| <a name="input_services"></a> [services](#input\_services) | List of Services as shared FQDNs (possibly with shared secrets) | `list(string)` | `[]` | no |
 | <a name="input_vault_url"></a> [vault\_url](#input\_vault\_url) | Vault URL | `string` | n/a | yes |
 
 ## Outputs
@@ -51,10 +53,12 @@ module "???" {
   approle_role_id = ??? # Vault Approle role_id
   approle_wrapped_secret_id = ??? # Vault Approle secret_id
   butane_snippets = ??? # (application specific) butane configs
+  #cnames = [] # List of CNAMEs as FQDNs
   fqdn = ??? # FQDN of the new Virtual Machine
   root_ca_pem = ??? # Private Root Certificate (PEM)
+  #services = [] # List of Services as shared FQDNs (possibly with shared secrets)
   vault_url = ??? # Vault URL
-    
+  
 }
 ```
 <!-- END_TF_DOCS -->

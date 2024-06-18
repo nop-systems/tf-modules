@@ -23,6 +23,8 @@ module "ignition" {
   approle_wrapped_secret_id = module.approle.secretid
   butane_snippets           = var.butane_snippets
   fqdn                      = var.fqdn
+  cnames                    = var.cnames
+  services                  = var.services
   root_ca_pem               = var.root_ca_pem
   vault_url                 = var.vault_url
 }

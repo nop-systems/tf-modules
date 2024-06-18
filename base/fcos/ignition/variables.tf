@@ -3,6 +3,18 @@ variable "fqdn" {
   description = "FQDN of the new Virtual Machine"
 }
 
+variable "cnames" {
+  type        = list(string)
+  description = "List of CNAMEs as FQDNs"
+  default     = []
+}
+
+variable "services" {
+  type        = list(string)
+  description = "List of Services as shared FQDNs (possibly with shared secrets)"
+  default     = []
+}
+
 variable "butane_snippets" {
   type        = list(string)
   description = "(application specific) butane configs"
@@ -30,3 +42,4 @@ variable "root_ca_pem" {
   type        = string
   description = "Private Root Certificate (PEM)"
 }
+
