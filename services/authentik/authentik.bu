@@ -11,7 +11,7 @@ storage:
     - path: /var/containers/authentik/media
     - path: /var/containers/authentik/custom-templates
     - path: /var/containers/postgres/data
-    - path: /var/containers/secrets/authentik
+    - path: /var/containers/redis/data
     - path: /var/containers/secrets/authentik/email
     - path: /var/containers/secrets/authentik/postgres
     - path: /var/containers/secrets/authentik_ldap
@@ -20,12 +20,20 @@ storage:
       mode: 0644
       contents:
         inline: |
+          [Unit]
+          Wants=network-online.target
+          After=network-online.target
+
           [Image]
           Image=ghcr.io/goauthentik/server:2024.4.2
     - path: /etc/containers/systemd/authentik-ldap-outpost.image
       mode: 0644
       contents:
         inline: |
+          [Unit]
+          Wants=network-online.target
+          After=network-online.target
+
           [Image]
           Image=ghcr.io/goauthentik/ldap:2024.4.2
     - path: /etc/containers/systemd/authentik.pod
@@ -34,22 +42,8 @@ storage:
         inline: |
           [Pod]
           Network=container.network
-          UserNS=auto
+          PodmanArgs=--userns=auto
 
-          Environment=AUTHENTIK_POSTGRESQL__HOST=systemd-postgres
-          Environment=AUTHENTIK_POSTGRESQL__NAME=authentik
-          Environment=AUTHENTIK_POSTGRESQL__USER=authentik
-          Environment=AUTHENTIK_REDIS__HOST=systemd-redis
-
-          Environment=AUTHENTIK_POSTGRESQL__PASSWORD=file:///secrets/postgres/password
-          Environment=AUTHENTIK_EMAIL__USERNAME=file:///secrets/email/username
-          Environment=AUTHENTIK_EMAIL__PASSWORD=file:///secrets/email/password
-          Environment=AUTHENTIK_EMAIL__HOST=file:///secrets/email/host
-          Environment=AUTHENTIK_EMAIL__PORT=file:///secrets/email/port
-          Environment=AUTHENTIK_EMAIL__USE_TLS=file:///secrets/email/use_tls
-          Environment=AUTHENTIK_SECRET_KEY=file:///secrets/secret_key
-
-          Environment=AUTHENTIK_LISTEN__TRUSTED_PROXY_CIDRS=${ join(",", trusted_proxy_cidrs) }
 
           Volume=/var/containers/authentik/media:/media:Z,U
           Volume=/var/containers/authentik/custom-templates:/custom-templates:Z,U
@@ -70,6 +64,21 @@ storage:
           Exec=server
           Pull=newer
           LogDriver=journald
+
+          Environment=AUTHENTIK_POSTGRESQL__HOST=systemd-postgres
+          Environment=AUTHENTIK_POSTGRESQL__NAME=authentik
+          Environment=AUTHENTIK_POSTGRESQL__USER=authentik
+          Environment=AUTHENTIK_REDIS__HOST=systemd-redis
+
+          Environment=AUTHENTIK_POSTGRESQL__PASSWORD=file:///secrets/postgres/password
+          Environment=AUTHENTIK_EMAIL__USERNAME=file:///secrets/email/username
+          Environment=AUTHENTIK_EMAIL__PASSWORD=file:///secrets/email/password
+          Environment=AUTHENTIK_EMAIL__HOST=file:///secrets/email/host
+          Environment=AUTHENTIK_EMAIL__PORT=file:///secrets/email/port
+          Environment=AUTHENTIK_EMAIL__USE_TLS=file:///secrets/email/use_tls
+          Environment=AUTHENTIK_SECRET_KEY=file:///secrets/secret_key
+
+          Environment=AUTHENTIK_LISTEN__TRUSTED_PROXY_CIDRS=${ join(",", trusted_proxy_cidrs) }
 
           PublishPort=80:9000
           PublishPort=443:9443
@@ -103,6 +112,19 @@ storage:
           Pull=newer
           LogDriver=journald
 
+          Environment=AUTHENTIK_POSTGRESQL__HOST=systemd-postgres
+          Environment=AUTHENTIK_POSTGRESQL__NAME=authentik
+          Environment=AUTHENTIK_POSTGRESQL__USER=authentik
+          Environment=AUTHENTIK_REDIS__HOST=systemd-redis
+
+          Environment=AUTHENTIK_POSTGRESQL__PASSWORD=file:///secrets/postgres/password
+          Environment=AUTHENTIK_EMAIL__USERNAME=file:///secrets/email/username
+          Environment=AUTHENTIK_EMAIL__PASSWORD=file:///secrets/email/password
+          Environment=AUTHENTIK_EMAIL__HOST=file:///secrets/email/host
+          Environment=AUTHENTIK_EMAIL__PORT=file:///secrets/email/port
+          Environment=AUTHENTIK_EMAIL__USE_TLS=file:///secrets/email/use_tls
+          Environment=AUTHENTIK_SECRET_KEY=file:///secrets/secret_key
+
           Volume=/var/containers/secrets/tls/this:/certs:z,idmap
 
           Pod=authentik.pod
@@ -128,12 +150,11 @@ storage:
 
           [Container]
           Image=docker.io/library/postgres:16-alpine
-          Exec=worker
           Pull=newer
           AutoUpdate=registry
           LogDriver=journald
           UserNS=auto
-          Notify=true
+          Notify=healthy
 
           Environment=POSTGRES_PASSWORD_FILE=/secrets/password
           Environment=POSTGRES_USER=authentik
