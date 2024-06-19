@@ -1,5 +1,5 @@
 module "fcos" {
-  source = "git@github.com:nop-systems/tf-modules.git//base/fcos/stack?ref=fcos/v0.2.4"
+  source = "git@github.com:nop-systems/tf-modules.git//base/fcos/stack?ref=fcos/v0.2.5"
   # source = "../../base/fcos/stack"
 
   fqdn      = var.fqdn
@@ -22,5 +22,13 @@ module "fcos" {
   root_ca_pem            = var.root_ca_pem
   matchbox_http_endpoint = var.matchbox_http_endpoint
   services               = [var.service_fqdn]
+}
+
+module "service_cname_record" {
+  source  = "git@github.com:nop-systems/tf-modules.git//base/dns-record?ref=dns-record/v0.1.0"
+  name    = var.service_fqdn       # DNS record name
+  type    = "CNAME"                # record type (e.g. A, AAAA)
+  value   = var.fqdn               # record value (e.g. IP address)
+  zone_id = var.cloudflare_zone_id # Cloudflare Zone ID
 }
 

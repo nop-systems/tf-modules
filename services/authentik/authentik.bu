@@ -239,6 +239,21 @@ storage:
     - path: /var/containers/vault-agent/config.d/authentik.hcl
       contents:
         inline: |
+          # Generate a Certificate with 3 days validity to avoid problems with expired certs in authentik
+          template {
+            contents = <<-EOT
+              {{ with pkiCert "pki-servers/issue/entity-metadata" "common_name=${ service_fqdn }" "ttl=259200" -}}
+              {{ .Cert }}{{ .CA }}{{ .Key }}
+              {{- .Cert | writeToFile "/vault/secrets/tls/${ service_fqdn }/fullchain.pem" "" "" "0644" -}}
+              {{- .CA | writeToFile "/vault/secrets/tls/${ service_fqdn }/fullchain.pem" "" "" "0644" "append" -}}
+              {{- .Key | writeToFile "/vault/secrets/tls/${ service_fqdn }/privkey.pem" "" "" "0644" -}}
+              {{- .Cert | writeToFile "/vault/secrets/tls/${ service_fqdn }/cert.pem" "" "" "0644" -}}
+              {{- end }}
+            EOT
+            destination = "/vault/secrets/tls/${ service_fqdn }/fullchain+privkey.pem"
+            error_on_missing_key = true
+          }
+
           template {
             contents = "{{ with secret \"kv/data/service/${ service_fqdn }/postgres\" }}{{ .Data.data.password }}{{ end }}"
             destination = "/vault/secrets/authentik/postgres/password"
