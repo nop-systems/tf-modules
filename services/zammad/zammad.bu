@@ -45,6 +45,8 @@ storage:
         inline: |
           POSTGRES_HOST=systemd-postgres
           POSTGRES_PORT=5432
+          POSTGRES_USER=zammad
+          POSTGRES_DB=zammad
           MEMCACHED_SERVERS=systemd-memcached:11211
           REDIS_URL=redis://systemd-redis:6379
           ELASTICSEARCH_HOST=systemd-elasticsearch
@@ -71,7 +73,7 @@ storage:
           LogDriver=journald
 
           EnvironmentFile=/var/containers/zammad/zammad.env
-          EnvironmentFile=/var/containers/secrets/zammad/postgres.env
+          EnvironmentFile=/var/containers/secrets/zammad/postgresql_pass.env
 
           Pod=zammad.pod
 
@@ -102,7 +104,7 @@ storage:
           Group=0
 
           EnvironmentFile=/var/containers/zammad/zammad.env
-          EnvironmentFile=/var/containers/secrets/zammad/postgres.env
+          EnvironmentFile=/var/containers/secrets/zammad/postgresql_pass.env
 
           Pod=zammad.pod
 
@@ -131,7 +133,7 @@ storage:
           Group=0
 
           EnvironmentFile=/var/containers/zammad/zammad.env
-          EnvironmentFile=/var/containers/secrets/zammad/postgres.env
+          EnvironmentFile=/var/containers/secrets/zammad/postgresql_pass.env
           Volume=/var/containers/zammad/backup:/var/tmp/zammad:Z,U
           Volume=/var/containers/zammad/storage:/opt/zammad/storage:ro
 
@@ -162,7 +164,7 @@ storage:
           Group=0
 
           EnvironmentFile=/var/containers/zammad/zammad.env
-          EnvironmentFile=/var/containers/secrets/zammad/postgres.env
+          EnvironmentFile=/var/containers/secrets/zammad/postgresql_pass.env
 
           Pod=zammad.pod
 
@@ -191,7 +193,7 @@ storage:
           Group=0
 
           EnvironmentFile=/var/containers/zammad/zammad.env
-          EnvironmentFile=/var/containers/secrets/zammad/postgres.env
+          EnvironmentFile=/var/containers/secrets/zammad/postgresql_pass.env
 
           Pod=zammad.pod
 
@@ -314,7 +316,7 @@ storage:
           UserNS=auto
           Notify=healthy
 
-          EnvironmentFile=/var/containers/secrets/zammad/postgres.env
+          EnvironmentFile=/var/containers/secrets/zammad/postgres_password.env
 
           Volume=/var/containers/postgres/data:/var/lib/postgresql/data:Z,U
 
@@ -391,12 +393,11 @@ storage:
       contents:
         inline: |
           template {
-            contents = <<-EOT
-              {{ with secret "kv/data/service/${ service_fqdn }/postgres" -}}
-              POSTGRES_PASS={{ .Data.data.password }}
-              POSTGRES_USER=zammad
-              POSTGRES_DB=zammad
-              {{- end }}
-            EOT
-            destination = "/vault/secrets/zammad/postgres.env"
+            contents = "{{ with secret \"kv/data/service/${ service_fqdn }/postgres\" }}POSTGRESQL_PASS={{ .Data.data.password }}{{ end }}"
+            destination = "/vault/secrets/zammad/postgresql_pass.env"
+          }
+
+          template {
+            contents = "{{ with secret \"kv/data/service/${ service_fqdn }/postgres\" }}POSTGRES_PASSWORD={{ .Data.data.password }}{{ end }}"
+            destination = "/vault/secrets/zammad/postgres_password.env"
           }
