@@ -36,6 +36,9 @@ storage:
           Network=container.network
           PodmanArgs=--userns=auto --exit-policy=continue
 
+          PublishPort=443:443
+          PublishPort=443:443/udp
+
           Volume=/var/containers/zammad/storage:/opt/zammad/storage:Z,U
 
           PublishPort=443:9443
@@ -226,9 +229,6 @@ storage:
           AutoUpdate=registry
           LogDriver=journald
           UserNS=auto
-
-          PublishPort=443:443
-          PublishPort=443:443/udp
 
           Volume=/var/containers/caddy/config:/config:Z,U
           Volume=/var/containers/caddy/data:/data:Z,U
