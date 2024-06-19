@@ -265,15 +265,15 @@ storage:
               root /zammad/opt/zammad/public
             }
 
-            reverse_proxy /ws http://zammad-websocket:6042 {
+            reverse_proxy /ws http://localhost:6042 {
               stream_timeout 24h
             }
 
-            reverse_proxy /cable https://zammad-railsserver:3000 {
+            reverse_proxy /cable https://localhost:3000 {
               stream_timeout 24h
             }
 
-            reverse_proxy https://zammad-railsserver:3000 {
+            reverse_proxy https://localhost:3000 {
             }
           }
 
