@@ -40,16 +40,11 @@ storage:
           PublishPort=443:443/udp
 
           Volume=/var/containers/zammad/storage:/opt/zammad/storage:Z,U
-
-          PublishPort=443:9443
     - path: /var/containers/zammad/zammad.env
       mode: 0644
       contents:
         inline: |
           POSTGRES_HOST=systemd-postgres
-          POSTGRES_PORT=5432
-          POSTGRES_USER=zammad
-          POSTGRES_DB=zammad
           MEMCACHED_SERVERS=systemd-memcached:11211
           REDIS_URL=redis://systemd-redis:6379
           ELASTICSEARCH_HOST=systemd-elasticsearch
@@ -71,7 +66,7 @@ storage:
 
           [Container]
           Image=zammad.image
-          Exec=zammad-railserver
+          Exec=zammad-railsserver
           Pull=newer
           LogDriver=journald
 
@@ -102,7 +97,6 @@ storage:
           Exec=zammad-init
           Pull=newer
           LogDriver=journald
-          Type=oneshot
           User=0
           Group=0
 
@@ -112,6 +106,7 @@ storage:
           Pod=zammad.pod
 
           [Service]
+          Type=oneshot
           Restart=on-failure
           RestartSec=1s
           RestartSteps=10
@@ -138,7 +133,6 @@ storage:
           EnvironmentFile=/var/containers/zammad/zammad.env
           EnvironmentFile=/var/containers/secrets/zammad/postgresql_pass.env
           Volume=/var/containers/zammad/backup:/var/tmp/zammad:Z,U
-          Volume=/var/containers/zammad/storage:/opt/zammad/storage:ro
 
           Pod=zammad.pod
 
@@ -393,11 +387,23 @@ storage:
       contents:
         inline: |
           template {
-            contents = "{{ with secret \"kv/data/service/${ service_fqdn }/postgres\" }}POSTGRESQL_PASS={{ .Data.data.password }}{{ end }}"
+            contents = <<-EOT
+              {{ with secret "kv/data/service/${ service_fqdn }/postgres" }}
+              POSTGRESQL_USER=zammad
+              POSTGRESQL_DB=zammad
+              POSTGRESQL_PASS={{ .Data.data.password }}
+              {{ end }}
+              EOT
             destination = "/vault/secrets/zammad/postgresql_pass.env"
           }
 
           template {
-            contents = "{{ with secret \"kv/data/service/${ service_fqdn }/postgres\" }}POSTGRES_PASSWORD={{ .Data.data.password }}{{ end }}"
+            contents = <<-EOT
+              {{ with secret "kv/data/service/${ service_fqdn }/postgres" }}
+              POSTGRES_USER=zammad
+              POSTGRES_DB=zammad
+              POSTGRES_PASSWORD={{ .Data.data.password }}
+              {{ end }}
+              EOT
             destination = "/vault/secrets/zammad/postgres_password.env"
           }
