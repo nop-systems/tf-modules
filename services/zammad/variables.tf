@@ -53,3 +53,8 @@ variable "trusted_proxies" {
   description = "List of CIDRs that proxy headers should be accepted from"
   type        = list(string)
 }
+
+variable "acme_ca" {
+  type        = string
+  description = "URL to ACME directory for internal CA"
+}
