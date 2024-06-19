@@ -4,7 +4,7 @@ version: "1.5.0"
 storage:
   directories:
     - path: /var/containers/authentik/media
-    - path: /var/containers/authentik/custom-templates
+    - path: /var/containers/authentik/templates
     - path: /var/containers/postgres/data
     - path: /var/containers/redis/data
     - path: /var/containers/secrets/authentik/email
@@ -42,7 +42,7 @@ storage:
           PublishPort=443:9443
 
           Volume=/var/containers/authentik/media:/media:Z,U
-          Volume=/var/containers/authentik/custom-templates:/custom-templates:Z,U
+          Volume=/var/containers/authentik/templates:/templates:Z,U
           Volume=/var/containers/secrets/authentik:/secrets:z,idmap
     - path: /etc/containers/systemd/authentik-server.container
       mode: 0644
