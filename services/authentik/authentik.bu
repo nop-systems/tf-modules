@@ -217,7 +217,7 @@ storage:
           PublishPort=389:3389
           PublishPort=636:6636
 
-          Environment=AUTHENTIK_HOST= https://systemd-authentik:9443
+          Environment=AUTHENTIK_HOST=https://systemd-authentik:9443
           Environment=AUTHENTIK_INSECURE=true
           Environment=AUTHENTIK_TOKEN=file:///secrets/token
 
