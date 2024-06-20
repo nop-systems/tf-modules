@@ -13,7 +13,6 @@ storage:
     - path: /var/containers/caddy/data
     - path: /var/containers/caddy/config
   files:
-    - path: /etc/sysctl
     - path: /etc/containers/systemd/zammad.image
       mode: 0644
       contents:
@@ -44,6 +43,7 @@ storage:
           Volume=/var/containers/zammad/storage:/opt/zammad/storage:Z,U
     - path: /var/containers/zammad/zammad.env
       mode: 0644
+      overwrite: true
       contents:
         inline: |
           POSTGRESQL_HOST=systemd-postgres
@@ -242,6 +242,7 @@ storage:
           WantedBy=multi-user.target default.target
     - path: /var/containers/caddy/Caddyfile
       mode: 0644
+      overwrite: true
       contents:
         inline: |
           {
@@ -431,6 +432,8 @@ storage:
           [Install]
           WantedBy=multi-user.target default.target
     - path: /var/containers/vault-agent/config.d/zammad.hcl
+      mode: 0644
+      overwrite: true
       contents:
         inline: |
           template {
