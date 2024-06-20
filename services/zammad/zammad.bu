@@ -4,6 +4,7 @@ version: "1.5.0"
 storage:
   directories:
     - path: /var/containers/zammad/storage
+    - path: /var/containers/zammad/backup
     - path: /var/containers/postgres/data
     - path: /var/containers/redis/data
     - path: /var/containers/elasticsearch/data
@@ -44,7 +45,7 @@ storage:
       mode: 0644
       contents:
         inline: |
-          POSTGRES_HOST=systemd-postgres
+          POSTGRESQL_HOST=systemd-postgres
           MEMCACHED_SERVERS=systemd-memcached:11211
           REDIS_URL=redis://systemd-redis:6379
           ELASTICSEARCH_HOST=systemd-elasticsearch
@@ -249,6 +250,13 @@ storage:
           }
 
           https://${fqdn}, https://${service_fqdn}, https:// {
+            tls {
+              issuer acme {
+                # disable http challenge because only https port is published
+                disable_http_challenge
+              }
+            }
+
             handle_errors {
               respond "Error {err.status_code} {err.status_text} on ${fqdn}"
             }
@@ -263,11 +271,11 @@ storage:
               stream_timeout 24h
             }
 
-            reverse_proxy /cable https://localhost:3000 {
+            reverse_proxy /cable http://localhost:3000 {
               stream_timeout 24h
             }
 
-            reverse_proxy https://localhost:3000 {
+            reverse_proxy http://localhost:3000 {
             }
           }
 
