@@ -34,7 +34,7 @@ storage:
 
           # data and assets are not swapped, this is copied from the docker-compose.yml
           Volume=/var/containers/openproject/data:/var/openproject/assets:Z,U
-          Volume=/var/containers/openproject/openproject-token.pub:/app/.openproject-token.pub:Z,U,ro
+          Volume=/var/containers/secrets/openproject/openproject-token.pub:/app/.openproject-token.pub:Z,U,ro
     - path: /var/containers/openproject/openproject.env
       mode: 0644
       overwrite: true
@@ -352,8 +352,12 @@ storage:
               EOT
             destination = "/vault/secrets/openproject/postgres.env"
           }
-    - path: /var/containers/openproject/openproject-token.pub
-      mode: 0644
-      overwrite: true
-      contents:
-        inline: ${openproject_token_pubkey}
+
+          template {
+            contents = <<-EOT
+              {{- with secret "kv/data/service/${ service_fqdn }/enterprise-token" -}}
+              {{ .Data.data.public_key }}
+              {{- end }}
+              EOT
+            destination = "/vault/secrets/openproject/openproject-token.pub"
+          }

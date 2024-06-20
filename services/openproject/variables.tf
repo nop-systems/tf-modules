@@ -68,8 +68,3 @@ variable "acme_ca" {
   type        = string
   description = "URL to ACME directory for internal CA"
 }
-
-variable "openproject_token_pubkey" {
-  type        = string
-  description = "Public Key for Enterprise Token"
-}
