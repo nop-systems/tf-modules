@@ -34,7 +34,7 @@ storage:
 
           # data and assets are not swapped, this is copied from the docker-compose.yml
           Volume=/var/containers/openproject/data:/var/openproject/assets:Z,U
-          Volume=/var/containers/openproject/assets:/app/public:z,idmap,U
+          Volume=/var/containers/openproject/openproject-token.pub:/app/.openproject-token.pub:Z,U,ro
     - path: /var/containers/openproject/openproject.env
       mode: 0644
       overwrite: true
@@ -72,6 +72,8 @@ storage:
 
           EnvironmentFile=/var/containers/openproject/openproject.env
           EnvironmentFile=/var/containers/secrets/openproject/database_url.env
+
+          Volume=/var/containers/openproject/assets:/app/public:z,idmap,U
 
           Pod=openproject.pod
 
@@ -183,6 +185,13 @@ storage:
 
           [Install]
           WantedBy=multi-user.target default.target
+    - path: /etc/containers/systemd/openproject-image.volume
+      mode: 0644
+      contents:
+        inline: |
+          [Volume]
+          Driver=image
+          Image=openproject.image
     - path: /etc/containers/systemd/caddy.container
       mode: 0644
       contents:
@@ -204,9 +213,9 @@ storage:
           Volume=/var/containers/caddy/config:/config:Z,U
           Volume=/var/containers/caddy/data:/data:Z,U
           Volume=/var/containers/caddy/Caddyfile:/etc/caddy/Caddyfile:Z,ro
-          Volume=/var/containers/openproject/assets:/public:z,idmap,ro
+          Volume=openproject.image:/openproject:z,idmap,ro
 
-          Pod=container.network
+          Network=container.network
 
           [Service]
           Restart=always
@@ -227,6 +236,7 @@ storage:
             servers {
               trusted_proxies static ${trusted_proxies}
             }
+            fallback_sni ${fqdn}
           }
 
           https://${fqdn}, https://${service_fqdn}, https:// {
@@ -238,12 +248,12 @@ storage:
             }
 
             handle_errors {
-              respond "Error {err.status_code} {err.status_text} on ${fqdn}"
+              respond "Error {err.status_code} {err.status_text} on ${fqdn}: {err.message} ({err.trace}, {err.id})"
             }
 
-            root * /public
+            root * /openproject/app/public
             file_server
-            reverse_proxy http://systemd-openproject-web:8080
+            reverse_proxy http://systemd-openproject:8080
             log
           }
 
@@ -316,29 +326,34 @@ storage:
         inline: |
           template {
             contents = <<-EOT
-              {{ with secret "kv/data/service/${ service_fqdn }/postgres" }}
-              DATABASE_URL=postgres://openproject:{{ .Data.data.password }}@db/openproject?pool=20&encoding=unicode&reconnect=true
-              {{ end }}
+              {{- with secret "kv/data/service/${ service_fqdn }/postgres" -}}
+              DATABASE_URL=postgres://openproject:{{ .Data.data.password }}@systemd-postgres/openproject?pool=20&encoding=unicode&reconnect=true
+              {{- end }}
               EOT
             destination = "/vault/secrets/openproject/database_url.env"
           }
 
           template {
             contents = <<-EOT
-              {{ with secret "kv/data/service/${ service_fqdn }/openproject" }}
+              {{- with secret "kv/data/service/${ service_fqdn }/openproject" -}}
               OPENPROJECT_SECRET_KEY_BASE={{ .Data.data.secret_key_base }}
-              {{ end }}
+              {{- end }}
               EOT
             destination = "/vault/secrets/openproject/openproject.env"
           }
 
           template {
             contents = <<-EOT
-              {{ with secret "kv/data/service/${ service_fqdn }/postgres" }}
+              {{- with secret "kv/data/service/${ service_fqdn }/postgres" -}}
               POSTGRES_USER=openproject
               POSTGRES_DB=openproject
               POSTGRES_PASSWORD={{ .Data.data.password }}
-              {{ end }}
+              {{- end }}
               EOT
             destination = "/vault/secrets/openproject/postgres.env"
           }
+    - path: /var/containers/openproject/openproject-token.pub
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: ${openproject_token_pubkey}

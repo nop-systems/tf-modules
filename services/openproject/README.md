@@ -46,6 +46,7 @@ No resources.
 | <a name="input_default_language"></a> [default\_language](#input\_default\_language) | Controls in which language basic data (such as types, status names, etc.) and demo data is being created in and sets the default fallback language for new users. | `string` | n/a | yes |
 | <a name="input_fqdn"></a> [fqdn](#input\_fqdn) | Fully Qualified Domain Name of VM | `string` | n/a | yes |
 | <a name="input_matchbox_http_endpoint"></a> [matchbox\_http\_endpoint](#input\_matchbox\_http\_endpoint) | matchbox http endpoint | `string` | n/a | yes |
+| <a name="input_openproject_token_pubkey"></a> [openproject\_token\_pubkey](#input\_openproject\_token\_pubkey) | Public Key for Enterprise Token | `string` | n/a | yes |
 | <a name="input_public_fqdn"></a> [public\_fqdn](#input\_public\_fqdn) | Public FQDN where OpenProject is reachable externally (used for links in emails) | `string` | n/a | yes |
 | <a name="input_root_ca_pem"></a> [root\_ca\_pem](#input\_root\_ca\_pem) | Private Root Certificate (PEM) | `string` | n/a | yes |
 | <a name="input_service_fqdn"></a> [service\_fqdn](#input\_service\_fqdn) | A FQDN defining the service, independent of the host | `string` | n/a | yes |
@@ -70,6 +71,7 @@ module "???" {
   default_language = ??? # Controls in which language basic data (such as types, status names, etc.) and demo data is being created in and sets the default fallback language for new users.
   fqdn = ??? # Fully Qualified Domain Name of VM
   matchbox_http_endpoint = ??? # matchbox http endpoint
+  openproject_token_pubkey = ??? # Public Key for Enterprise Token
   public_fqdn = ??? # Public FQDN where OpenProject is reachable externally (used for links in emails)
   root_ca_pem = ??? # Private Root Certificate (PEM)
   service_fqdn = ??? # A FQDN defining the service, independent of the host
