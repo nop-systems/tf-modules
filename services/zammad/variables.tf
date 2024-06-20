@@ -24,6 +24,11 @@ variable "xo_tags" {
   default     = []
 }
 
+variable "authentik_host" {
+  type        = string
+  description = "(Internal) URL to authentik for Outposts"
+}
+
 variable "vault_url" {
   type        = string
   description = "Vault URL"

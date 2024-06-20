@@ -14,6 +14,7 @@ module "fcos" {
     fqdn            = var.fqdn
     service_fqdn    = var.service_fqdn
     trusted_proxies = join(" ", var.trusted_proxies)
+    authentik_host  = var.authentik_host
   })]
 
   cloudflare_zone_id     = var.cloudflare_zone_id

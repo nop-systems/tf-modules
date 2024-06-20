@@ -27,6 +27,7 @@ No resources.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_acme_ca"></a> [acme\_ca](#input\_acme\_ca) | URL to ACME directory for internal CA | `string` | n/a | yes |
+| <a name="input_authentik_host"></a> [authentik\_host](#input\_authentik\_host) | (Internal) URL to authentik for Outposts | `string` | n/a | yes |
 | <a name="input_cloudflare_zone_id"></a> [cloudflare\_zone\_id](#input\_cloudflare\_zone\_id) | Cloudflare Zone ID | `string` | n/a | yes |
 | <a name="input_fqdn"></a> [fqdn](#input\_fqdn) | Fully Qualified Domain Name of VM | `string` | n/a | yes |
 | <a name="input_matchbox_http_endpoint"></a> [matchbox\_http\_endpoint](#input\_matchbox\_http\_endpoint) | matchbox http endpoint | `string` | n/a | yes |
@@ -49,6 +50,7 @@ No outputs.
 module "???" {
   source = "git@github.com:nop-systems/tf-modules.git//<module-path>?ref=<tag>"
   acme_ca = ??? # URL to ACME directory for internal CA
+  authentik_host = ??? # (Internal) URL to authentik for Outposts
   cloudflare_zone_id = ??? # Cloudflare Zone ID
   fqdn = ??? # Fully Qualified Domain Name of VM
   matchbox_http_endpoint = ??? # matchbox http endpoint

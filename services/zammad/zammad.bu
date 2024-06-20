@@ -9,6 +9,7 @@ storage:
     - path: /var/containers/redis/data
     - path: /var/containers/elasticsearch/data
     - path: /var/containers/secrets/zammad
+    - path: /var/containers/secrets/authentik_ldap
     - path: /var/containers/caddy/data
     - path: /var/containers/caddy/config
   files:
@@ -46,6 +47,7 @@ storage:
       contents:
         inline: |
           POSTGRESQL_HOST=systemd-postgres
+          POSTGRESQL_OPTIONS=?pool=50
           MEMCACHED_SERVERS=systemd-memcached:11211
           REDIS_URL=redis://systemd-redis:6379
           ELASTICSEARCH_HOST=systemd-elasticsearch
@@ -152,6 +154,7 @@ storage:
           [Unit]
           Description=zammad scheduler
           After=network-online.target local-fs.target vault-agent.service
+          After=zammad-init.service postgres.service
 
           [Container]
           Image=zammad.image
@@ -263,8 +266,10 @@ storage:
 
             @static path /assets/* /robots.txt /humans.txt /favicon.ico /apple-touch-icon.png
 
-            file_server @static {
-              root /zammad/opt/zammad/public
+            handle @static {
+              file_server {
+                root /zammad/opt/zammad/public
+              }
             }
 
             reverse_proxy /ws http://localhost:6042 {
@@ -390,7 +395,41 @@ storage:
 
           [Install]
           WantedBy=multi-user.target default.target
+    - path: /etc/containers/systemd/authentik-ldap.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=authentik LDAP outpost
+          After=network-online.target local-fs.target vault-agent.service
 
+          [Container]
+          Image=ghcr.io/goauthentik/ldap:2024.4.2
+          Pull=newer
+          LogDriver=journald
+
+          # metrics
+          PublishPort=9300:9300
+
+          Environment=AUTHENTIK_HOST=${authentik_host}
+          Environment=AUTHENTIK_INSECURE=false
+          Environment=AUTHENTIK_TOKEN=file:///secrets/token
+
+          Volume=/var/containers/secrets/authentik_ldap:/secrets:z,idmap
+
+          Network=container.network
+
+          [Service]
+          Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
+
+          [Service]
+          Restart=always
+
+          [Install]
+          WantedBy=multi-user.target default.target
     - path: /var/containers/vault-agent/config.d/zammad.hcl
       contents:
         inline: |
@@ -414,4 +453,9 @@ storage:
               {{ end }}
               EOT
             destination = "/vault/secrets/zammad/postgres_password.env"
+          }
+
+          template {
+            contents = "{{ with secret \"kv/data/service/${ service_fqdn }/authentik_ldap\" }}{{ .Data.data.token }}{{ end }}"
+            destination = "/vault/secrets/authentik_ldap/token"
           }
