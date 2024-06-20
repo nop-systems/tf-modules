@@ -5,13 +5,13 @@
 - `kv/data/service/${ service_fqdn }/openproject`:
   ```json
   {
-    secret_key_base = "string"
+    "secret_key_base": "string"
   }
   ```
 - `kv/data/service/${ service_fqdn }/postgres`:
   ```json
   {
-    password = "string"
+    "password": "string"
   }
   ```
 
@@ -48,7 +48,7 @@ No resources.
 | <a name="input_matchbox_http_endpoint"></a> [matchbox\_http\_endpoint](#input\_matchbox\_http\_endpoint) | matchbox http endpoint | `string` | n/a | yes |
 | <a name="input_public_fqdn"></a> [public\_fqdn](#input\_public\_fqdn) | Public FQDN where OpenProject is reachable externally (used for links in emails) | `string` | n/a | yes |
 | <a name="input_root_ca_pem"></a> [root\_ca\_pem](#input\_root\_ca\_pem) | Private Root Certificate (PEM) | `string` | n/a | yes |
-| <a name="input_service_fqdn"></a> [service\_fqdn](#input\_service\_fqdn) | A FQDN defining the authentik service, independen of the host | `string` | n/a | yes |
+| <a name="input_service_fqdn"></a> [service\_fqdn](#input\_service\_fqdn) | A FQDN defining the service, independent of the host | `string` | n/a | yes |
 | <a name="input_trusted_proxies"></a> [trusted\_proxies](#input\_trusted\_proxies) | List of CIDRs that proxy headers should be accepted from | `list(string)` | n/a | yes |
 | <a name="input_vault_url"></a> [vault\_url](#input\_vault\_url) | Vault URL | `string` | n/a | yes |
 | <a name="input_xo_network_id"></a> [xo\_network\_id](#input\_xo\_network\_id) | XenOrchestra Network UUID | `string` | n/a | yes |
@@ -72,7 +72,7 @@ module "???" {
   matchbox_http_endpoint = ??? # matchbox http endpoint
   public_fqdn = ??? # Public FQDN where OpenProject is reachable externally (used for links in emails)
   root_ca_pem = ??? # Private Root Certificate (PEM)
-  service_fqdn = ??? # A FQDN defining the authentik service, independen of the host
+  service_fqdn = ??? # A FQDN defining the service, independent of the host
   trusted_proxies = ??? # List of CIDRs that proxy headers should be accepted from
   vault_url = ??? # Vault URL
   xo_network_id = ??? # XenOrchestra Network UUID
