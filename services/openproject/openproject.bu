@@ -27,7 +27,6 @@ storage:
           [Unit]
           Wants=postgres.service
           Wants=memcached.service
-          AssertPathExists=/var/containers/secrets/openproject/openproject-token.pub
 
           [Pod]
           Network=container.network
