@@ -13,8 +13,7 @@ storage:
       mode: 0644
       overwrite: true
       contents:
-        inline: |
-          ${root_ca_pem}
+        inline: ${root_ca_pem}
     - path: /var/containers/vault-agent/config.d/pki.hcl
       mode: 0644
       overwrite: true
