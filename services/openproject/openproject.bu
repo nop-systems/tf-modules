@@ -1,0 +1,344 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Relativ-IT/Butane-Schemas/Release/Butane-Schema.json
+variant: fcos
+version: "1.5.0"
+storage:
+  directories:
+    - path: /var/containers/openproject/data
+    - path: /var/containers/openproject/assets
+    - path: /var/containers/postgres/data
+    - path: /var/containers/secrets/openproject
+    - path: /var/containers/caddy/data
+    - path: /var/containers/caddy/config
+  files:
+    - path: /etc/containers/systemd/openproject.image
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Wants=network-online.target
+          After=network-online.target
+
+          [Image]
+          Image=docker.io/openproject/openproject:14.2-slim
+    - path: /etc/containers/systemd/openproject.pod
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Wants=postgres.service
+          Wants=memcached.service
+
+          [Pod]
+          Network=container.network
+          PodmanArgs=--userns=auto --exit-policy=continue
+
+          # data and assets are not swapped, this is copied from the docker-compose.yml
+          Volume=/var/containers/openproject/data:/var/openproject/assets:Z,U
+          Volume=/var/containers/openproject/assets:/app/public:z,idmap,U
+    - path: /var/containers/openproject/openproject.env
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          RAILS_CACHE_STORE=memcached
+          OPENPROJECT_CACHE__MEMCACHE__SERVER=systemd-memcached:11211
+          OPENPROJECT_HTTPS=true
+          OPENPROJECT_HSTS=true
+          OPENPROJECT_HOST__NAME=${public_fqdn}
+          OPENPROJECT_DEFAULT__LANGUAGE=${default_language}
+          RAILS_MIN_THREADS=4
+          RAILS_MAX_THREADS=16
+          IMAP_ENABLED=true
+          PGDATA=/var/lib/postgresql/data
+          OPDATA=/var/openproject/assets
+    - path: /etc/containers/systemd/openproject-web.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=openproject web
+          After=network-online.target local-fs.target vault-agent.service
+          Wants=postgres.service
+          Wants=memcached.service
+          Wants=openproject-seeder.service
+          After=openproject-seeder.service
+
+          [Container]
+          Image=openproject.image
+          Exec=./docker/prod/web
+          Pull=newer
+          LogDriver=journald
+          Notify=healthy
+
+          EnvironmentFile=/var/containers/openproject/openproject.env
+          EnvironmentFile=/var/containers/secrets/openproject/database_url.env
+
+          Pod=openproject.pod
+
+          HealthCmd=curl -f http://localhost:8080/health_checks/default
+          HealthInterval=10s
+          HealthRetries=3
+          HealthStartPeriod=30s
+          HealthTimeout=3s
+
+          [Service]
+          Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
+
+          [Install]
+          WantedBy=multi-user.target default.target
+    - path: /etc/containers/systemd/openproject-seeder.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=openproject seeder
+          After=network-online.target local-fs.target vault-agent.service
+          Wants=postgres.service
+          After=postgres.service
+
+          [Container]
+          Image=openproject.image
+          Exec=./docker/prod/seeder
+          Pull=newer
+          LogDriver=journald
+
+          EnvironmentFile=/var/containers/openproject/openproject.env
+          EnvironmentFile=/var/containers/secrets/openproject/database_url.env
+
+          Pod=openproject.pod
+
+          [Service]
+          Type=oneshot
+          Restart=on-failure
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
+
+          [Install]
+          WantedBy=multi-user.target default.target
+
+    - path: /etc/containers/systemd/openproject-worker.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=openproject worker
+          After=network-online.target local-fs.target vault-agent.service
+          Wants=postgres.service
+          Wants=memcached.service
+          Wants=openproject-seeder.service
+          After=openproject-seeder.service
+
+          [Container]
+          Image=openproject.image
+          Exec=./docker/prod/worker
+          Pull=newer
+          LogDriver=journald
+
+          EnvironmentFile=/var/containers/openproject/openproject.env
+          EnvironmentFile=/var/containers/secrets/openproject/database_url.env
+
+          Pod=openproject.pod
+
+          [Service]
+          Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
+
+          [Install]
+          WantedBy=multi-user.target default.target
+
+    - path: /etc/containers/systemd/openproject-cron.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=openproject cron
+          After=network-online.target local-fs.target vault-agent.service
+          Wants=postgres.service
+          Wants=memcached.service
+          Wants=openproject-seeder.service
+          After=openproject-seeder.service
+
+          [Container]
+          Image=openproject.image
+          Exec=./docker/prod/cron
+          Pull=newer
+          LogDriver=journald
+
+          EnvironmentFile=/var/containers/openproject/openproject.env
+          EnvironmentFile=/var/containers/secrets/openproject/database_url.env
+
+          Pod=openproject.pod
+
+          [Service]
+          Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
+
+          [Install]
+          WantedBy=multi-user.target default.target
+    - path: /etc/containers/systemd/caddy.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=Reverse Proxy
+          After=network-online.target local-fs.target
+
+          [Container]
+          Image=docker.io/library/caddy:2.8
+          Pull=newer
+          AutoUpdate=registry
+          LogDriver=journald
+          UserNS=auto
+
+          PublishPort=443:443
+          PublishPort=443:443/udp
+
+          Volume=/var/containers/caddy/config:/config:Z,U
+          Volume=/var/containers/caddy/data:/data:Z,U
+          Volume=/var/containers/caddy/Caddyfile:/etc/caddy/Caddyfile:Z,ro
+          Volume=/var/containers/openproject/assets:/public:z,idmap,ro
+
+          Pod=container.network
+
+          [Service]
+          Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
+
+          [Install]
+          WantedBy=multi-user.target default.target
+    - path: /var/containers/caddy/Caddyfile
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          {
+            acme_ca ${acme_ca}
+            auto_https disable_redirects
+            servers {
+              trusted_proxies static ${trusted_proxies}
+            }
+          }
+
+          https://${fqdn}, https://${service_fqdn}, https:// {
+            tls {
+              issuer acme {
+                # disable http challenge because only https port is published
+                disable_http_challenge
+              }
+            }
+
+            handle_errors {
+              respond "Error {err.status_code} {err.status_text} on ${fqdn}"
+            }
+
+            root * /public
+            file_server
+            reverse_proxy http://systemd-openproject-web:8080
+            log
+          }
+
+    - path: /etc/containers/systemd/postgres.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=PostgreSQL database
+          After=network-online.target local-fs.target vault-agent.service
+
+          [Container]
+          Image=docker.io/library/postgres:16-alpine
+          Pull=newer
+          AutoUpdate=registry
+          LogDriver=journald
+          UserNS=auto
+          Notify=healthy
+
+          EnvironmentFile=/var/containers/secrets/openproject/postgres.env
+
+          Volume=/var/containers/postgres/data:/var/lib/postgresql/data:Z,U
+
+          HealthCmd=pg_isready -d openproject -U openproject
+          HealthInterval=30s
+          HealthRetries=5
+          HealthStartPeriod=20s
+          HealthTimeout=5s
+
+          Network=container.network
+
+          [Service]
+          Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
+
+          [Install]
+          WantedBy=multi-user.target default.target
+    - path: /etc/containers/systemd/memcached.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=Memcached
+          After=network-online.target local-fs.target
+
+          [Container]
+          Image=docker.io/library/memcached:1.6.28-alpine
+
+          Pull=newer
+          AutoUpdate=registry
+          LogDriver=journald
+          UserNS=auto
+
+          Network=container.network
+
+          [Service]
+          Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
+
+          [Install]
+          WantedBy=multi-user.target default.target
+    - path: /var/containers/vault-agent/config.d/openproject.hcl
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          template {
+            contents = <<-EOT
+              {{ with secret "kv/data/service/${ service_fqdn }/postgres" }}
+              DATABASE_URL=postgres://openproject:{{ .Data.data.password }}@db/openproject?pool=20&encoding=unicode&reconnect=true
+              {{ end }}
+              EOT
+            destination = "/vault/secrets/openproject/database_url.env"
+          }
+
+          template {
+            contents = <<-EOT
+              {{ with secret "kv/data/service/${ service_fqdn }/openproject" }}
+              OPENPROJECT_SECRET_KEY_BASE={{ .Data.data.secret_key_base }}
+              {{ end }}
+              EOT
+            destination = "/vault/secrets/openproject/openproject.env"
+          }
+
+          template {
+            contents = <<-EOT
+              {{ with secret "kv/data/service/${ service_fqdn }/postgres" }}
+              POSTGRES_USER=openproject
+              POSTGRES_DB=openproject
+              POSTGRES_PASSWORD={{ .Data.data.password }}
+              {{ end }}
+              EOT
+            destination = "/vault/secrets/openproject/postgres.env"
+          }
