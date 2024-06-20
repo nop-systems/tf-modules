@@ -237,6 +237,9 @@ storage:
 
           [Service]
           Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
 
           [Install]
           WantedBy=multi-user.target default.target
@@ -305,6 +308,9 @@ storage:
 
           [Service]
           Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
 
           [Install]
           WantedBy=multi-user.target default.target
@@ -338,6 +344,9 @@ storage:
 
           [Service]
           Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
 
           [Install]
           WantedBy=multi-user.target default.target
@@ -369,6 +378,9 @@ storage:
 
           [Service]
           Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
 
           [Install]
           WantedBy=multi-user.target default.target
@@ -393,6 +405,9 @@ storage:
 
           [Service]
           Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
 
           [Install]
           WantedBy=multi-user.target default.target
@@ -417,6 +432,7 @@ storage:
           Environment=AUTHENTIK_TOKEN=file:///secrets/token
 
           Volume=/var/containers/secrets/authentik_ldap:/secrets:z,idmap
+          Volume=/var/containers/secrets/tls/this/root_ca.pem:/etc/ssl/certs/root_ca.pem:z,idmap,ro
 
           Network=container.network
 
