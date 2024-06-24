@@ -344,7 +344,7 @@ storage:
           Environment=AUTHENTIK_TOKEN=file:///secrets/token
 
           Volume=/var/containers/secrets/authentik_ldap:/secrets:z,idmap
-          Volume=/var/containers/secrets/tls/this/root_ca.pem:/etc/ssl/certs/root_ca.pem:z,idmap,ro
+          Volume=/var/containers/secrets/tls/this/root_ca.pem:/etc/ssl/certs/root_ca.pem:ro
 
           Network=container.network
 
