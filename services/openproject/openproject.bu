@@ -323,6 +323,42 @@ storage:
 
           [Install]
           WantedBy=multi-user.target default.target
+    - path: /etc/containers/systemd/authentik-ldap.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=authentik LDAP outpost
+          After=network-online.target local-fs.target vault-agent.service
+
+          [Container]
+          Image=ghcr.io/goauthentik/ldap:2024.4.2
+          Pull=newer
+          LogDriver=journald
+
+          # metrics
+          PublishPort=9300:9300
+
+          Environment=AUTHENTIK_HOST=${authentik_host}
+          Environment=AUTHENTIK_INSECURE=false
+          Environment=AUTHENTIK_TOKEN=file:///secrets/token
+
+          Volume=/var/containers/secrets/authentik_ldap:/secrets:z,idmap
+          Volume=/var/containers/secrets/tls/this/root_ca.pem:/etc/ssl/certs/root_ca.pem:z,idmap,ro
+
+          Network=container.network
+
+          [Service]
+          Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
+
+          [Service]
+          Restart=always
+
+          [Install]
+          WantedBy=multi-user.target default.target
     - path: /var/containers/vault-agent/config.d/openproject.hcl
       mode: 0644
       overwrite: true
@@ -364,4 +400,9 @@ storage:
               {{- end }}
               EOT
             destination = "/vault/secrets/openproject/openproject-token.pub"
+          }
+
+          template {
+            contents = "{{ with secret \"kv/data/service/${ service_fqdn }/authentik_ldap\" }}{{ .Data.data.token }}{{ end }}"
+            destination = "/vault/secrets/authentik_ldap/token"
           }

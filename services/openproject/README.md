@@ -42,6 +42,7 @@ No resources.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_acme_ca"></a> [acme\_ca](#input\_acme\_ca) | URL to ACME directory for internal CA | `string` | n/a | yes |
+| <a name="input_authentik_host"></a> [authentik\_host](#input\_authentik\_host) | (Internal) URL to authentik for Outposts | `string` | n/a | yes |
 | <a name="input_cloudflare_zone_id"></a> [cloudflare\_zone\_id](#input\_cloudflare\_zone\_id) | Cloudflare Zone ID | `string` | n/a | yes |
 | <a name="input_default_language"></a> [default\_language](#input\_default\_language) | Controls in which language basic data (such as types, status names, etc.) and demo data is being created in and sets the default fallback language for new users. | `string` | n/a | yes |
 | <a name="input_fqdn"></a> [fqdn](#input\_fqdn) | Fully Qualified Domain Name of VM | `string` | n/a | yes |
@@ -66,6 +67,7 @@ No outputs.
 module "???" {
   source = "git@github.com:nop-systems/tf-modules.git//<module-path>?ref=<tag>"
   acme_ca = ??? # URL to ACME directory for internal CA
+  authentik_host = ??? # (Internal) URL to authentik for Outposts
   cloudflare_zone_id = ??? # Cloudflare Zone ID
   default_language = ??? # Controls in which language basic data (such as types, status names, etc.) and demo data is being created in and sets the default fallback language for new users.
   fqdn = ??? # Fully Qualified Domain Name of VM
