@@ -40,6 +40,8 @@ storage:
           PodmanArgs=--userns=auto
 
           PublishPort=443:9443
+          # metrics for server
+          PublishPort=9300:9300
 
           Volume=/var/containers/authentik/media:/media:Z,U
           Volume=/var/containers/authentik/templates:/templates:Z,U
@@ -83,9 +85,6 @@ storage:
           RestartSteps=10
           RestartMaxDelaySec=5m
 
-          [Service]
-          Restart=always
-
           [Install]
           WantedBy=multi-user.target default.target
     - path: /etc/containers/systemd/authentik-worker.container
@@ -103,6 +102,7 @@ storage:
           Exec=worker
           Pull=newer
           LogDriver=journald
+          Notify=healthy
 
           Environment=AUTHENTIK_POSTGRESQL__HOST=systemd-postgres
           Environment=AUTHENTIK_POSTGRESQL__NAME=authentik
@@ -121,14 +121,17 @@ storage:
 
           Pod=authentik.pod
 
+          HealthCmd=ak healthcheck
+          HealthInterval=30s
+          HealthRetries=5
+          HealthStartPeriod=20s
+          HealthTimeout=5s
+
           [Service]
           Restart=always
           RestartSec=1s
           RestartSteps=10
           RestartMaxDelaySec=5m
-
-          [Service]
-          Restart=always
 
           [Install]
           WantedBy=multi-user.target default.target
@@ -216,6 +219,8 @@ storage:
 
           PublishPort=389:3389
           PublishPort=636:6636
+          # metrics
+          PublishPort=9301:9300
 
           Environment=AUTHENTIK_HOST=https://systemd-authentik:9443
           Environment=AUTHENTIK_INSECURE=true
@@ -237,6 +242,8 @@ storage:
           [Install]
           WantedBy=multi-user.target default.target
     - path: /var/containers/vault-agent/config.d/authentik.hcl
+      mode: 0644
+      overwrite: true
       contents:
         inline: |
           # Generate a Certificate with 3 days validity to avoid problems with expired certs in authentik
