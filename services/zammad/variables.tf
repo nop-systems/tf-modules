@@ -50,7 +50,7 @@ variable "cloudflare_zone_id" {
 }
 
 variable "service_fqdn" {
-  description = "A FQDN defining the authentik service, independen of the host"
+  description = "A FQDN defining the service, independent of the host"
   type        = string
 }
 
