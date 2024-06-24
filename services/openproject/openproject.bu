@@ -213,7 +213,7 @@ storage:
           Volume=/var/containers/caddy/config:/config:Z,U
           Volume=/var/containers/caddy/data:/data:Z,U
           Volume=/var/containers/caddy/Caddyfile:/etc/caddy/Caddyfile:Z,ro
-          Volume=openproject.image:/openproject:z,idmap,ro
+          Volume=openproject-image.volume:/openproject:z,idmap,ro
 
           Network=container.network
 
@@ -236,7 +236,7 @@ storage:
             servers {
               trusted_proxies static ${trusted_proxies}
             }
-            fallback_sni ${fqdn}
+            fallback_sni ${service_fqdn}
           }
 
           https://${fqdn}, https://${service_fqdn}, https:// {
@@ -251,8 +251,12 @@ storage:
               respond "Error {err.status_code} {err.status_text} on ${fqdn}: {err.message} ({err.trace}, {err.id})"
             }
 
-            root * /openproject/app/public
-            file_server
+            @static path /422.html /assets/* /favicon.ico /fonts/*
+            handle @static {
+              file_server {
+                root /openproject/app/public
+              }
+            }
             reverse_proxy http://systemd-openproject:8080
             log
           }
