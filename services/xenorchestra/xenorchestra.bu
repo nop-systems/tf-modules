@@ -1,0 +1,124 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Relativ-IT/Butane-Schemas/Release/Butane-Schema.json
+variant: fcos
+version: "1.5.0"
+storage:
+  directories:
+    - path: /var/containers/xenorchestra/data
+    - path: /var/containers/redis/data
+  files:
+    - path: /etc/containers/systemd/xenorchestra.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=Xen Orchestra
+          After=network-online.target local-fs.target
+
+          [Container]
+          Image=docker.io/ezka77/xen-orchestra-ce:latest
+          LogDriver=journald
+          AutoUpdate=registry
+
+          PublishPort=443:8443
+
+          Environment=XO_HTTPS_LISTEN_PORT=8443
+          Environment=XO_HTTPS_LISTEN_CERT=/tls/fullchain.pem
+          Environment=XO_HTTPS_LISTEN_KEY=/tls/privkey.pem
+          Environment=XO_REDIS_URI=redis://systemd-redis:6379/0
+          Environment=XOA_PLAN=5
+          Environment=NODE_ENV=production
+          Environment=DEBUG=xo:main
+
+          AddCapability=SYS_ADMIN
+          AddCapability=NET_ADMIN
+          AddDevice=/dev/fuse:/dev/fuse
+          AddDevice=/dev/loop-control:/dev/loop-control
+
+          Volume=/var/containers/xenorchestra/data:/storage:Z,U
+          Volume=/var/containers/secrets/tls/this/:/tls:z,idmap,ro
+
+          Network=container.network
+
+          [Service]
+          Restart=always
+
+          [Install]
+          WantedBy=multi-user.target default.target
+    - path: /etc/containers/systemd/redis.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=Redis
+          After=network-online.target local-fs.target vault-agent.service
+
+          [Container]
+          Image=docker.io/library/redis:alpine
+          Exec=--appendonly yes
+
+          Pull=newer
+          AutoUpdate=registry
+          LogDriver=journald
+          UserNS=auto
+          Notify=healthy
+
+          Volume=/var/containers/redis/data:/data:Z,U
+
+          HealthCmd=redis-cli ping | grep PONG
+          HealthInterval=30s
+          HealthRetries=5
+          HealthStartPeriod=20s
+          HealthTimeout=3s
+
+          Network=container.network
+
+          [Service]
+          Restart=always
+
+          [Install]
+          WantedBy=multi-user.target default.target
+    - path: /etc/containers/systemd/authentik-ldap.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=authentik LDAP outpost
+          After=network-online.target local-fs.target vault-agent.service
+
+          [Container]
+          Image=ghcr.io/goauthentik/ldap:${authentik_version}
+          Pull=newer
+          LogDriver=journald
+
+          # metrics
+          PublishPort=9300:9300
+
+          Environment=AUTHENTIK_HOST=${authentik_host}
+          Environment=AUTHENTIK_INSECURE=false
+          Environment=AUTHENTIK_TOKEN=file:///secrets/token
+
+          Volume=/var/containers/secrets/authentik_ldap:/secrets:z,idmap
+          Volume=/var/containers/secrets/tls/this/root_ca.pem:/etc/ssl/certs/root_ca.pem:ro
+
+          Network=container.network
+
+          [Service]
+          Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
+
+          [Service]
+          Restart=always
+
+          [Install]
+          WantedBy=multi-user.target default.target
+    - path: /var/containers/vault-agent/config.d/authentik-ldap.hcl
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          template {
+            contents = "{{ with secret \"kv/data/service/${ service_fqdn }/authentik_ldap\" }}{{ .Data.data.token }}{{ end }}"
+            destination = "/vault/secrets/authentik_ldap/token"
+          }
