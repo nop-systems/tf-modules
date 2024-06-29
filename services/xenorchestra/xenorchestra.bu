@@ -64,7 +64,6 @@ storage:
           AutoUpdate=registry
           LogDriver=journald
           UserNS=auto
-          Notify=healthy
 
           Volume=/var/containers/redis/data:/data:Z,U
 
@@ -96,7 +95,6 @@ storage:
           AutoUpdate=registry
           LogDriver=journald
           UserNS=auto
-          Notify=healthy
 
           # metrics
           PublishPort=9300:9300
