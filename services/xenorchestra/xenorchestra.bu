@@ -39,7 +39,7 @@ storage:
           AddDevice=/dev/loop-control:/dev/loop-control
 
           Volume=/var/containers/xenorchestra/data:/storage:Z,U
-          Volume=/var/containers/secrets/tls/this/:/tls:z,idmap,ro
+          Volume=/var/containers/secrets/tls/${fqdn}:/tls:z,idmap,ro
 
           Network=container.network
 
