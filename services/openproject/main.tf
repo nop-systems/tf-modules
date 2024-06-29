@@ -3,7 +3,7 @@ module "fcos" {
   # source = "../../base/fcos/stack"
 
   fqdn      = var.fqdn
-  desc      = "OpnepProject project managing software"
+  desc      = "OpenProject project managing software"
   xo_tags   = concat(var.xo_tags, ["service:openproject"])
   memory    = 1024 * 4
   cpu_cores = 4
