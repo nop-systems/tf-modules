@@ -16,8 +16,12 @@ storage:
 
           [Container]
           Image=docker.io/ezka77/xen-orchestra-ce:latest
-          LogDriver=journald
+
+          Pull=newer
           AutoUpdate=registry
+          LogDriver=journald
+          UserNS=auto
+          Notify=healthy
 
           PublishPort=443:8443
 
@@ -87,8 +91,12 @@ storage:
 
           [Container]
           Image=ghcr.io/goauthentik/ldap:${authentik_version}
+
           Pull=newer
+          AutoUpdate=registry
           LogDriver=journald
+          UserNS=auto
+          Notify=healthy
 
           # metrics
           PublishPort=9300:9300
@@ -122,3 +130,28 @@ storage:
             contents = "{{ with secret \"kv/data/service/${ service_fqdn }/authentik_ldap\" }}{{ .Data.data.token }}{{ end }}"
             destination = "/vault/secrets/authentik_ldap/token"
           }
+systemd:
+  units:
+    - name: xenorchestra-reload-on-cert-renew.path
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Watch vault-agent cert for changes
+        After=vault-agent.service
+
+        [Path]
+        PathChanged=/var/containers/secrets/tls/this/fullchain.pem
+
+        [Install]
+        WantedBy=multi-user.target
+    - name: xenorchestra-reload-on-cert-renew.service
+      contents: |
+        [Unit]
+        Description=Reload XenOrchestra when Certificate changes
+
+        [Service]
+        Type=oneshot
+        ExecStart=-podman kill --signal HUP systemd-xenorchestra
+
+        [Install]
+        WantedBy=multi-user.target
