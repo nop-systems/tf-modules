@@ -141,7 +141,6 @@ storage:
           LogDriver=journald
 
           EnvironmentFile=/var/containers/openproject/openproject.env
-          EnvironmentFile=/var/containers/openproject/imap.env
           EnvironmentFile=/var/containers/secrets/openproject/database_url.env
 
           Pod=openproject.pod
@@ -174,7 +173,7 @@ storage:
           LogDriver=journald
 
           EnvironmentFile=/var/containers/openproject/openproject.env
-          EnvironmentFile=/var/containers/openproject/imap.env
+          EnvironmentFile=/var/containers/secrets/openproject/imap.env
           EnvironmentFile=/var/containers/secrets/openproject/database_url.env
 
           Pod=openproject.pod
