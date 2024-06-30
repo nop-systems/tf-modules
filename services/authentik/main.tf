@@ -12,6 +12,7 @@ module "fcos" {
   butane_snippets = [templatefile("${path.module}/authentik.bu", {
     service_fqdn        = var.service_fqdn
     trusted_proxy_cidrs = var.trusted_proxy_cidrs
+    authentik_version   = "2024.6.0"
   })]
 
   cloudflare_zone_id     = var.cloudflare_zone_id
