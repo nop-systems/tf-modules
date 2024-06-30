@@ -10,13 +10,18 @@ module "fcos" {
   disk_size = 40
 
   butane_snippets = [templatefile("${path.module}/openproject.bu", {
-    acme_ca          = var.acme_ca
-    fqdn             = var.fqdn
-    service_fqdn     = var.service_fqdn
-    public_fqdn      = var.public_fqdn
-    default_language = var.default_language
-    trusted_proxies  = join(" ", var.trusted_proxies)
-    authentik_host   = var.authentik_host
+    acme_ca             = var.acme_ca
+    fqdn                = var.fqdn
+    service_fqdn        = var.service_fqdn
+    public_fqdn         = var.public_fqdn
+    default_language    = var.default_language
+    trusted_proxies     = join(" ", var.trusted_proxies)
+    authentik_host      = var.authentik_host
+    openproject_version = "14.2-slim"
+    caddy_version       = "2.8"
+    postgres_version    = "16-alpine"
+    memcached_version   = "1.6.28-alpine"
+    authentik_version   = "2024.6.0"
   })]
 
   cloudflare_zone_id     = var.cloudflare_zone_id

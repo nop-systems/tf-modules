@@ -19,7 +19,7 @@ storage:
           After=network-online.target
 
           [Image]
-          Image=docker.io/openproject/openproject:14.2-slim
+          Image=docker.io/openproject/openproject:${openproject_version}
     - path: /etc/containers/systemd/openproject.pod
       mode: 0644
       contents:
@@ -141,6 +141,7 @@ storage:
           LogDriver=journald
 
           EnvironmentFile=/var/containers/openproject/openproject.env
+          EnvironmentFile=/var/containers/openproject/imap.env
           EnvironmentFile=/var/containers/secrets/openproject/database_url.env
 
           Pod=openproject.pod
@@ -173,6 +174,7 @@ storage:
           LogDriver=journald
 
           EnvironmentFile=/var/containers/openproject/openproject.env
+          EnvironmentFile=/var/containers/openproject/imap.env
           EnvironmentFile=/var/containers/secrets/openproject/database_url.env
 
           Pod=openproject.pod
@@ -201,7 +203,7 @@ storage:
           After=network-online.target local-fs.target
 
           [Container]
-          Image=docker.io/library/caddy:2.8
+          Image=docker.io/library/caddy:${caddy_version}
           Pull=newer
           AutoUpdate=registry
           LogDriver=journald
@@ -270,7 +272,7 @@ storage:
           After=network-online.target local-fs.target vault-agent.service
 
           [Container]
-          Image=docker.io/library/postgres:16-alpine
+          Image=docker.io/library/postgres:${postgres_version}
           Pull=newer
           AutoUpdate=registry
           LogDriver=journald
@@ -306,7 +308,7 @@ storage:
           After=network-online.target local-fs.target
 
           [Container]
-          Image=docker.io/library/memcached:1.6.28-alpine
+          Image=docker.io/library/memcached:${memcached_version}
 
           Pull=newer
           AutoUpdate=registry
@@ -332,7 +334,7 @@ storage:
           After=network-online.target local-fs.target vault-agent.service
 
           [Container]
-          Image=ghcr.io/goauthentik/ldap:2024.4.2
+          Image=ghcr.io/goauthentik/ldap:${authentik_version}
           Pull=newer
           LogDriver=journald
 
@@ -402,6 +404,22 @@ storage:
             destination = "/vault/secrets/openproject/openproject-token.pub"
           }
 
+          template {
+            contents = <<-EOT
+              {{- with secret "kv/data/service/${ service_fqdn }/imap" -}}
+              IMAP_USERNAME={{ .Data.data.username }}
+              IMAP_PASSWORD={{ .Data.data.password }}
+              IMAP_HOST={{ .Data.data.host }}
+              IMAP_PORT={{ .Data.data.port }}
+              {{- end }}
+              EOT
+            destination = "/vault/secrets/openproject/imap.env"
+          }
+    - path: /var/containers/vault-agent/config.d/authentik-ldap.hcl
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
           template {
             contents = "{{ with secret \"kv/data/service/${ service_fqdn }/authentik_ldap\" }}{{ .Data.data.token }}{{ end }}"
             destination = "/vault/secrets/authentik_ldap/token"
