@@ -51,7 +51,7 @@ storage:
           After=network-online.target
 
           [Image]
-          Image=docker.io/library/nextcloud:${nextcloud_version}
+          Image=docker.io/library/nextcloud:${nextcloud_fpm_version}
     - path: /etc/containers/systemd/nextcloud-app.container
       mode: 0644
       contents:

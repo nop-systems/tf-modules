@@ -10,18 +10,18 @@ module "fcos" {
   disk_size = 500
 
   butane_snippets = [templatefile("${path.module}/nextcloud.bu", {
-    acme_ca           = var.acme_ca
-    fqdn              = var.fqdn
-    service_fqdn      = var.service_fqdn
-    public_fqdn       = var.public_fqdn
-    trusted_proxies   = join(" ", var.trusted_proxies)
-    php_memory_limit  = var.php_memory_limit
-    php_upload_limit  = var.php_upload_limit
-    trusted_proxies   = "0.0.0.0/0 ::/0"
-    nextcloud_version = "29.0.3-fpm"
-    caddy_version     = "2.8"
-    postgres_version  = "16-alpine"
-    redis_version     = "7.2.5-alpine"
+    acme_ca               = var.acme_ca
+    fqdn                  = var.fqdn
+    service_fqdn          = var.service_fqdn
+    public_fqdn           = var.public_fqdn
+    trusted_proxies       = join(" ", var.trusted_proxies)
+    php_memory_limit      = var.php_memory_limit
+    php_upload_limit      = var.php_upload_limit
+    trusted_proxies       = "0.0.0.0/0 ::/0"
+    nextcloud_fpm_version = "29.0.3-fpm"
+    caddy_version         = "2.8"
+    postgres_version      = "16-alpine"
+    redis_version         = "7.2.5-alpine"
   })]
 
   cloudflare_zone_id     = var.cloudflare_zone_id
