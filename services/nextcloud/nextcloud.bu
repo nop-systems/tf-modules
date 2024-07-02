@@ -68,7 +68,7 @@ storage:
 
           [Install]
           WantedBy=multi-user.target default.target
-    
+
     - path: /etc/containers/systemd/nextcloud-cron.container
       mode: 0644
       contents:
@@ -382,3 +382,10 @@ storage:
               EOT
             destination = "/vault/secrets/nextcloud/postgres.env"
           }
+    - path: /usr/local/sbin/occ
+      mode: 0755
+      overwrite: true
+      contents:
+        inline: |
+          #!/usr/bin/env sh
+          podman exec -it --user 33 systemd-nextcloud-app /var/www/html/occ "$@"
