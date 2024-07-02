@@ -4,6 +4,7 @@ version: "1.5.0"
 storage:
   directories:
     - path: /var/containers/nextcloud/data
+    - path: /var/containers/nextcloud/html
     - path: /var/containers/postgres/data
     - path: /var/containers/redis/data
     - path: /var/containers/secrets/nextcloud
@@ -22,7 +23,8 @@ storage:
           Network=container.network
           PodmanArgs=--userns=auto --exit-policy=continue
 
-          Volume=/var/containers/nextcloud/data:/var/www/html:z,idmap
+          Volume=/var/containers/nextcloud/html:/var/www/html:z,idmap
+          Volume=/var/containers/nextcloud/data:/data:Z,U
 
     - path: /var/containers/nextcloud/nextcloud.env
       mode: 0644
@@ -39,6 +41,7 @@ storage:
           NC_default_phone_region=DE
           NC_trashbin_retention_obligation='auto, 90'
           NC_maintenance_window_start=2
+          NEXTCLOUD_DATA_DIR=/data
     - path: /etc/containers/systemd/nextcloud.image
       mode: 0644
       contents:
@@ -130,7 +133,7 @@ storage:
           Volume=/var/containers/caddy/config:/config:Z,U
           Volume=/var/containers/caddy/data:/data:Z,U
           Volume=/var/containers/caddy/Caddyfile:/etc/caddy/Caddyfile:Z,ro
-          Volume=/var/containers/nextcloud/data:/var/www/html:z,idmap,ro
+          Volume=/var/containers/nextcloud/html:/var/www/html:z,idmap,ro
 
           Network=container.network
 
