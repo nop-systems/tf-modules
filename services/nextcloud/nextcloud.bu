@@ -39,6 +39,16 @@ storage:
           NC_default_phone_region=DE
           NC_trashbin_retention_obligation='auto, 90'
           NC_maintenance_window_start=2
+    - path: /etc/containers/systemd/nextcloud.image
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Wants=network-online.target
+          After=network-online.target
+
+          [Image]
+          Image=docker.io/library/nextcloud:${nextcloud_version}
     - path: /etc/containers/systemd/nextcloud-app.container
       mode: 0644
       contents:
@@ -50,7 +60,7 @@ storage:
           Wants=redis.service
 
           [Container]
-          Image=docker.io/library/nextcloud:${nextcloud_version}
+          Image=nextcloud.image
           Pull=newer
           LogDriver=journald
 
@@ -80,7 +90,7 @@ storage:
           Wants=redis.service
 
           [Container]
-          Image=docker.io/library/nextcloud:${nextcloud_version}
+          Image=nextcloud.image
           Exec=/cron.sh
           Pull=newer
           LogDriver=journald
