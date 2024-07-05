@@ -5,7 +5,7 @@ module "fcos" {
   fqdn      = var.fqdn
   desc      = "Xen Orchestra (Community Edition)"
   xo_tags   = concat(var.xo_tags, ["xenorchestra"])
-  memory    = 2048
+  memory    = 3072
   cpu_cores = 2
   disk_size = 30
 
