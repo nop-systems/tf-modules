@@ -15,7 +15,7 @@ variable "allow_root_issuing_ttl" {
 
 variable "organization" {
   type        = string
-  description = "Organization to inlcude in leaf certificates"
+  description = "Organization to include in leaf certificates"
 }
 
 variable "acme_allowed_domains" {

@@ -40,7 +40,6 @@ resource "vault_generic_endpoint" "config_urls" {
     issuing_certificates    = ["{{cluster_aia_path}}/issuer/{{issuer_id}}/der"]
     crl_distribution_points = ["{{cluster_aia_path}}/issuer/{{issuer_id}}/crl/der"]
     ocsp_servers            = ["{{cluster_path}}/ocsp"]
-
   })
 }
 

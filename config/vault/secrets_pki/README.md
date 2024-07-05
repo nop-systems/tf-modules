@@ -38,7 +38,7 @@
 |------|-------------|------|---------|:--------:|
 | <a name="input_acme_allowed_domains"></a> [acme\_allowed\_domains](#input\_acme\_allowed\_domains) | Allowed domains for ACME role (only subdomains) | `list(string)` | n/a | yes |
 | <a name="input_allow_root_issuing_ttl"></a> [allow\_root\_issuing\_ttl](#input\_allow\_root\_issuing\_ttl) | temporarily increase max TTL of root issuer to 12 years to allow issuing of a new long term root CA | `bool` | n/a | yes |
-| <a name="input_organization"></a> [organization](#input\_organization) | Organization to inlcude in leaf certificates | `string` | n/a | yes |
+| <a name="input_organization"></a> [organization](#input\_organization) | Organization to include in leaf certificates | `string` | n/a | yes |
 | <a name="input_servers_issuer_ref"></a> [servers\_issuer\_ref](#input\_servers\_issuer\_ref) | Issuer ref of current PKI servers Issuer | `string` | n/a | yes |
 | <a name="input_vault_url"></a> [vault\_url](#input\_vault\_url) | Main HA URL to vault cluster | `string` | n/a | yes |
 
@@ -56,7 +56,7 @@ module "???" {
   source = "git@github.com:nop-systems/tf-modules.git//<module-path>?ref=<tag>"
   acme_allowed_domains = ??? # Allowed domains for ACME role (only subdomains)
   allow_root_issuing_ttl = ??? # temporarily increase max TTL of root issuer to 12 years to allow issuing of a new long term root CA
-  organization = ??? # Organization to inlcude in leaf certificates
+  organization = ??? # Organization to include in leaf certificates
   servers_issuer_ref = ??? # Issuer ref of current PKI servers Issuer
   vault_url = ??? # Main HA URL to vault cluster
   

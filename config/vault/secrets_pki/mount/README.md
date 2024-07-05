@@ -53,7 +53,7 @@ module "???" {
   path = ??? # Path of PKI mount
   ttl = ??? # default TTL for issued certificates in seconds
   vault_url = ??? # Vault URI of Cluster
-    
+  
 }
 ```
 <!-- END_TF_DOCS -->
