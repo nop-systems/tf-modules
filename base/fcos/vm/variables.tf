@@ -38,8 +38,8 @@ variable "memory" {
   type        = number
   description = "Memory in MB"
   validation {
-    condition     = var.memory >= 3072
-    error_message = "Memory size must be 3072 MiB or more"
+    condition     = var.memory >= 2048
+    error_message = "Memory size must be 2048 MiB or more"
   }
 }
 
