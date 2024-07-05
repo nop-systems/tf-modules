@@ -1,11 +1,11 @@
 module "hello-world" {
-  source = "git@github.com:nop-systems/tf-modules.git//base/fcos/stack?ref=fcos/v0.2.5"
+  source = "git@github.com:nop-systems/tf-modules.git//base/fcos/stack?ref=fcos/v0.3.2"
   # source = "../../base/fcos/stack"
 
   fqdn      = var.fqdn
   desc      = "hello world"
   xo_tags   = var.xo_tags
-  memory    = 2048
+  memory    = 3072
   cpu_cores = 1
   disk_size = 10
 

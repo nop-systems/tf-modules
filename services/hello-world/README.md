@@ -15,7 +15,7 @@ No providers.
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_hello-world"></a> [hello-world](#module\_hello-world) | git@github.com:nop-systems/tf-modules.git//base/fcos/stack | fcos/v0.2.5 |
+| <a name="module_hello-world"></a> [hello-world](#module\_hello-world) | git@github.com:nop-systems/tf-modules.git//base/fcos/stack | fcos/v0.3.2 |
 
 ## Resources
 
