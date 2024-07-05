@@ -35,4 +35,16 @@ resource "xenorchestra_vm" "this" {
   timeouts {
     create = "10m"
   }
+
+  blocked_operations = var.protect_vm ? [
+    "clean_reboot",
+    "clean_shutdown",
+    "destroy",
+    "hard_reboot",
+    "hard_shutdown",
+    "pause",
+    "shutdown",
+    "suspend",
+  ] : []
+
 }

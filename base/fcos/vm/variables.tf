@@ -63,3 +63,9 @@ variable "tags" {
   description = "List of additional tags that should be attached to the VM"
   default     = []
 }
+
+variable "protect_vm" {
+  type        = bool
+  description = "Protect VM from accidental deletion and shutdown"
+  default     = true
+}
