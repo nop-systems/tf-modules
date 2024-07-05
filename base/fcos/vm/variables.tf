@@ -32,19 +32,24 @@ variable "template_id" {
 variable "cpu_cores" {
   type        = number
   description = "Number of CPU cores"
-  default     = 1
 }
 
 variable "memory" {
   type        = number
   description = "Memory in MB"
-  default     = 2048
+  validation {
+    condition     = var.memory >= 3072
+    error_message = "Memory size must be 3072 MiB or more"
+  }
 }
 
 variable "disk_size" {
   type        = number
   description = "Disk Size in GB for var partition disk (eg. 32)"
-  default     = 8
+  validation {
+    condition     = var.disk_size >= 10
+    error_message = "disk size must be >= 10 GB"
+  }
 }
 
 variable "affinity_host_id" {

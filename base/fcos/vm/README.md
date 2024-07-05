@@ -31,11 +31,11 @@ No modules.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_affinity_host_id"></a> [affinity\_host\_id](#input\_affinity\_host\_id) | The preferred host you would like the VM to run on. If changed on an existing VM it will require a reboot for the VM to be rescheduled. | `string` | `null` | no |
-| <a name="input_cpu_cores"></a> [cpu\_cores](#input\_cpu\_cores) | Number of CPU cores | `number` | `1` | no |
+| <a name="input_cpu_cores"></a> [cpu\_cores](#input\_cpu\_cores) | Number of CPU cores | `number` | n/a | yes |
 | <a name="input_desc"></a> [desc](#input\_desc) | Description of the VM visible in XenOrchestra | `string` | `""` | no |
-| <a name="input_disk_size"></a> [disk\_size](#input\_disk\_size) | Disk Size in GB for var partition disk (eg. 32) | `number` | `8` | no |
+| <a name="input_disk_size"></a> [disk\_size](#input\_disk\_size) | Disk Size in GB for var partition disk (eg. 32) | `number` | n/a | yes |
 | <a name="input_mac_address"></a> [mac\_address](#input\_mac\_address) | MAC address to use for VM NIC | `string` | n/a | yes |
-| <a name="input_memory"></a> [memory](#input\_memory) | Memory in MB | `number` | `2048` | no |
+| <a name="input_memory"></a> [memory](#input\_memory) | Memory in MB | `number` | n/a | yes |
 | <a name="input_name"></a> [name](#input\_name) | Name of the new Virtual Machine | `string` | n/a | yes |
 | <a name="input_network_id"></a> [network\_id](#input\_network\_id) | XenOrchestra Network UUID | `string` | n/a | yes |
 | <a name="input_sr_id"></a> [sr\_id](#input\_sr\_id) | XenOrchestra Storage Repository UUID | `string` | n/a | yes |
@@ -56,17 +56,17 @@ No modules.
 module "???" {
   source = "git@github.com:nop-systems/tf-modules.git//<module-path>?ref=<tag>"
   #affinity_host_id = <no value> # The preferred host you would like the VM to run on. If changed on an existing VM it will require a reboot for the VM to be rescheduled.
-  #cpu_cores = 1 # Number of CPU cores
+  cpu_cores = ??? # Number of CPU cores
   #desc =  # Description of the VM visible in XenOrchestra
-  #disk_size = 8 # Disk Size in GB for var partition disk (eg. 32)
+  disk_size = ??? # Disk Size in GB for var partition disk (eg. 32)
   mac_address = ??? # MAC address to use for VM NIC
-  #memory = 2048 # Memory in MB
+  memory = ??? # Memory in MB
   name = ??? # Name of the new Virtual Machine
   network_id = ??? # XenOrchestra Network UUID
   sr_id = ??? # XenOrchestra Storage Repository UUID
   #tags = [] # List of additional tags that should be attached to the VM
   template_id = ??? # XenOrchestra Template UUID
-    
+  
 }
 ```
 <!-- END_TF_DOCS -->
