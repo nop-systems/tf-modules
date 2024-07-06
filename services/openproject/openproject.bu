@@ -73,7 +73,7 @@ storage:
           EnvironmentFile=/var/containers/openproject/openproject.env
           EnvironmentFile=/var/containers/secrets/openproject/database_url.env
 
-          Volume=/var/containers/openproject/assets:/app/public:z,idmap,U
+          Volume=openproject-public.volume:/app/public:z,idmap,U
 
           Pod=openproject.pod
 
@@ -186,13 +186,13 @@ storage:
 
           [Install]
           WantedBy=multi-user.target default.target
-    - path: /etc/containers/systemd/openproject-image.volume
+    - path: /etc/containers/systemd/openproject-public.volume
       mode: 0644
       contents:
         inline: |
           [Volume]
-          Driver=image
-          Image=openproject.image
+          Device=tmpfs
+          Type=tmpfs
     - path: /etc/containers/systemd/caddy.container
       mode: 0644
       contents:
@@ -214,7 +214,7 @@ storage:
           Volume=/var/containers/caddy/config:/config:Z,U
           Volume=/var/containers/caddy/data:/data:Z,U
           Volume=/var/containers/caddy/Caddyfile:/etc/caddy/Caddyfile:Z,ro
-          Volume=openproject-image.volume:/openproject:ro
+          Volume=openproject-public.volume:/openproject:z,idmap,ro
 
           Network=container.network
 
@@ -255,7 +255,7 @@ storage:
             @static path /422.html /assets/* /favicon.ico /fonts/*
             handle @static {
               file_server {
-                root /openproject/app/public
+                root /openproject
               }
             }
             reverse_proxy http://systemd-openproject:8080
