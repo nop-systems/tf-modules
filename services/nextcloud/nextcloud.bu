@@ -25,7 +25,7 @@ storage:
 
           Volume=/var/containers/nextcloud/html:/var/www/html:z,idmap
           Volume=/var/containers/nextcloud/data:/data:Z,U
-
+          Volume=/vault/secrets/nextcloud/:/secrets:z,idmap,ro
     - path: /var/containers/nextcloud/nextcloud.env
       mode: 0644
       overwrite: true
@@ -35,6 +35,11 @@ storage:
           TRUSTED_PROXIES=${trusted_proxies}
           REDIS_HOST=systemd-redis
           POSTGRES_HOST=systemd-postgres
+          POSTGRES_USER=nextcloud
+          POSTGRES_DB=nextcloud
+          POSTGRES_PASSWORD_FILE=/secrets/postgres_password
+          NEXTCLOUD_ADMIN_USER=admin
+          NEXTCLOUD_ADMIN_PASSWORD_FILE=/secrets/nextcloud_admin_password
           PHP_MEMORY_LIMIT=${php_memory_limit}
           PHP_UPLOAD_LIMIT=${php_upload_limit}
           TZ='Europe/Berlin'
@@ -68,8 +73,6 @@ storage:
           LogDriver=journald
 
           EnvironmentFile=/var/containers/nextcloud/nextcloud.env
-          EnvironmentFile=/var/containers/secrets/nextcloud/nextcloud.env
-          EnvironmentFile=/var/containers/secrets/nextcloud/postgres.env
 
           Pod=nextcloud.pod
 
@@ -81,7 +84,6 @@ storage:
 
           [Install]
           WantedBy=multi-user.target default.target
-
     - path: /etc/containers/systemd/nextcloud-cron.container
       mode: 0644
       contents:
@@ -94,21 +96,15 @@ storage:
 
           [Container]
           Image=nextcloud.image
-          Exec=/cron.sh
-          Pull=newer
+          Exec=php -f /var/www/html/cron.php
           LogDriver=journald
 
           EnvironmentFile=/var/containers/nextcloud/nextcloud.env
-          EnvironmentFile=/var/containers/secrets/nextcloud/nextcloud.env
-          EnvironmentFile=/var/containers/secrets/nextcloud/postgres.env
 
           Pod=nextcloud.pod
 
           [Service]
-          Restart=always
-          RestartSec=1s
-          RestartSteps=10
-          RestartMaxDelaySec=5m
+          Type=oneshot
 
           [Install]
           WantedBy=multi-user.target default.target
@@ -126,6 +122,7 @@ storage:
           AutoUpdate=registry
           LogDriver=journald
           UserNS=auto
+          Notify=healthy
 
           PublishPort=443:443
           PublishPort=443:443/udp
@@ -136,6 +133,12 @@ storage:
           Volume=/var/containers/nextcloud/html:/var/www/html:z,idmap,ro
 
           Network=container.network
+
+          HealthCmd=php -f /var/www/html/occ status -e
+          HealthInterval=30s
+          HealthRetries=5
+          HealthStartPeriod=20s
+          HealthTimeout=5s
 
           [Service]
           Restart=always
@@ -378,22 +381,19 @@ storage:
           template {
             contents = <<-EOT
               {{- with secret "kv/data/service/${ service_fqdn }/nextcloud" -}}
-              NEXTCLOUD_ADMIN_USER=admin
-              NEXTCLOUD_ADMIN_PASSWORD={{ .Data.data.admin_password }}
+              {{ .Data.data.admin_password }}
               {{- end }}
               EOT
-            destination = "/vault/secrets/nextcloud/nextcloud.env"
+            destination = "/vault/secrets/nextcloud/nextcloud_admin_password"
           }
 
           template {
             contents = <<-EOT
               {{- with secret "kv/data/service/${ service_fqdn }/postgres" -}}
-              POSTGRES_USER=nextcloud
-              POSTGRES_DB=nextcloud
-              POSTGRES_PASSWORD={{ .Data.data.password }}
+              {{ .Data.data.password }}
               {{- end }}
               EOT
-            destination = "/vault/secrets/nextcloud/postgres.env"
+            destination = "/vault/secrets/nextcloud/postgres_password"
           }
     - path: /usr/local/sbin/occ
       mode: 0755
@@ -402,3 +402,18 @@ storage:
         inline: |
           #!/usr/bin/env sh
           podman exec -it --user 33 systemd-nextcloud-app /var/www/html/occ "$@"
+systemd:
+  units:
+    - name: nextcloud-cron.timer
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Run nextcloud cron
+        After=nextcloud-app.service
+
+        [Timer]
+        OnBootSec=5min
+        OnUnitActiveSec=5min
+
+        [Install]
+        WantedBy=timers.target

@@ -53,21 +53,51 @@ No modules.
 ## Usage
 
 ```hcl
-module "???" {
+module "" {
   source = "git@github.com:nop-systems/tf-modules.git//<module-path>?ref=<tag>"
-  cn = ??? # Certificate Name
-  country = ??? # Value for Organizational Unit field
-  issuing_active = ??? # Set to true allow issuing, else only crl-signing and ocsp-signing allowed
-  locality = ??? # Value for Locality field
-  organization = ??? # Value for Organization field
-  ou = ??? # Value for Organization field
-  pki_mount = ??? # PKI secret engine mount point
-  province = ??? # Value for province field
-  root_issuer_ref = ??? # Issuer to use for signing
-  root_pki_mount = ??? # PKI secret engine mount point containing root certificate
-  slug = ??? # slug name used for ressource names
-  #ttl = 3.1536e+07 # TTL of intermediate in seconds
   
+  /* Certificate Name (required) */
+  cn =
+  /* Value for Organizational Unit field (required) */
+  country =
+  /* Set to true allow issuing, else only crl-signing and ocsp-signing allowed (required) */
+  issuing_active =
+  /* Value for Locality field (required) */
+  locality =
+  /* Value for Organization field (required) */
+  organization =
+  /* Value for Organization field (required) */
+  ou =
+  /* PKI secret engine mount point (required) */
+  pki_mount =
+  /* Value for province field (required) */
+  province =
+  /* Issuer to use for signing (required) */
+  root_issuer_ref =
+  /* PKI secret engine mount point containing root certificate (required) */
+  root_pki_mount =
+  /* slug name used for ressource names (required) */
+  slug =
+
+  
+  /* TTL of intermediate in seconds (optional) */
+  # ttl = 3.1536e+07
+}
+
+module "" {
+  source = "git@github.com:nop-systems/tf-modules.git//?ref="
+  
+  cn =
+  country =
+  issuing_active =
+  locality =
+  organization =
+  ou =
+  pki_mount =
+  province =
+  root_issuer_ref =
+  root_pki_mount =
+  slug =
 }
 ```
 <!-- END_TF_DOCS -->

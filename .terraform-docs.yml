@@ -16,10 +16,23 @@ content: |-
   ## Usage
 
   ```hcl
-  module "???" {
+  module "" {
     source = "git@github.com:nop-systems/tf-modules.git//<module-path>?ref=<tag>"
-    {{ range .Module.Inputs -}}
-    {{if not .Required }}#{{ end }}{{ .Name }} = {{if .Required }}???{{ else }}{{ .Default.Raw }}{{ end }} # {{ .Description }}
-    {{ end }}
+    {{ range .Module.Inputs }}{{if .Required }}
+    /* {{ .Description }} (required) */
+    {{ .Name }} = 
+    {{- end }}{{ end }}
+
+    {{ range .Module.Inputs }}{{if not .Required }}
+    /* {{ .Description }} (optional) */
+    # {{ .Name }} = {{ .Default.Raw }}
+    {{- end }}{{ end }}
+  }
+
+  module "" {
+    source = "git@github.com:nop-systems/tf-modules.git//?ref="
+    {{ range .Module.Inputs }}{{if .Required }}
+    {{ .Name }} = 
+    {{- end }}{{ end }}
   }
   ```

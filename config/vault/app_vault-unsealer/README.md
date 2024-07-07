@@ -39,10 +39,19 @@ No outputs.
 ## Usage
 
 ```hcl
-module "???" {
+module "" {
   source = "git@github.com:nop-systems/tf-modules.git//<module-path>?ref=<tag>"
-  transit_mount_path = ??? # Mount path to transit engine
   
+  /* Mount path to transit engine (required) */
+  transit_mount_path =
+
+  
+}
+
+module "" {
+  source = "git@github.com:nop-systems/tf-modules.git//?ref="
+  
+  transit_mount_path =
 }
 ```
 <!-- END_TF_DOCS -->

@@ -64,24 +64,60 @@ No outputs.
 ## Usage
 
 ```hcl
-module "???" {
+module "" {
   source = "git@github.com:nop-systems/tf-modules.git//<module-path>?ref=<tag>"
-  acme_ca = ??? # URL to ACME directory for internal CA
-  authentik_host = ??? # (Internal) URL to authentik for Outposts
-  cloudflare_zone_id = ??? # Cloudflare Zone ID
-  default_language = ??? # Controls in which language basic data (such as types, status names, etc.) and demo data is being created in and sets the default fallback language for new users.
-  fqdn = ??? # Fully Qualified Domain Name of VM
-  matchbox_http_endpoint = ??? # matchbox http endpoint
-  public_fqdn = ??? # Public FQDN where OpenProject is reachable externally (used for links in emails)
-  root_ca_pem = ??? # Private Root Certificate (PEM)
-  service_fqdn = ??? # A FQDN defining the service, independent of the host
-  trusted_proxies = ??? # List of CIDRs that proxy headers should be accepted from
-  vault_url = ??? # Vault URL
-  xo_network_id = ??? # XenOrchestra Network UUID
-  xo_sr_id = ??? # XenOrchestra Storage Repository UUID
-  #xo_tags = [] # List of additional tags that should be attached to the VM
-  xo_template_id = ??? # XenOrchestra Template UUID
   
+  /* URL to ACME directory for internal CA (required) */
+  acme_ca =
+  /* (Internal) URL to authentik for Outposts (required) */
+  authentik_host =
+  /* Cloudflare Zone ID (required) */
+  cloudflare_zone_id =
+  /* Controls in which language basic data (such as types, status names, etc.) and demo data is being created in and sets the default fallback language for new users. (required) */
+  default_language =
+  /* Fully Qualified Domain Name of VM (required) */
+  fqdn =
+  /* matchbox http endpoint (required) */
+  matchbox_http_endpoint =
+  /* Public FQDN where OpenProject is reachable externally (used for links in emails) (required) */
+  public_fqdn =
+  /* Private Root Certificate (PEM) (required) */
+  root_ca_pem =
+  /* A FQDN defining the service, independent of the host (required) */
+  service_fqdn =
+  /* List of CIDRs that proxy headers should be accepted from (required) */
+  trusted_proxies =
+  /* Vault URL (required) */
+  vault_url =
+  /* XenOrchestra Network UUID (required) */
+  xo_network_id =
+  /* XenOrchestra Storage Repository UUID (required) */
+  xo_sr_id =
+  /* XenOrchestra Template UUID (required) */
+  xo_template_id =
+
+  
+  /* List of additional tags that should be attached to the VM (optional) */
+  # xo_tags = []
+}
+
+module "" {
+  source = "git@github.com:nop-systems/tf-modules.git//?ref="
+  
+  acme_ca =
+  authentik_host =
+  cloudflare_zone_id =
+  default_language =
+  fqdn =
+  matchbox_http_endpoint =
+  public_fqdn =
+  root_ca_pem =
+  service_fqdn =
+  trusted_proxies =
+  vault_url =
+  xo_network_id =
+  xo_sr_id =
+  xo_template_id =
 }
 ```
 <!-- END_TF_DOCS -->

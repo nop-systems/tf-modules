@@ -67,26 +67,59 @@ Combined Ignition + Matchbox + VM modules for standard deployments
 ## Usage
 
 ```hcl
-module "???" {
+module "" {
   source = "git@github.com:nop-systems/tf-modules.git//<module-path>?ref=<tag>"
-  #additional_token_policies = [] # List of additional Policies assigned to the VM’s approle
-  butane_snippets = ??? # (application specific) butane config
-  cloudflare_zone_id = ??? # Cloudflare Zone ID
-  #cnames = [] # List of CNAMEs as FQDNs
-  #cpu_cores = 1 # Number of CPU cores
-  #desc =  # Description of the VM visible in XenOrchestra
-  #disk_size = 8 # Disk Size in GB for var partition disk (eg. 32)
-  fqdn = ??? # Fully Qualified Domain Name of VM
-  matchbox_http_endpoint = ??? # matchbox http endpoint
-  #memory = 2048 # Memory in MB
-  root_ca_pem = ??? # Private Root Certificate (PEM)
-  #services = [] # List of Services as shared FQDNs (possibly with shared secrets)
-  vault_url = ??? # Vault URL
-  xo_network_id = ??? # XenOrchestra Network UUID
-  xo_sr_id = ??? # XenOrchestra Storage Repository UUID
-  #xo_tags = [] # List of additional tags that should be attached to the VM
-  xo_template_id = ??? # XenOrchestra Template UUID
   
+  /* (application specific) butane config (required) */
+  butane_snippets =
+  /* Cloudflare Zone ID (required) */
+  cloudflare_zone_id =
+  /* Fully Qualified Domain Name of VM (required) */
+  fqdn =
+  /* matchbox http endpoint (required) */
+  matchbox_http_endpoint =
+  /* Private Root Certificate (PEM) (required) */
+  root_ca_pem =
+  /* Vault URL (required) */
+  vault_url =
+  /* XenOrchestra Network UUID (required) */
+  xo_network_id =
+  /* XenOrchestra Storage Repository UUID (required) */
+  xo_sr_id =
+  /* XenOrchestra Template UUID (required) */
+  xo_template_id =
+
+  
+  /* List of additional Policies assigned to the VM’s approle (optional) */
+  # additional_token_policies = []
+  /* List of CNAMEs as FQDNs (optional) */
+  # cnames = []
+  /* Number of CPU cores (optional) */
+  # cpu_cores = 1
+  /* Description of the VM visible in XenOrchestra (optional) */
+  # desc = 
+  /* Disk Size in GB for var partition disk (eg. 32) (optional) */
+  # disk_size = 8
+  /* Memory in MB (optional) */
+  # memory = 2048
+  /* List of Services as shared FQDNs (possibly with shared secrets) (optional) */
+  # services = []
+  /* List of additional tags that should be attached to the VM (optional) */
+  # xo_tags = []
+}
+
+module "" {
+  source = "git@github.com:nop-systems/tf-modules.git//?ref="
+  
+  butane_snippets =
+  cloudflare_zone_id =
+  fqdn =
+  matchbox_http_endpoint =
+  root_ca_pem =
+  vault_url =
+  xo_network_id =
+  xo_sr_id =
+  xo_template_id =
 }
 ```
 <!-- END_TF_DOCS -->

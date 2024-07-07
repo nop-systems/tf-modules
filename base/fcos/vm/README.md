@@ -54,21 +54,48 @@ No modules.
 ## Usage
 
 ```hcl
-module "???" {
+module "" {
   source = "git@github.com:nop-systems/tf-modules.git//<module-path>?ref=<tag>"
-  #affinity_host_id = <no value> # The preferred host you would like the VM to run on. If changed on an existing VM it will require a reboot for the VM to be rescheduled.
-  cpu_cores = ??? # Number of CPU cores
-  #desc =  # Description of the VM visible in XenOrchestra
-  disk_size = ??? # Disk Size in GB for var partition disk (eg. 32)
-  mac_address = ??? # MAC address to use for VM NIC
-  memory = ??? # Memory in MB
-  name = ??? # Name of the new Virtual Machine
-  network_id = ??? # XenOrchestra Network UUID
-  #protect_vm = true # Protect VM from accidental deletion and shutdown
-  sr_id = ??? # XenOrchestra Storage Repository UUID
-  #tags = [] # List of additional tags that should be attached to the VM
-  template_id = ??? # XenOrchestra Template UUID
   
+  /* Number of CPU cores (required) */
+  cpu_cores =
+  /* Disk Size in GB for var partition disk (eg. 32) (required) */
+  disk_size =
+  /* MAC address to use for VM NIC (required) */
+  mac_address =
+  /* Memory in MB (required) */
+  memory =
+  /* Name of the new Virtual Machine (required) */
+  name =
+  /* XenOrchestra Network UUID (required) */
+  network_id =
+  /* XenOrchestra Storage Repository UUID (required) */
+  sr_id =
+  /* XenOrchestra Template UUID (required) */
+  template_id =
+
+  
+  /* The preferred host you would like the VM to run on. If changed on an existing VM it will require a reboot for the VM to be rescheduled. (optional) */
+  # affinity_host_id = <no value>
+  /* Description of the VM visible in XenOrchestra (optional) */
+  # desc = 
+  /* Protect VM from accidental deletion and shutdown (optional) */
+  # protect_vm = true
+  /* List of additional tags that should be attached to the VM (optional) */
+  # tags = []
+}
+
+module "" {
+  source = "git@github.com:nop-systems/tf-modules.git//?ref="
+  
+  cpu_cores =
+  disk_size =
+  mac_address =
+  memory =
+  name =
+  network_id =
+  sr_id =
+  template_id =
 }
 ```
 <!-- END_TF_DOCS -->

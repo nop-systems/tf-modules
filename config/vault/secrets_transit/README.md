@@ -37,8 +37,15 @@ No inputs.
 ## Usage
 
 ```hcl
-module "???" {
+module "" {
   source = "git@github.com:nop-systems/tf-modules.git//<module-path>?ref=<tag>"
+  
+
+  
+}
+
+module "" {
+  source = "git@github.com:nop-systems/tf-modules.git//?ref="
   
 }
 ```

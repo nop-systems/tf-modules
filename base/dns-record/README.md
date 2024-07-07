@@ -43,13 +43,28 @@ No modules.
 ## Usage
 
 ```hcl
-module "???" {
+module "" {
   source = "git@github.com:nop-systems/tf-modules.git//<module-path>?ref=<tag>"
-  name = ??? # DNS record name
-  type = ??? # record type (e.g. A, AAAA)
-  value = ??? # record value (e.g. IP address)
-  zone_id = ??? # Cloudflare Zone ID
-    
+  
+  /* DNS record name (required) */
+  name =
+  /* record type (e.g. A, AAAA) (required) */
+  type =
+  /* record value (e.g. IP address) (required) */
+  value =
+  /* Cloudflare Zone ID (required) */
+  zone_id =
+
+  
+}
+
+module "" {
+  source = "git@github.com:nop-systems/tf-modules.git//?ref="
+  
+  name =
+  type =
+  value =
+  zone_id =
 }
 ```
 <!-- END_TF_DOCS -->

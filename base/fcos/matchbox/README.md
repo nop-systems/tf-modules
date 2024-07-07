@@ -48,15 +48,32 @@ No outputs.
 ## Usage
 
 ```hcl
-module "???" {
+module "" {
   source = "git@github.com:nop-systems/tf-modules.git//<module-path>?ref=<tag>"
-  #fcos_stream = stable # Fedora CoreOS stream
-  #fcos_version = <no value> # Fedora CoreOS version (defaults to latest)
-  fqdn = ??? # FQDN of the new Virtual Machine
-  ignition = ??? # compiled ignition config
-  mac_address = ??? # MAC address of VM
-  matchbox_http_endpoint = ??? # matchbox http endpoint
-    
+  
+  /* FQDN of the new Virtual Machine (required) */
+  fqdn =
+  /* compiled ignition config (required) */
+  ignition =
+  /* MAC address of VM (required) */
+  mac_address =
+  /* matchbox http endpoint (required) */
+  matchbox_http_endpoint =
+
+  
+  /* Fedora CoreOS stream (optional) */
+  # fcos_stream = stable
+  /* Fedora CoreOS version (defaults to latest) (optional) */
+  # fcos_version = <no value>
+}
+
+module "" {
+  source = "git@github.com:nop-systems/tf-modules.git//?ref="
+  
+  fqdn =
+  ignition =
+  mac_address =
+  matchbox_http_endpoint =
 }
 ```
 <!-- END_TF_DOCS -->

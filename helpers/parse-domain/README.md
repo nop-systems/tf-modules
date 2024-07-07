@@ -39,10 +39,19 @@ No resources.
 ## Usage
 
 ```hcl
-module "???" {
+module "" {
   source = "git@github.com:nop-systems/tf-modules.git//<module-path>?ref=<tag>"
-  domain = ??? # domain to parse
-    
+  
+  /* domain to parse (required) */
+  domain =
+
+  
+}
+
+module "" {
+  source = "git@github.com:nop-systems/tf-modules.git//?ref="
+  
+  domain =
 }
 ```
 <!-- END_TF_DOCS -->

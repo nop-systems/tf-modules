@@ -18,7 +18,7 @@ No providers.
 | <a name="module_cluster_AAAA_record"></a> [cluster\_AAAA\_record](#module\_cluster\_AAAA\_record) | git@github.com:nop-systems/tf-modules.git//base/dns-record | dns-record/v0.1.0 |
 | <a name="module_cluster_A_record"></a> [cluster\_A\_record](#module\_cluster\_A\_record) | git@github.com:nop-systems/tf-modules.git//base/dns-record | dns-record/v0.1.0 |
 | <a name="module_cluster_node_cname"></a> [cluster\_node\_cname](#module\_cluster\_node\_cname) | git@github.com:nop-systems/tf-modules.git//base/dns-record | dns-record/v0.1.0 |
-| <a name="module_fcos"></a> [fcos](#module\_fcos) | git@github.com:nop-systems/tf-modules.git//base/fcos/stack | fcos/v0.2.5 |
+| <a name="module_fcos"></a> [fcos](#module\_fcos) | git@github.com:nop-systems/tf-modules.git//base/fcos/stack | fcos/v0.2.6 |
 
 ## Resources
 
@@ -50,23 +50,57 @@ No outputs.
 ## Usage
 
 ```hcl
-module "???" {
+module "" {
   source = "git@github.com:nop-systems/tf-modules.git//<module-path>?ref=<tag>"
-  acme_email = ??? # E-Mail address for ACME account
-  cloudflare_zone_id = ??? # Cloudflare Zone ID
-  cluster_fqdn = ??? # 
-  cluster_members = ??? # map of node name to FQDNs of all cluster members
-  fqdn = ??? # Fully Qualified Domain Name of VM
-  matchbox_http_endpoint = ??? # matchbox http endpoint
-  node = ??? # Vault node name
-  root_ca_pem = ??? # Private Root Certificate (PEM)
-  ssh_authorized_keys = ??? # SSH authorized keys for VM
-  vault_url = ??? # Vault URL
-  xo_network_id = ??? # XenOrchestra Network UUID
-  xo_sr_id = ??? # XenOrchestra Storage Repository UUID
-  #xo_tags = [] # List of additional tags that should be attached to the VM
-  xo_template_id = ??? # XenOrchestra Template UUID
   
+  /* E-Mail address for ACME account (required) */
+  acme_email =
+  /* Cloudflare Zone ID (required) */
+  cloudflare_zone_id =
+  /*  (required) */
+  cluster_fqdn =
+  /* map of node name to FQDNs of all cluster members (required) */
+  cluster_members =
+  /* Fully Qualified Domain Name of VM (required) */
+  fqdn =
+  /* matchbox http endpoint (required) */
+  matchbox_http_endpoint =
+  /* Vault node name (required) */
+  node =
+  /* Private Root Certificate (PEM) (required) */
+  root_ca_pem =
+  /* SSH authorized keys for VM (required) */
+  ssh_authorized_keys =
+  /* Vault URL (required) */
+  vault_url =
+  /* XenOrchestra Network UUID (required) */
+  xo_network_id =
+  /* XenOrchestra Storage Repository UUID (required) */
+  xo_sr_id =
+  /* XenOrchestra Template UUID (required) */
+  xo_template_id =
+
+  
+  /* List of additional tags that should be attached to the VM (optional) */
+  # xo_tags = []
+}
+
+module "" {
+  source = "git@github.com:nop-systems/tf-modules.git//?ref="
+  
+  acme_email =
+  cloudflare_zone_id =
+  cluster_fqdn =
+  cluster_members =
+  fqdn =
+  matchbox_http_endpoint =
+  node =
+  root_ca_pem =
+  ssh_authorized_keys =
+  vault_url =
+  xo_network_id =
+  xo_sr_id =
+  xo_template_id =
 }
 ```
 <!-- END_TF_DOCS -->

@@ -47,13 +47,28 @@ No modules.
 ## Usage
 
 ```hcl
-module "???" {
+module "" {
   source = "git@github.com:nop-systems/tf-modules.git//<module-path>?ref=<tag>"
-  max_ttl = ??? # max TTL for issued certificates in seconds
-  path = ??? # Path of PKI mount
-  ttl = ??? # default TTL for issued certificates in seconds
-  vault_url = ??? # Vault URI of Cluster
   
+  /* max TTL for issued certificates in seconds (required) */
+  max_ttl =
+  /* Path of PKI mount (required) */
+  path =
+  /* default TTL for issued certificates in seconds (required) */
+  ttl =
+  /* Vault URI of Cluster (required) */
+  vault_url =
+
+  
+}
+
+module "" {
+  source = "git@github.com:nop-systems/tf-modules.git//?ref="
+  
+  max_ttl =
+  path =
+  ttl =
+  vault_url =
 }
 ```
 <!-- END_TF_DOCS -->

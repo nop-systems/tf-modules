@@ -49,14 +49,28 @@ No modules.
 ## Usage
 
 ```hcl
-module "???" {
+module "" {
   source = "git@github.com:nop-systems/tf-modules.git//<module-path>?ref=<tag>"
-  #additional_token_policies = [] # List of additional Policies assigned to tokens created with the Approle
-  #cnames = [] # List of altnatives Names as FQDN to include in metadata
-  fqdn = ??? # The hostname of the VM as FQDN, will be used as role_name and for metadata. Must be unique.
-  #services = [] # List of service FQDNs the host is instance of to include in metdata (to access common secrets)
-  wrapping_ttl = ??? # TTL for wrapped secret-id (duration string or null for unwrapped)
-    
+  
+  /* The hostname of the VM as FQDN, will be used as role_name and for metadata. Must be unique. (required) */
+  fqdn =
+  /* TTL for wrapped secret-id (duration string or null for unwrapped) (required) */
+  wrapping_ttl =
+
+  
+  /* List of additional Policies assigned to tokens created with the Approle (optional) */
+  # additional_token_policies = []
+  /* List of altnatives Names as FQDN to include in metadata (optional) */
+  # cnames = []
+  /* List of service FQDNs the host is instance of to include in metdata (to access common secrets) (optional) */
+  # services = []
+}
+
+module "" {
+  source = "git@github.com:nop-systems/tf-modules.git//?ref="
+  
+  fqdn =
+  wrapping_ttl =
 }
 ```
 <!-- END_TF_DOCS -->

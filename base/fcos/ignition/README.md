@@ -48,17 +48,38 @@ No modules.
 ## Usage
 
 ```hcl
-module "???" {
+module "" {
   source = "git@github.com:nop-systems/tf-modules.git//<module-path>?ref=<tag>"
-  approle_role_id = ??? # Vault Approle role_id
-  approle_wrapped_secret_id = ??? # Vault Approle secret_id
-  butane_snippets = ??? # (application specific) butane configs
-  #cnames = [] # List of CNAMEs as FQDNs
-  fqdn = ??? # FQDN of the new Virtual Machine
-  root_ca_pem = ??? # Private Root Certificate (PEM)
-  #services = [] # List of Services as shared FQDNs (possibly with shared secrets)
-  vault_url = ??? # Vault URL
   
+  /* Vault Approle role_id (required) */
+  approle_role_id =
+  /* Vault Approle secret_id (required) */
+  approle_wrapped_secret_id =
+  /* (application specific) butane configs (required) */
+  butane_snippets =
+  /* FQDN of the new Virtual Machine (required) */
+  fqdn =
+  /* Private Root Certificate (PEM) (required) */
+  root_ca_pem =
+  /* Vault URL (required) */
+  vault_url =
+
+  
+  /* List of CNAMEs as FQDNs (optional) */
+  # cnames = []
+  /* List of Services as shared FQDNs (possibly with shared secrets) (optional) */
+  # services = []
+}
+
+module "" {
+  source = "git@github.com:nop-systems/tf-modules.git//?ref="
+  
+  approle_role_id =
+  approle_wrapped_secret_id =
+  butane_snippets =
+  fqdn =
+  root_ca_pem =
+  vault_url =
 }
 ```
 <!-- END_TF_DOCS -->

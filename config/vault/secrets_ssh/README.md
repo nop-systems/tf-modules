@@ -50,11 +50,22 @@ No modules.
 ## Usage
 
 ```hcl
-module "???" {
+module "" {
   source = "git@github.com:nop-systems/tf-modules.git//<module-path>?ref=<tag>"
-  allowed_users = ??? # Allowed usernames as SSH principal
-  default_user = ??? # Default username as SSH principal
   
+  /* Allowed usernames as SSH principal (required) */
+  allowed_users =
+  /* Default username as SSH principal (required) */
+  default_user =
+
+  
+}
+
+module "" {
+  source = "git@github.com:nop-systems/tf-modules.git//?ref="
+  
+  allowed_users =
+  default_user =
 }
 ```
 <!-- END_TF_DOCS -->

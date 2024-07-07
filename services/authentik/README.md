@@ -45,20 +45,48 @@ No outputs.
 ## Usage
 
 ```hcl
-module "???" {
+module "" {
   source = "git@github.com:nop-systems/tf-modules.git//<module-path>?ref=<tag>"
-  cloudflare_zone_id = ??? # Cloudflare Zone ID
-  fqdn = ??? # Fully Qualified Domain Name of VM
-  matchbox_http_endpoint = ??? # matchbox http endpoint
-  root_ca_pem = ??? # Private Root Certificate (PEM)
-  service_fqdn = ??? # A FQDN defining the service, independent of the host
-  trusted_proxy_cidrs = ??? # List of CIDRs that proxy headers should be accepted from
-  vault_url = ??? # Vault URL
-  xo_network_id = ??? # XenOrchestra Network UUID
-  xo_sr_id = ??? # XenOrchestra Storage Repository UUID
-  #xo_tags = [] # List of additional tags that should be attached to the VM
-  xo_template_id = ??? # XenOrchestra Template UUID
   
+  /* Cloudflare Zone ID (required) */
+  cloudflare_zone_id =
+  /* Fully Qualified Domain Name of VM (required) */
+  fqdn =
+  /* matchbox http endpoint (required) */
+  matchbox_http_endpoint =
+  /* Private Root Certificate (PEM) (required) */
+  root_ca_pem =
+  /* A FQDN defining the service, independent of the host (required) */
+  service_fqdn =
+  /* List of CIDRs that proxy headers should be accepted from (required) */
+  trusted_proxy_cidrs =
+  /* Vault URL (required) */
+  vault_url =
+  /* XenOrchestra Network UUID (required) */
+  xo_network_id =
+  /* XenOrchestra Storage Repository UUID (required) */
+  xo_sr_id =
+  /* XenOrchestra Template UUID (required) */
+  xo_template_id =
+
+  
+  /* List of additional tags that should be attached to the VM (optional) */
+  # xo_tags = []
+}
+
+module "" {
+  source = "git@github.com:nop-systems/tf-modules.git//?ref="
+  
+  cloudflare_zone_id =
+  fqdn =
+  matchbox_http_endpoint =
+  root_ca_pem =
+  service_fqdn =
+  trusted_proxy_cidrs =
+  vault_url =
+  xo_network_id =
+  xo_sr_id =
+  xo_template_id =
 }
 ```
 <!-- END_TF_DOCS -->

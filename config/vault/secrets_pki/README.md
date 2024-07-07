@@ -52,14 +52,31 @@
 ## Usage
 
 ```hcl
-module "???" {
+module "" {
   source = "git@github.com:nop-systems/tf-modules.git//<module-path>?ref=<tag>"
-  acme_allowed_domains = ??? # Allowed domains for ACME role (only subdomains)
-  allow_root_issuing_ttl = ??? # temporarily increase max TTL of root issuer to 12 years to allow issuing of a new long term root CA
-  organization = ??? # Organization to include in leaf certificates
-  servers_issuer_ref = ??? # Issuer ref of current PKI servers Issuer
-  vault_url = ??? # Main HA URL to vault cluster
   
+  /* Allowed domains for ACME role (only subdomains) (required) */
+  acme_allowed_domains =
+  /* temporarily increase max TTL of root issuer to 12 years to allow issuing of a new long term root CA (required) */
+  allow_root_issuing_ttl =
+  /* Organization to include in leaf certificates (required) */
+  organization =
+  /* Issuer ref of current PKI servers Issuer (required) */
+  servers_issuer_ref =
+  /* Main HA URL to vault cluster (required) */
+  vault_url =
+
+  
+}
+
+module "" {
+  source = "git@github.com:nop-systems/tf-modules.git//?ref="
+  
+  acme_allowed_domains =
+  allow_root_issuing_ttl =
+  organization =
+  servers_issuer_ref =
+  vault_url =
 }
 ```
 <!-- END_TF_DOCS -->
