@@ -6,13 +6,13 @@
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.7.4 |
-| <a name="requirement_vault"></a> [vault](#requirement\_vault) | >=3.24.0 |
+| <a name="requirement_vault"></a> [vault](#requirement\_vault) | >=4.3.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_vault"></a> [vault](#provider\_vault) | >=3.24.0 |
+| <a name="provider_vault"></a> [vault](#provider\_vault) | >=4.3.0 |
 
 ## Modules
 
@@ -23,10 +23,9 @@ No modules.
 | Name | Type |
 |------|------|
 | [vault_generic_endpoint.config_auto-tidy](https://registry.terraform.io/providers/hashicorp/vault/latest/docs/resources/generic_endpoint) | resource |
-| [vault_generic_endpoint.config_cluster](https://registry.terraform.io/providers/hashicorp/vault/latest/docs/resources/generic_endpoint) | resource |
-| [vault_generic_endpoint.config_urls](https://registry.terraform.io/providers/hashicorp/vault/latest/docs/resources/generic_endpoint) | resource |
-| [vault_generic_endpoint.tune](https://registry.terraform.io/providers/hashicorp/vault/latest/docs/resources/generic_endpoint) | resource |
 | [vault_mount.pki](https://registry.terraform.io/providers/hashicorp/vault/latest/docs/resources/mount) | resource |
+| [vault_pki_secret_backend_config_cluster.this](https://registry.terraform.io/providers/hashicorp/vault/latest/docs/resources/pki_secret_backend_config_cluster) | resource |
+| [vault_pki_secret_backend_config_urls.this](https://registry.terraform.io/providers/hashicorp/vault/latest/docs/resources/pki_secret_backend_config_urls) | resource |
 | [vault_pki_secret_backend_crl_config.crl-config](https://registry.terraform.io/providers/hashicorp/vault/latest/docs/resources/pki_secret_backend_crl_config) | resource |
 
 ## Inputs
