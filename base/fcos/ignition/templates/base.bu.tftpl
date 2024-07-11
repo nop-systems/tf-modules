@@ -56,6 +56,11 @@ storage:
           location = "docker.io"
           [[registry.mirror]]
           location = "mirror.gcr.io"
+    - path: /etc/profile.d/zz-default-editor.sh
+      overwrite: true
+      contents:
+        inline: |
+          export EDITOR=vim
   links:
     - path: /etc/systemd/system/multi-user.target.wants/xe-linux-distribution.service
       target: /usr/lib/systemd/system/xe-linux-distribution.service
