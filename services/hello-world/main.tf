@@ -1,5 +1,5 @@
 module "hello-world" {
-  source = "git@github.com:nop-systems/tf-modules.git//base/fcos/stack?ref=fcos/v0.3.4"
+  source = "git@github.com:nop-systems/tf-modules.git//base/fcos/stack?ref=fcos/v0.4.0-alpha"
   # source = "../../base/fcos/stack"
 
   fqdn      = var.fqdn
