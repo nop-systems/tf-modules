@@ -56,6 +56,9 @@ storage:
           location = "docker.io"
           [[registry.mirror]]
           location = "mirror.gcr.io"
+  links:
+    - path: /etc/systemd/system/multi-user.target.wants/xe-linux-distribution.service
+      target: /usr/lib/systemd/system/xe-linux-distribution.service
 systemd:
   units:
     # Installing layered packages with rpm-ostree
@@ -77,11 +80,9 @@ systemd:
         # if the package is already installed. This is useful if the package is
         # added to the root image in a future Fedora CoreOS release as it will
         # prevent the service from failing.
-        ExecStart=/usr/bin/rpm-ostree install --allow-inactive xe-guest-utilities-latest kitty-terminfo vim bat mosh
+        ExecStart=/usr/bin/rpm-ostree install -y --allow-inactive xe-guest-utilities-latest kitty-terminfo vim bat mosh
         ExecStartPost=/bin/touch /etc/%N.stamp
-        ExecStartPost=/usr/bin/systemctl reboot
+        ExecStartPost=/usr/bin/systemctl --no-block reboot
 
         [Install]
         WantedBy=multi-user.target
-    - name: xe-linux-distribution.service
-      enabled: true
