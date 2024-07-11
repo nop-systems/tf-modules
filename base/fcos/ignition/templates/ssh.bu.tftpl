@@ -4,9 +4,7 @@ version: "1.5.0"
 storage:
   directories:
     - path: /etc/ssh/certs
-      mode: 0644
-    - path: /var/containers/metrics
-      mode: 0644
+      mode: 0755
   files:
     - path: /etc/ssh/sshd_config.d/41-certificates.conf
       overwrite: true

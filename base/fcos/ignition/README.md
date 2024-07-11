@@ -44,6 +44,7 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_ignition"></a> [ignition](#output\_ignition) | Ignition config |
+| <a name="output_xo_tags"></a> [xo\_tags](#output\_xo\_tags) | XenOrchestra tags describing the base ignition |
 
 ## Usage
 

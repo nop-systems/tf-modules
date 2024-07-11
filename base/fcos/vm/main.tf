@@ -28,7 +28,6 @@ resource "xenorchestra_vm" "this" {
   }
 
   tags = concat([
-    "os=Fedora Core OS",
     "managed-by=Terraform"
   ], var.tags)
 

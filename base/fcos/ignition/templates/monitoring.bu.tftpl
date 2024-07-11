@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Relativ-IT/Butane-Schemas/Release/Butane-Schema.json
+variant: fcos
+version: "1.5.0"
+storage:
+  directories:
+    - path: /var/containers/metrics
+      mode: 0755
+systemd:
+  units:
+    - name: prometheus-node-exporter.service
+      dropins:
+        - name: args.conf
+          contents: |
+            [Service]
+            EnvironmentFile=
+            ExecStart=
+            ExecStart=/usr/bin/prometheus-node-exporter \
+              --collector.textfile.directory /var/containers/metrics \

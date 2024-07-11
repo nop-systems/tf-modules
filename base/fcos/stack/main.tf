@@ -43,7 +43,7 @@ module "vm" {
 
   name = module.domain.record_name
   desc = var.desc
-  tags = var.xo_tags
+  tags = concat(var.xo_tags, module.ignition.xo_tags)
 
   cpu_cores = var.cpu_cores
   memory    = var.memory
