@@ -28,8 +28,8 @@ resource "xenorchestra_vm" "this" {
   }
 
   tags = concat([
-    "os:FedoraCoreOS",
-    "managed-by:Terraform"
+    "os=Fedora Core OS",
+    "managed-by=Terraform"
   ], var.tags)
 
   timeouts {
