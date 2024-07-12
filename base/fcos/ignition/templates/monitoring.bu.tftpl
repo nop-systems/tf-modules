@@ -87,7 +87,7 @@ systemd:
             EnvironmentFile=
             ExecStart=
             ExecStart=/usr/bin/prometheus-podman-exporter \
-              --web.listen-address 10.89.255.1:9882
+              --web.listen-address 10.89.255.1:9882 \
               --collector.enable-all
     - name: zincati-metrics-export.service
       contents: |
