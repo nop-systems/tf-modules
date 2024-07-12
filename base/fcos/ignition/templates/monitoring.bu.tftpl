@@ -3,8 +3,70 @@ variant: fcos
 version: "1.5.0"
 storage:
   directories:
-    - path: /var/containers/metrics
+    - path: /var/containers/monitoring/metrics
       mode: 0755
+    - path: /var/containers/monitoring/exporters
+      mode: 0755
+  files:
+    - path: /etc/containers/systemd/monitoring.network
+      mode: 0644
+      contents:
+        inline: |
+          [Network]
+          IPv6=true
+          Subnet=10.89.255.0/24
+    - path: /etc/containers/systemd/exporter-exporter.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=Exporter Exporter - prometheus exporter proxy
+          After=network-online.target local-fs.target
+
+          [Container]
+          Image=docker.io/qubitproducts/exporter_exporter:${exporter_exporter_version}
+          Exec= -config.dirs /exporters \
+            -web.listen-address "[::]:9999"
+
+          Pull=newer
+          AutoUpdate=registry
+          LogDriver=journald
+          UserNS=auto
+
+          PublishPort=9999:9999
+
+          Volume=/var/containers/monitoring/metrics:/metrics:z,idmap,ro
+          Volume=/var/containers/monitoring/exporters:/exporters:Z,U,ro
+
+          Network=monitoring.network
+          Network=vault-agent.network
+          Network=container.network
+
+          [Service]
+          Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
+
+          [Install]
+          WantedBy=multi-user.target default.target
+    - path: /var/containers/monitoring/exporters/base.yaml
+      mode: 0644
+      contents:
+        inline: |
+          modules:
+            node:
+              method: http
+              http:
+                port: 9100
+            podman:
+              method: http
+              http:
+                port: 9882
+            zincati:
+              method: file
+              file:
+                path: /metrics/zincati.prom
 systemd:
   units:
     - name: prometheus-node-exporter.service
@@ -15,4 +77,37 @@ systemd:
             EnvironmentFile=
             ExecStart=
             ExecStart=/usr/bin/prometheus-node-exporter \
-              --collector.textfile.directory /var/containers/metrics \
+              --web.listen-address 10.89.255.1:9100 \
+              --collector.systemd
+    - name: prometheus-podman-exporter.service
+      dropins:
+        - name: args.conf
+          contents: |
+            [Service]
+            EnvironmentFile=
+            ExecStart=
+            ExecStart=/usr/bin/prometheus-podman-exporter \
+              --web.listen-address 10.89.255.1:9882
+              --collector.enable-all
+    - name: zincati-metrics-export.service
+      contents: |
+        [Unit]
+        Description=export zincati metrics from socket to /var/containers/monitoring/metrics/zincati.prom
+
+        [Service]
+        Type=oneshot
+        Exec=socat -u UNIX-CONNECT:/run/zincati/public/metrics.promsock OPEN:/var/containers/monitoring/metrics/zincati.prom,creat
+    - name: zincati-metrics-export.timer
+      enabled: true
+      contents: |
+        [Unit]
+        Description=export zincati metrics from socket to /var/containers/monitoring/metrics/zincati.prom
+        After=zincati.service
+        Requires=zincati.service
+
+        [Timer]
+        OnBootSec=5min
+        OnUnitActiveSec=5min
+
+        [Install]
+        WantedBy=multi-user.target

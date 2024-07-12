@@ -60,7 +60,7 @@ storage:
           Volume=/etc/ssh/ssh_host_ed25519_key.pub:/data/ssh_host_ed25519_key.pub:z,ro,idmap
           Volume=/etc/ssh/certs/:/data/certs/:z,idmap
           Volume=/var/containers/vault-agent/token/vault-token:/root/.vault-token:ro
-          Volume=/var/containers/metrics:/data/metrics:z,idmap
+          Volume=/var/containers/monitoring/metrics:/data/metrics:z,idmap
           Volume=/var/containers/vault-ssh-signer.yaml:/etc/vault-ssh-cli/config.yaml:Z,ro
 
           Pod=vault-agent.pod
@@ -74,6 +74,15 @@ storage:
 
           [Install]
           WantedBy=multi-user.target default.target
+    - path: /var/containers/monitoring/exporters/vault-ssh-signer.yaml
+      mode: 0644
+      contents:
+        inline: |
+          modules:
+            vault-ssh-signer:
+              method: file
+              file:
+                path: /metrics/vault-ssh-signer.prom
 systemd:
   units:
     - name: vault-ssh-signer.timer

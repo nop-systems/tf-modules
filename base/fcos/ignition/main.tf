@@ -1,8 +1,11 @@
 locals {
   xo_tags = [
     "os=Fedora Core OS",
-    "prom:node=9100",
-    "prom:podman=9882",
+    "prom:node=9999",
+    "prom:podman=9999",
+    "prom:vault-agent=9999",
+    "prom:vault-ssh-signer=9999",
+    "prom:zincati=9999"
   ]
 }
 
@@ -26,7 +29,9 @@ data "ct_config" "this" {
       vault_url   = var.vault_url
       root_ca_pem = jsonencode(var.root_ca_pem)
     }),
-    templatefile("${path.module}/templates/monitoring.bu.tftpl", {})
+    templatefile("${path.module}/templates/monitoring.bu.tftpl", {
+      exporter_exporter_version = "latest"
+    })
   ], var.butane_snippets)
   # pretty_print = true
 }

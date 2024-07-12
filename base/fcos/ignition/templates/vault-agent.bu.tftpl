@@ -61,11 +61,43 @@ storage:
             }
           }
 
+          listener "tcp" {
+            address = "[::]:8299"
+            role = "metrics_only"
+            tls_disable = true
+            unauthenticated_metrics_access = true
+          }
+
+          telemetry {
+            prometheus_retention_time = "24h"
+          }
+
           template_config {
             # renew leased secrets after half of ttl to have some spare time if it's broken
             lease_renewal_threshold = 0.5
           }
+    - path: /etc/containers/systemd/vault-agent.network
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          [Network]
+          IPv6=true
+          Subnet=10.89.254.0/24
+    - path: /etc/containers/systemd/vault-agent.pod
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          [Unit]
+          Description=Pod for all vault-agent related containers
 
+          [Pod]
+          Network=vault-agent.network
+          PodmanArgs=--userns=auto --exit-policy=continue
+
+          Volume=/var/containers/secrets:/vault/secrets:z,idmap
+          Volume=/var/containers/vault-agent:/vault:Z,U
     - path: /etc/containers/systemd/vault-agent.container
       mode: 0644
       overwrite: true
@@ -136,25 +168,14 @@ storage:
 
           [Install]
           WantedBy=multi-user.target default.target
-    - path: /etc/containers/systemd/vault-agent.pod
+    - path: /var/containers/monitoring/exporters/vault-agent.yaml
       mode: 0644
-      overwrite: true
       contents:
         inline: |
-          [Unit]
-          Description=Pod for all vault-agent related containers
-
-          [Pod]
-          Network=vault-agent.network
-          PodmanArgs=--userns=auto --exit-policy=continue
-
-          Volume=/var/containers/secrets:/vault/secrets:z,idmap
-          Volume=/var/containers/vault-agent:/vault:Z,U
-
-    - path: /etc/containers/systemd/vault-agent.network
-      mode: 0644
-      overwrite: true
-      contents:
-        inline: |
-          [Network]
-          IPv6=true
+          modules:
+            vault-agent:
+              method: http
+              http:
+                address: systemd-vault-agent
+                port: 8299
+                path: /agent/v1/metrics
