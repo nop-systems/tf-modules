@@ -4,35 +4,24 @@ version: "1.5.0"
 storage:
   directories:
     - path: /var/containers/secrets
-      user:
-        id: 100
-      group:
-        id: 1000
-    - path: /var/containers/vault-agent/config.d
-      user:
-        id: 1000
-      group:
-        id: 1000
+    - path: /etc/vault-agent/config.d
     - path: /var/containers/vault-agent/token
-      user:
-        id: 100
-      group:
-        id: 1000
-    - path: /var/containers/vault-agent/unwrapper
+      mode: 0700
+    - path: /etc/vault-agent/unwrapper
+      mode: 0700
   files:
     - path: /var/containers/vault-agent/approle/roleid
       mode: 0644
       overwrite: true
       contents:
         inline: ${vault_roleid}
-    - path: /var/containers/vault-agent/unwrapper/vault-unwrap-secretid.env
+    - path: /etc/vault-agent/unwrapper/vault-unwrap-secretid.env
       mode: 0600
-      overwrite: true
       contents:
         inline: |
           VAULT_TOKEN=${vault_wrapped_secretid}
           VAULT_ADDR=${vault_url}
-    - path: /var/containers/vault-agent/config.d/agent.hcl
+    - path: /etc/vault-agent/config.d/agent.hcl
       mode: 0644
       overwrite: true
       contents:
@@ -98,6 +87,7 @@ storage:
 
           Volume=/var/containers/secrets:/vault/secrets:z,idmap
           Volume=/var/containers/vault-agent:/vault:Z,U
+          Volume=/etc/vault-agent:/config:Z,U
     - path: /etc/containers/systemd/vault-agent.container
       mode: 0644
       overwrite: true
@@ -112,11 +102,11 @@ storage:
           StartLimitIntervalSec=0
 
           [Container]
-          Image=docker.io/hashicorp/vault:latest
+          Image=docker.io/hashicorp/vault:${vault_version}
           Pull=newer
           AutoUpdate=registry
           Entrypoint=
-          Exec=vault agent -config=/vault/config.d/
+          Exec=vault agent -config=/config/config.d/
           PodmanArgs=--image-volume=ignore
           Notify=true
           LogDriver=journald
@@ -146,14 +136,14 @@ storage:
           StartLimitIntervalSec=0
 
           [Container]
-          Image=docker.io/hashicorp/vault:latest
+          Image=docker.io/hashicorp/vault:${vault_version}
           Pull=newer
           Entrypoint=
           Exec=sh -c 'if secret_id=$(vault unwrap --field secret_id); then echo "$secret_id" > /vault/approle/secretid; fi'
           PodmanArgs=--image-volume=ignore
           LogDriver=journald
 
-          EnvironmentFile=/var/containers/vault-agent/unwrapper/vault-unwrap-secretid.env
+          EnvironmentFile=/etc/vault-agent/unwrapper/vault-unwrap-secretid.env
 
           AddCapability=IPC_LOCK
 
@@ -168,7 +158,7 @@ storage:
 
           [Install]
           WantedBy=multi-user.target default.target
-    - path: /var/containers/monitoring/exporters/vault-agent.yaml
+    - path: /etc/monitoring/exporters/vault-agent.yaml
       mode: 0644
       contents:
         inline: |

@@ -17,12 +17,10 @@ storage:
   files:
     - path: /etc/hostname
       mode: 0644
-      overwrite: true
       contents:
         inline: ${hostname}
     - path: /etc/containers/systemd/container.network
       mode: 0644
-      overwrite: true
       contents:
         inline: |
           [Network]
@@ -50,7 +48,6 @@ storage:
     # use mirror.gcr.io to avoid docker.io rate limiting
     - path: /etc/containers/registries.conf.d/dockerio-gcr-mirror.toml
       mode: 0644
-      overwrite: true
       contents:
         inline: |
           [[registry]]
@@ -58,7 +55,6 @@ storage:
           [[registry.mirror]]
           location = "mirror.gcr.io"
     - path: /etc/profile.d/zz-default-editor.sh
-      overwrite: true
       contents:
         inline: |
           export EDITOR=vim

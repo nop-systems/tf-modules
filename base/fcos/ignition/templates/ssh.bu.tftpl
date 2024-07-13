@@ -5,17 +5,17 @@ storage:
   directories:
     - path: /etc/ssh/certs
       mode: 0755
+    - path: /etc/vault-ssh-cli
+      mode: 0755
   files:
     - path: /etc/ssh/sshd_config.d/41-certificates.conf
-      overwrite: true
       contents:
         inline: |
           TrustedUserCAKeys /var/containers/secrets/ssh/trusted-user-ca-keys.pem
           HostKey /etc/ssh/ssh_host_ed25519_key
           HostCertificate /etc/ssh/certs/ssh_host_ed25519_key-cert.pub
-    - path: /var/containers/vault-agent/config.d/ssh-ca.hcl
+    - path: /etc/vault-agent/config.d/ssh-ca.hcl
       mode: 0644
-      overwrite: true
       contents:
         inline: |
           template {
@@ -23,9 +23,8 @@ storage:
             destination = "/vault/secrets/ssh/trusted-user-ca-keys.pem"
             error_on_missing_key = true
           }
-    - path: /var/containers/vault-ssh-signer.yaml
+    - path: /etc/vault-ssh-cli/config.yaml
       mode: 0644
-      overwrite: true
       contents:
         inline: |
           vault-address: ${vault_url}
@@ -38,7 +37,6 @@ storage:
           debug: true
     - path: /etc/containers/systemd/vault-ssh-signer.container
       mode: 0644
-      overwrite: true
       contents:
         inline: |
           [Unit]
@@ -52,16 +50,18 @@ storage:
           StartLimitIntervalSec=0
 
           [Container]
-          Image=ghcr.io/soerenschneider/vault-ssh-cli:latest
+          Image=ghcr.io/soerenschneider/vault-ssh-cli:${vault_ssh_cli_version}
           Pull=newer
           Exec=sign-host-key
           LogDriver=journald
 
+          RuntimeDir=metrics/%n
+
           Volume=/etc/ssh/ssh_host_ed25519_key.pub:/data/ssh_host_ed25519_key.pub:z,ro,idmap
           Volume=/etc/ssh/certs/:/data/certs/:z,idmap
+          Volume=/etc/vault-ssh-cli/config.yaml:/etc/vault-ssh-cli/config.yaml:Z,ro
           Volume=/var/containers/vault-agent/token/vault-token:/root/.vault-token:ro
-          Volume=/var/containers/monitoring/metrics:/data/metrics:z,idmap
-          Volume=/var/containers/vault-ssh-signer.yaml:/etc/vault-ssh-cli/config.yaml:Z,ro
+          Volume=$RUNTIME_DIRECTORY:/data/metrics:z,idmap
 
           Pod=vault-agent.pod
 
@@ -74,7 +74,7 @@ storage:
 
           [Install]
           WantedBy=multi-user.target default.target
-    - path: /var/containers/monitoring/exporters/vault-ssh-signer.yaml
+    - path: /etc/monitoring/exporters/vault-ssh-signer.yaml
       mode: 0644
       contents:
         inline: |
@@ -82,7 +82,7 @@ storage:
             vault-ssh-signer:
               method: file
               file:
-                path: /metrics/vault-ssh-signer.prom
+                path: /metrics/vault-ssh-signer/vault-ssh-signer.prom
 systemd:
   units:
     - name: vault-ssh-signer.timer

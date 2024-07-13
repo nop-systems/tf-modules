@@ -19,9 +19,11 @@ data "ct_config" "this" {
       vault_roleid           = var.approle_role_id
       vault_wrapped_secretid = var.approle_wrapped_secret_id
       vault_url              = var.vault_url
+      vault_version          = "latest"
     }),
     templatefile("${path.module}/templates/ssh.bu.tftpl", {
-      vault_url = var.vault_url
+      vault_url             = var.vault_url
+      vault_ssh_cli_version = "latest"
     }),
     templatefile("${path.module}/templates/pki.bu.tftpl", {
       fqdn        = var.fqdn

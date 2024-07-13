@@ -3,11 +3,15 @@ variant: fcos
 version: "1.5.0"
 storage:
   directories:
-    - path: /var/containers/monitoring/metrics
-      mode: 0755
-    - path: /var/containers/monitoring/exporters
+    - path: /etc/monitoring/exporters
       mode: 0755
   files:
+    - path: /etc/tmpfiles.d/metrics.conf
+      mode: 0644
+      contents:
+        inline: |
+          #Type Path         Mode User Group Age Argument
+          d     /run/metrics -    -    -     ~7d -
     - path: /etc/containers/systemd/monitoring.network
       mode: 0644
       contents:
@@ -35,8 +39,8 @@ storage:
 
           PublishPort=9999:9999
 
-          Volume=/var/containers/monitoring/metrics:/metrics:z,idmap,ro
-          Volume=/var/containers/monitoring/exporters:/exporters:Z,U,ro
+          Volume=/run/metrics:/metrics:z,idmap,ro
+          Volume=/etc/monitoring/exporters:/exporters:Z,U,ro
 
           Network=monitoring.network
           Network=vault-agent.network
@@ -50,7 +54,7 @@ storage:
 
           [Install]
           WantedBy=multi-user.target default.target
-    - path: /var/containers/monitoring/exporters/base.yaml
+    - path: /etc/monitoring/exporters/base.yaml
       mode: 0644
       contents:
         inline: |
@@ -96,7 +100,12 @@ systemd:
 
         [Service]
         Type=oneshot
-        Exec=socat -u UNIX-CONNECT:/run/zincati/public/metrics.promsock OPEN:/var/containers/monitoring/metrics/zincati.prom,creat
+        Exec=socat -u \
+          UNIX-CONNECT:/run/zincati/public/metrics.promsock \
+          OPEN:/var/containers/monitoring/metrics/zincati.prom,creat
+
+        RuntimeDirectory=metrics/zincati
+        RuntimeDirectoryPreserve=yes
     - name: zincati-metrics-export.timer
       enabled: true
       contents: |
