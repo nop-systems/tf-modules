@@ -158,14 +158,12 @@ storage:
 
           [Install]
           WantedBy=multi-user.target default.target
-    - path: /etc/monitoring/exporters/vault-agent.yaml
+    - path: /etc/monitoring/expexp.d/vault-agent.yaml
       mode: 0644
       contents:
         inline: |
-          modules:
-            vault-agent:
-              method: http
-              http:
-                address: systemd-vault-agent
-                port: 8299
-                path: /agent/v1/metrics
+          method: http
+          http:
+            address: systemd-vault-agent
+            port: 8299
+            path: /agent/v1/metrics

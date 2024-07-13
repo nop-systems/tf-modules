@@ -3,7 +3,7 @@ variant: fcos
 version: "1.5.0"
 storage:
   directories:
-    - path: /etc/monitoring/exporters
+    - path: /etc/monitoring/expexp.d
       mode: 0755
   files:
     - path: /etc/tmpfiles.d/metrics.conf
@@ -19,6 +19,22 @@ storage:
           [Network]
           IPv6=true
           Subnet=10.89.255.0/24
+
+    - path: /etc/containers/systemd/monitoring.pod
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=Pod to keep monitoring network online
+
+          [Pod]
+          Network=monitoring.network
+          PodmanArgs=--userns=auto --exit-policy=continue
+
+          PublishPort=9999:9999
+          Network=monitoring.network
+          Network=vault-agent.network
+          Network=container.network
     - path: /etc/containers/systemd/exporter-exporter.container
       mode: 0644
       contents:
@@ -29,22 +45,17 @@ storage:
 
           [Container]
           Image=docker.io/qubitproducts/exporter_exporter:${exporter_exporter_version}
-          Exec= -config.dirs /exporters \
+          Exec= -config.file /config/expexp.yaml \
+            -config.dirs /config/expexp.d \
             -web.listen-address "[::]:9999"
 
           Pull=newer
           AutoUpdate=registry
           LogDriver=journald
-          UserNS=auto
-
-          PublishPort=9999:9999
 
           Volume=/run/metrics:/metrics:z,idmap,ro
-          Volume=/etc/monitoring/exporters:/exporters:Z,U,ro
-
-          Network=monitoring.network
-          Network=vault-agent.network
-          Network=container.network
+          Volume=/etc/monitoring:/config:Z,U,ro
+          Pod=monitoring.pod
 
           [Service]
           Restart=always
@@ -54,7 +65,7 @@ storage:
 
           [Install]
           WantedBy=multi-user.target default.target
-    - path: /etc/monitoring/exporters/base.yaml
+    - path: /etc/monitoring/expexp.yaml
       mode: 0644
       contents:
         inline: |
@@ -62,10 +73,12 @@ storage:
             node:
               method: http
               http:
+                address: host.containers.internal
                 port: 9100
             podman:
               method: http
               http:
+                address: host.containers.internal
                 port: 9882
             zincati:
               method: file
@@ -77,6 +90,10 @@ systemd:
       dropins:
         - name: args.conf
           contents: |
+            [Unit]
+            After=monitoring-pod.service
+            Requires=monitoring-pod.service
+
             [Service]
             EnvironmentFile=
             ExecStart=
@@ -87,6 +104,10 @@ systemd:
       dropins:
         - name: args.conf
           contents: |
+            [Unit]
+            After=monitoring-pod.service
+            Requires=monitoring-pod.service
+
             [Service]
             EnvironmentFile=
             ExecStart=
@@ -96,13 +117,13 @@ systemd:
     - name: zincati-metrics-export.service
       contents: |
         [Unit]
-        Description=export zincati metrics from socket to /var/containers/monitoring/metrics/zincati.prom
+        Description=export zincati metrics from socket to /run/metrics/zincati/zincati.prom
 
         [Service]
         Type=oneshot
         Exec=socat -u \
           UNIX-CONNECT:/run/zincati/public/metrics.promsock \
-          OPEN:/var/containers/monitoring/metrics/zincati.prom,creat
+          OPEN:/run/metrics/zincati/zincati.prom,creat
 
         RuntimeDirectory=metrics/zincati
         RuntimeDirectoryPreserve=yes
@@ -110,7 +131,7 @@ systemd:
       enabled: true
       contents: |
         [Unit]
-        Description=export zincati metrics from socket to /var/containers/monitoring/metrics/zincati.prom
+        Description=export zincati metrics from socket to /run/metrics/zincati/zincati.prom
         After=zincati.service
         Requires=zincati.service
 

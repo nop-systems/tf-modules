@@ -55,18 +55,21 @@ storage:
           Exec=sign-host-key
           LogDriver=journald
 
-          RuntimeDir=metrics/%n
 
           Volume=/etc/ssh/ssh_host_ed25519_key.pub:/data/ssh_host_ed25519_key.pub:z,ro,idmap
           Volume=/etc/ssh/certs/:/data/certs/:z,idmap
           Volume=/etc/vault-ssh-cli/config.yaml:/etc/vault-ssh-cli/config.yaml:Z,ro
           Volume=/var/containers/vault-agent/token/vault-token:/root/.vault-token:ro
-          Volume=$RUNTIME_DIRECTORY:/data/metrics:z,idmap
+          Volume=%t/metrics/%N:/data/metrics:z,idmap
 
           Pod=vault-agent.pod
 
           [Service]
           Type=oneshot
+
+          RuntimeDirectory=metrics/%N
+          RuntimeDirectoryPreserve=yes
+
           Restart=on-failure
           RestartSec=1s
           RestartSteps=10
@@ -74,15 +77,13 @@ storage:
 
           [Install]
           WantedBy=multi-user.target default.target
-    - path: /etc/monitoring/exporters/vault-ssh-signer.yaml
+    - path: /etc/monitoring/expexp.d/vault-ssh-signer.yaml
       mode: 0644
       contents:
         inline: |
-          modules:
-            vault-ssh-signer:
-              method: file
-              file:
-                path: /metrics/vault-ssh-signer/vault-ssh-signer.prom
+          method: file
+          file:
+            path: /metrics/vault-ssh-signer/vault-ssh-signer.prom
 systemd:
   units:
     - name: vault-ssh-signer.timer
