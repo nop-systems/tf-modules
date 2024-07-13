@@ -83,7 +83,7 @@ storage:
             zincati:
               method: file
               file:
-                path: /metrics/zincati.prom
+                path: /metrics/zincati/zincati.prom
 systemd:
   units:
     - name: prometheus-node-exporter.service
@@ -121,9 +121,10 @@ systemd:
 
         [Service]
         Type=oneshot
-        Exec=socat -u \
+        ExecStart=socat -u \
           UNIX-CONNECT:/run/zincati/public/metrics.promsock \
           OPEN:/run/metrics/zincati/zincati.prom,creat
+        ExecStartPost=chcon system_u:object_r:container_file_t:s0 /run/metrics/zincati/zincati.prom
 
         RuntimeDirectory=metrics/zincati
         RuntimeDirectoryPreserve=yes
