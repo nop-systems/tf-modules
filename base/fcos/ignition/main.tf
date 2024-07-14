@@ -32,6 +32,7 @@ data "ct_config" "this" {
       root_ca_pem = jsonencode(var.root_ca_pem)
     }),
     templatefile("${path.module}/templates/monitoring.bu.tftpl", {
+      fqdn                        = var.fqdn
       exporter_exporter_version   = "latest"
       monitoring_client_pki_mount = var.monitoring_client_pki_mount
     })
