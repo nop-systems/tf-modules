@@ -32,6 +32,7 @@ No inputs.
 
 | Name | Description |
 |------|-------------|
+| <a name="output_accessor"></a> [accessor](#output\_accessor) | mount accessor |
 | <a name="output_path"></a> [path](#output\_path) | approle auth mount path |
 
 ## Usage
