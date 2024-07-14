@@ -83,7 +83,7 @@ module "dns-record_AAAA" {
   zone_id = var.cloudflare_zone_id
 }
 
-module "dns-recorrd_monitoring" {
+module "dns-record_monitoring" {
   source = "git@github.com:nop-systems/tf-modules.git//base/dns-record?ref=dns-record/v0.1.0"
 
   name  = "monitoring.${module.domain.record_name}"
