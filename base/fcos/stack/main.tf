@@ -92,3 +92,8 @@ module "dns-record_monitoring" {
 
   zone_id = var.cloudflare_zone_id
 }
+
+moved {
+  from = module.dns-recorrd_monitoring
+  to   = module.dns-record_monitoring
+}
