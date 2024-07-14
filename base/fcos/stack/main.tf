@@ -88,7 +88,7 @@ module "dns-recorrd_monitoring" {
 
   name  = "monitoring.${module.domain.record_name}"
   type  = "CNAME"
-  value = module.domain.record_name
+  value = var.fqdn
 
   zone_id = var.cloudflare_zone_id
 }
