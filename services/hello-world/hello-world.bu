@@ -54,7 +54,7 @@ storage:
     #     inline: |
     #       [Container]
     #       Volume=secrets.volume:/secrets:z,idmap
-    # - path: /var/containers/vault-agent/config.d/hello-world.hcl
+    # - path: /etc/vault-agent/config.d/hello-world.hcl
     #   contents:
     #     inline: |
     #       template {

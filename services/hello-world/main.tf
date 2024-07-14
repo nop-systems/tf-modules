@@ -15,12 +15,12 @@ module "hello-world" {
     acme_url            = var.acme_url
   })]
 
-  cloudflare_zone_id     = var.cloudflare_zone_id
-  xo_sr_id               = var.xo_sr_id
-  xo_network_id          = var.xo_network_id
-  xo_template_id         = var.xo_template_id
-  vault_url              = var.vault_url
-  root_ca_pem            = var.root_ca_pem
-  matchbox_http_endpoint = var.matchbox_http_endpoint
+  cloudflare_zone_id          = var.cloudflare_zone_id
+  xo_sr_id                    = var.xo_sr_id
+  xo_network_id               = var.xo_network_id
+  xo_template_id              = var.xo_template_id
+  vault_url                   = var.vault_url
+  root_ca_pem                 = var.root_ca_pem
+  matchbox_http_endpoint      = var.matchbox_http_endpoint
+  monitoring_client_pki_mount = var.monitoring_client_pki_mount
 }
-

@@ -53,3 +53,8 @@ variable "acme_url" {
   type        = string
   description = "URL to ACME directory"
 }
+
+variable "monitoring_client_pki_mount" {
+  type        = string
+  description = "PKI mount path for monitoring client certificates (e.g. pki-monitoring)"
+}
