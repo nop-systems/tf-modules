@@ -35,6 +35,7 @@ No modules.
 | <a name="input_butane_snippets"></a> [butane\_snippets](#input\_butane\_snippets) | (application specific) butane configs | `list(string)` | n/a | yes |
 | <a name="input_cnames"></a> [cnames](#input\_cnames) | List of CNAMEs as FQDNs | `list(string)` | `[]` | no |
 | <a name="input_fqdn"></a> [fqdn](#input\_fqdn) | FQDN of the new Virtual Machine | `string` | n/a | yes |
+| <a name="input_monitoring_client_pki_mount"></a> [monitoring\_client\_pki\_mount](#input\_monitoring\_client\_pki\_mount) | PKI mount path for monitoring client certificates (e.g. pki-monitoring) | `string` | n/a | yes |
 | <a name="input_root_ca_pem"></a> [root\_ca\_pem](#input\_root\_ca\_pem) | Private Root Certificate (PEM) | `string` | n/a | yes |
 | <a name="input_services"></a> [services](#input\_services) | List of Services as shared FQDNs (possibly with shared secrets) | `list(string)` | `[]` | no |
 | <a name="input_vault_url"></a> [vault\_url](#input\_vault\_url) | Vault URL | `string` | n/a | yes |
@@ -60,6 +61,8 @@ module "" {
   butane_snippets =
   /* FQDN of the new Virtual Machine (required) */
   fqdn =
+  /* PKI mount path for monitoring client certificates (e.g. pki-monitoring) (required) */
+  monitoring_client_pki_mount =
   /* Private Root Certificate (PEM) (required) */
   root_ca_pem =
   /* Vault URL (required) */
@@ -79,6 +82,7 @@ module "" {
   approle_wrapped_secret_id =
   butane_snippets =
   fqdn =
+  monitoring_client_pki_mount =
   root_ca_pem =
   vault_url =
 }

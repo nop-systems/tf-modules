@@ -55,6 +55,7 @@ storage:
 
           Volume=/run/metrics:/metrics:z,idmap,ro
           Volume=/etc/monitoring:/config:Z,U,ro
+          Volume=/var/containers/secrets/tls-monitoring:/tls:z,idmap,ro
           Pod=monitoring.pod
 
           [Service]
@@ -84,6 +85,37 @@ storage:
               method: file
               file:
                 path: /metrics/zincati/zincati.prom
+    - path: /etc/vault-agent/config.d/monitoring.hcl
+      mode: 0644
+      contents:
+        inline: |
+          # https://github.com/hashicorp/consul-template/blob/main/docs/templating-language.md#pkicert
+          template {
+            contents = <<-EOT
+              {{ with pkiCert "pki-servers/issue/entity-metadata" "common_name=monitoring.${fqdn}" -}}
+              {{ .Cert }}{{ .CA }}{{ .Key }}
+              {{- .Cert | writeToFile "/vault/secrets/tls-monitoring/fullchain.pem" "" "" "0644" -}}
+              {{- .CA | writeToFile "/vault/secrets/tls-monitoring/fullchain.pem" "" "" "0644" "append" -}}
+              {{- .Key | writeToFile "/vault/secrets/tls-monitoring/privkey.pem" "" "" "0644" -}}
+              {{- .Cert | writeToFile "/vault/secrets/tls-monitoring/cert.pem" "" "" "0644" -}}
+              {{- end }}
+            EOT
+            destination = "/vault/secrets/tls-monitoring/fullchain+privkey.pem"
+            error_on_missing_key = true
+          }
+
+          template {
+            contents = "{{ with secret \"pki-root/cert/ca\" }}{{ .Data.certificate }}{{ end }}"
+            destination = "/vault/secrets/tls-monitoring/root_ca.pem"
+            error_on_missing_key = true
+          }
+
+          template {
+            contents = "{{ with secret \"${monitoring_client_pki_mount}/cert/ca\" }}{{ .Data.certificate }}{{ end }}"
+            destination = "/vault/secrets/tls-monitoring/client_ca.pem
+            error_on_missing_key = true
+          }
+
 systemd:
   units:
     - name: prometheus-node-exporter.service

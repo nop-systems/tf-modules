@@ -19,14 +19,15 @@ module "approle" {
 module "ignition" {
   source = "../ignition"
 
-  approle_role_id           = module.approle.roleid
-  approle_wrapped_secret_id = module.approle.secretid
-  butane_snippets           = var.butane_snippets
-  fqdn                      = var.fqdn
-  cnames                    = var.cnames
-  services                  = var.services
-  root_ca_pem               = var.root_ca_pem
-  vault_url                 = var.vault_url
+  approle_role_id             = module.approle.roleid
+  approle_wrapped_secret_id   = module.approle.secretid
+  butane_snippets             = var.butane_snippets
+  fqdn                        = var.fqdn
+  cnames                      = var.cnames
+  services                    = var.services
+  root_ca_pem                 = var.root_ca_pem
+  vault_url                   = var.vault_url
+  monitoring_client_pki_mount = var.monitoring_client_pki_mount
 }
 
 module "matchbox" {
@@ -78,6 +79,16 @@ module "dns-record_AAAA" {
   name  = module.domain.record_name
   type  = "AAAA"
   value = try(local.ipv6_addresses[0], null)
+
+  zone_id = var.cloudflare_zone_id
+}
+
+module "dns-recorrd_monitoring" {
+  source = "git@github.com:nop-systems/tf-modules.git//base/dns-record?ref=dns-record/v0.1.0"
+
+  name  = "monitoring.${module.domain.record_name}"
+  type  = "CNAME"
+  value = module.domain.record_name
 
   zone_id = var.cloudflare_zone_id
 }

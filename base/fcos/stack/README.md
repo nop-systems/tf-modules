@@ -23,6 +23,7 @@ Combined Ignition + Matchbox + VM modules for standard deployments
 | <a name="module_approle"></a> [approle](#module\_approle) | git@github.com:nop-systems/tf-modules.git//base/approle | approle/v0.1.2 |
 | <a name="module_dns-record_A"></a> [dns-record\_A](#module\_dns-record\_A) | git@github.com:nop-systems/tf-modules.git//base/dns-record | dns-record/v0.1.0 |
 | <a name="module_dns-record_AAAA"></a> [dns-record\_AAAA](#module\_dns-record\_AAAA) | git@github.com:nop-systems/tf-modules.git//base/dns-record | dns-record/v0.1.0 |
+| <a name="module_dns-recorrd_monitoring"></a> [dns-recorrd\_monitoring](#module\_dns-recorrd\_monitoring) | git@github.com:nop-systems/tf-modules.git//base/dns-record | dns-record/v0.1.0 |
 | <a name="module_domain"></a> [domain](#module\_domain) | git@github.com:nop-systems/tf-modules.git//helpers/parse-domain | parse-domain/v1.0.0 |
 | <a name="module_ignition"></a> [ignition](#module\_ignition) | ../ignition | n/a |
 | <a name="module_matchbox"></a> [matchbox](#module\_matchbox) | ../matchbox | n/a |
@@ -48,6 +49,7 @@ Combined Ignition + Matchbox + VM modules for standard deployments
 | <a name="input_fqdn"></a> [fqdn](#input\_fqdn) | Fully Qualified Domain Name of VM | `string` | n/a | yes |
 | <a name="input_matchbox_http_endpoint"></a> [matchbox\_http\_endpoint](#input\_matchbox\_http\_endpoint) | matchbox http endpoint | `string` | n/a | yes |
 | <a name="input_memory"></a> [memory](#input\_memory) | Memory in MB | `number` | `2048` | no |
+| <a name="input_monitoring_client_pki_mount"></a> [monitoring\_client\_pki\_mount](#input\_monitoring\_client\_pki\_mount) | PKI mount path for monitoring client certificates (e.g. pki-monitoring) | `string` | n/a | yes |
 | <a name="input_root_ca_pem"></a> [root\_ca\_pem](#input\_root\_ca\_pem) | Private Root Certificate (PEM) | `string` | n/a | yes |
 | <a name="input_services"></a> [services](#input\_services) | List of Services as shared FQDNs (possibly with shared secrets) | `list(string)` | `[]` | no |
 | <a name="input_vault_url"></a> [vault\_url](#input\_vault\_url) | Vault URL | `string` | n/a | yes |
@@ -78,6 +80,8 @@ module "" {
   fqdn =
   /* matchbox http endpoint (required) */
   matchbox_http_endpoint =
+  /* PKI mount path for monitoring client certificates (e.g. pki-monitoring) (required) */
+  monitoring_client_pki_mount =
   /* Private Root Certificate (PEM) (required) */
   root_ca_pem =
   /* Vault URL (required) */
@@ -115,6 +119,7 @@ module "" {
   cloudflare_zone_id =
   fqdn =
   matchbox_http_endpoint =
+  monitoring_client_pki_mount =
   root_ca_pem =
   vault_url =
   xo_network_id =
