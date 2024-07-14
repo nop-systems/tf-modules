@@ -46,8 +46,13 @@ storage:
           [Container]
           Image=docker.io/qubitproducts/exporter_exporter:${exporter_exporter_version}
           Exec= -config.file /config/expexp.yaml \
-            -config.dirs /config/expexp.d \
-            -web.listen-address "[::]:9999"
+            -config.dirs=/config/expexp.d \
+            -web.listen-address="" \
+            -web.tls.listen-address="[::]:9999" \
+            -web.tls.cert=/tls/fullchain.pem \
+            -web.tls.key=/tls/privkey.pem \
+            -web.tls.ca=/tls/client_ca.pem \
+            -web.tls.verify
 
           Pull=newer
           AutoUpdate=registry
@@ -112,7 +117,7 @@ storage:
 
           template {
             contents = "{{ with secret \"${monitoring_client_pki_mount}/cert/ca\" }}{{ .Data.certificate }}{{ end }}"
-            destination = "/vault/secrets/tls-monitoring/client_ca.pem
+            destination = "/vault/secrets/tls-monitoring/client_ca.pem"
             error_on_missing_key = true
           }
 
