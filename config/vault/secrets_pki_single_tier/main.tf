@@ -26,9 +26,12 @@ resource "vault_pki_secret_backend_role" "default" {
   organization = [var.organization]
   ou           = [var.ou]
 
-  allowed_domains_template = true
-  allowed_domains          = var.domain_templates
-  allow_bare_domains       = true
+  allowed_domains_template    = true
+  allowed_domains             = var.domain_templates
+  allow_bare_domains          = true
+  allow_wildcard_certificates = false
+  allow_localhost             = false
+  enforce_hostnames           = false
 
   server_flag = false
   client_flag = true
