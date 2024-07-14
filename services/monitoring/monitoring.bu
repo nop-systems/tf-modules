@@ -1,0 +1,689 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Relativ-IT/Butane-Schemas/Release/Butane-Schema.json
+variant: fcos
+version: "1.5.0"
+storage:
+  directories:
+    - path: /etc/prometheus
+    - path: /var/containers/prometheus/data
+    - path: /etc/alertmanager
+    - path: /var/containers/alertmanager/data
+    - path: /etc/loki
+    - path: /var/containers/loki/data
+    - path: /var/containers/minio/data
+    - path: /var/containers/grafana/data
+    - path: /var/containers/caddy/data
+    - path: /var/containers/caddy/config
+    - path: /etc/caddy
+    - path: /var/containers/secrets/xo-sd-proxy
+    - path: /var/containers/secrets/minio
+    - path: /var/containers/secrets/grafana
+  files:
+    - path: /etc/prometheus/prometheus.yml
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          global:
+            scrape_interval:     15s
+            evaluation_interval: 15s
+            # scrape_timeout is set to the global default (10s).
+
+          rule_files:
+            - 'alert.rules'
+
+          alerting:
+            alertmanagers:
+            - scheme: http
+              static_configs:
+              - targets:
+                - 'systemd-alertmanager:9093'
+
+          scrape_configs:
+            - job_name: prometheus
+              scrape_interval: 10s
+              static_configs:
+                - targets: [ 'localhost:9090' ]
+            - job_name: blackbox_websites
+              metrics_path: /probe
+              params:
+                module: [ http_2xx ]
+              static_configs:
+                - targets:
+                  - https://asta.studis-bht.de
+                  - https://stupa.studis-bht.de
+                  - https://login.studis-bht.de
+                  - https://openproject.studis-bht.de
+                  - https://zammad.studis-bht.de
+                  - https://grafana.studis-bht.de
+                  - https://bht-berlin.de
+              relabel_configs:
+                - source_labels: [__address__]
+                  target_label: __param_target
+                - source_labels: [__param_target]
+                  target_label: instance
+                - target_label: __address__
+                  replacement: blackbox_exporter:9115
+
+            - job_name: blackbox_pings
+              metrics_path: /probe
+              params:
+                module: [ icmp ]
+              static_configs:
+                - targets:
+                  - 1.1.1.1
+                  - 8.8.8.8
+              relabel_configs:
+                - source_labels: [__address__]
+                  target_label: __param_target
+                - source_labels: [__param_target]
+                  target_label: instance
+                - target_label: __address__
+                  replacement: blackbox_exporter:9115
+    - path: /etc/containers/systemd/prometheus.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=prometheus
+          After=network-online.target local-fs.target
+
+          [Container]
+          Image=docker.io/prom/prometheus:${prometheus_version}
+          Pull=newer
+          LogDriver=journald
+          UserNS=auto
+          # Notify=healthy
+
+          PublishPort=9090:9090
+
+          Volume=/etc/prometheus:/etc/prometheus:Z,U
+          Volume=/var/containers/prometheus/data:/prometheus:Z,U
+
+          Network=container.network
+
+          [Service]
+          Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
+
+          [Install]
+          WantedBy=multi-user.target default.target
+    - path: /etc/containers/systemd/xo-sd-proxy.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=xo-sd-proxy
+          After=network-online.target local-fs.target vault-agent.service
+
+          [Container]
+          Image=ghcr.io/nop-systems/xo-sd-proxy:${xo_sd_proxy_version}
+          Pull=newer
+          LogDriver=journald
+          UserNS=auto
+          # Notify=healthy
+
+          Volume=/var/containers/secrets/xo-sd-proxy/xoa_token:/secrets/xoa_token:z,idmap,ro
+          Volume=/var/containers/secrets/tls/this/root_ca.pem:/etc/ssl/certs/root_ca.pem:ro
+
+          Network=container.network
+
+          Environment=XOA_URL=https://xenorchestra.base.panke.studis-bht.de
+          Environment=XOA_TOKEN_FILE=/secrets/xoa_token
+          Environment=SSL_CERT_FILE=/etc/ssl/certs/root_ca.pem
+
+          [Service]
+          Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
+
+          [Install]
+          WantedBy=multi-user.target default.target
+    - path: /etc/alertmanager/alertmanager.yml
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          global:
+            resolve_timeout: 5m
+
+          route:
+            group_by: ['alertname', 'job', 'instance']
+            group_wait: 30s
+            group_interval: 5m
+            repeat_interval: 12h
+            receiver: 'slack'
+
+          receivers:
+            - name: 'slack'
+              # slack_configs:
+              #   - send_resolved: true
+              #     username: 'alertmanager'
+              #     channel: '#alerts'
+              #     api_url: 'https://hooks.slack.com/services/T01JZQZQZ6V/B01JZQZQZ6V/1JZQZQZ6V'
+    - path: /etc/containers/systemd/alertmanager.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=alertmanager
+          After=network-online.target local-fs.target
+
+          [Container]
+          Image=docker.io/prom/alertmanager:${alertmanager_version}
+          Pull=newer
+          LogDriver=journald
+          UserNS=auto
+          # Notify=healthy
+
+          Volume=/etc/alertmanager:/etc/alertmanager:Z,U
+          Volume=/var/containers/alertmanager/data:/alertmanager:Z,U
+
+          Network=container.network
+
+          [Service]
+          Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
+
+          [Install]
+          WantedBy=multi-user.target default.target
+    - path: /etc/containers/systemd/blackbox_exporter.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=blackbox exporter
+          After=network-online.target local-fs.target
+
+          [Container]
+          Image=docker.io/prom/blackbox-exporter:${blackbox_exporter_version}
+          Pull=newer
+          LogDriver=journald
+          UserNS=auto
+          # Notify=healthy
+
+          Network=container.network
+
+          [Service]
+          Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
+
+          [Install]
+          WantedBy=multi-user.target default.target
+    - path: /etc/containers/systemd/snmp_exporter.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=snmp exporter
+          After=network-online.target local-fs.target
+
+          [Container]
+          Image=docker.io/prom/snmp-exporter:${snmp_exporter_version}
+          Pull=newer
+          LogDriver=journald
+          UserNS=auto
+          # Notify=healthy
+
+          Network=container.network
+
+          [Service]
+          Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
+
+          [Install]
+          WantedBy=multi-user.target default.target
+    - path: /etc/containers/systemd/grafana.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=grafana
+          After=network-online.target local-fs.target vault-agent.service
+
+          [Container]
+          Image=docker.io/grafana/grafana-oss:${grafana_version}
+          Pull=newer
+          LogDriver=journald
+          UserNS=auto
+          Notify=healthy
+
+          Environment=GF_SECURITY_ADMIN_PASSWORD__FILE=/secrets/admin_password
+          Environment=GF_USERS_ALLOW_SIGN_UP=false
+
+          Network=container.network
+
+          Volume=/var/containers/grafana/data:/var/lib/grafana:Z,U
+          Volume=/var/containers/secrets/grafana:/secrets:z,idmap,ro
+
+          HealthCmd="wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1
+          HealthInterval=10s
+          HealthRetries=5
+          HealthStartPeriod=20s
+          HealthTimeout=5s
+
+          [Service]
+          Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
+
+          [Install]
+          WantedBy=multi-user.target default.target
+    - path: /etc/loki/loki.yaml
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          auth_enabled: true
+
+          server:
+            http_listen_address: 0.0.0.0
+            grpc_listen_address: 0.0.0.0
+            http_listen_port: 3100
+            grpc_listen_port: 9095
+            log_level: info
+
+          common:
+            path_prefix: /loki
+            compactor_address: http://systemd-loki-backend:3100
+            replication_factor: 3
+
+          storage_config:
+            aws:
+              endpoint: systemd-minio:9000
+              insecure: true
+              bucketnames: loki-data
+              access_key_id: $${MINIO_ROOT_USER}
+              secret_access_key: $${MINIO_ROOT_PASSWORD}
+              s3forcepathstyle: true
+
+          memberlist:
+            join_members: ["systemd-loki-read", "systemd-loki-write", "systemd-loki-backend"]
+            dead_node_reclaim_time: 30s
+            gossip_to_dead_nodes_time: 15s
+            left_ingesters_timeout: 30s
+            bind_addr: ['0.0.0.0']
+            bind_port: 7946
+            gossip_interval: 2s
+
+          ingester:
+            lifecycler:
+              join_after: 10s
+              observe_period: 5s
+              ring:
+                replication_factor: 3
+                kvstore:
+                  store: memberlist
+              final_sleep: 0s
+            chunk_idle_period: 1m
+            wal:
+              enabled: true
+              dir: /loki/wal
+            max_chunk_age: 1m
+            chunk_retain_period: 30s
+            chunk_encoding: snappy
+            chunk_target_size: 1.572864e+06
+            chunk_block_size: 262144
+            flush_op_timeout: 10s
+
+          ruler:
+            enable_api: true
+            enable_sharding: true  
+            wal:
+              dir: /loki/ruler-wal
+            evaluation:
+              mode: remote
+              query_frontend:
+                address: dns:///systemd-loki-read:9095
+            storage:
+              type: local
+              local:
+                directory: /loki/rules
+            rule_path: /loki/prom-rules
+            remote_write:
+              enabled: true
+              clients:
+                local:
+                  url: http://systemd-prometheus:9090/api/v1/write
+                  queue_config:
+                    # send immediately as soon as a sample is generated
+                    capacity: 1
+                    batch_send_deadline: 0s
+
+          schema_config:
+            configs:
+            - from: 2020-08-01
+              store: tsdb
+              object_store: s3
+              schema: v13
+              index:
+                prefix: index_
+                period: 24h
+
+
+          limits_config:
+            max_cache_freshness_per_query: '10m'
+            reject_old_samples: true
+            reject_old_samples_max_age: 30m
+            ingestion_rate_mb: 10
+            ingestion_burst_size_mb: 20
+            # parallelize queries in 15min intervals
+            split_queries_by_interval: 15m
+            volume_enabled: true
+
+          table_manager:
+            retention_deletes_enabled: true
+            retention_period: 336h
+
+          query_range:
+            # make queries more cache-able by aligning them with their step intervals
+            align_queries_with_step: true
+            max_retries: 5
+            parallelise_shardable_queries: true
+            cache_results: true
+
+          frontend:
+            log_queries_longer_than: 5s
+            compress_responses: true
+            max_outstanding_per_tenant: 2048
+
+          query_scheduler:
+            max_outstanding_requests_per_tenant: 1024
+
+          querier:
+            query_ingesters_within: 2h
+
+          compactor:
+            working_directory: /tmp/compactor
+    - path: /etc/containers/systemd/loki-read.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=loki read
+          After=network-online.target local-fs.target minio.service vault-agent.service
+
+          [Container]
+          Image=docker.io/grafana/loki:${loki_version}
+          Pull=newer
+          LogDriver=journald
+          UserNS=auto
+          Notify=healthy
+
+          Exec=-config.file=/etc/loki/loki.yaml -config.expand-env=true -target=read -legacy-read-mode=false
+
+          Network=container.network
+
+          Volume=/etc/loki:/etc/loki:z,idmap,ro
+
+          EnvironmentFile=/var/containers/secrets/minio/root_credentials.env
+
+          HealthCmd="wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1
+          HealthInterval=10s
+          HealthRetries=5
+          HealthStartPeriod=20s
+          HealthTimeout=5s
+
+          [Service]
+          Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
+
+          [Install]
+          WantedBy=multi-user.target default.target
+    - path: /etc/containers/systemd/loki-write.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=loki write
+          After=network-online.target local-fs.target minio.service vault-agent.service
+
+          [Container]
+          Image=docker.io/grafana/loki:${loki_version}
+          Pull=newer
+          LogDriver=journald
+          UserNS=auto
+          Notify=healthy
+
+          Exec=-config.file=/etc/loki/loki.yaml -config.expand-env=true -target=write
+
+          Network=container.network
+
+          Volume=/etc/loki:/etc/loki:z,idmap,ro
+
+          EnvironmentFile=/var/containers/secrets/minio/root_credentials.env
+
+          HealthCmd="wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1
+          HealthInterval=10s
+          HealthRetries=5
+          HealthStartPeriod=20s
+          HealthTimeout=5s
+
+          [Service]
+          Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
+
+          [Install]
+          WantedBy=multi-user.target default.target
+    - path: /etc/containers/systemd/loki-backend.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=loki backend
+          After=network-online.target local-fs.target minio.service vault-agent.service
+
+          [Container]
+          Image=docker.io/grafana/loki:${loki_version}
+          Pull=newer
+          LogDriver=journald
+          UserNS=auto
+          Notify=healthy
+
+          Exec=-config.file=/etc/loki/loki.yaml -config.expand-env=true -target=backend -legacy-read-mode=false
+
+          Network=container.network
+
+          Volume=/etc/loki:/etc/loki:z,idmap,ro
+
+          EnvironmentFile=/var/containers/secrets/minio/root_credentials.env
+
+          HealthCmd="wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1
+          HealthInterval=10s
+          HealthRetries=5
+          HealthStartPeriod=20s
+          HealthTimeout=5s
+
+          [Service]
+          Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
+
+          [Install]
+          WantedBy=multi-user.target default.target
+    - path: /etc/containers/systemd/minio.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=minio S3 compatible object storage
+          After=network-online.target local-fs.target vault-agent.service
+
+          [Container]
+          Image=docker.io/minio/minio:${minio_version}
+          Pull=newer
+          LogDriver=journald
+          UserNS=auto
+          Notify=healthy
+
+          Entrypoint=["sh", "-euc", "mkdir -p /data/loki-data && mkdir -p /data/loki-ruler && minio server --address \"0.0.0.0:9000\" --console-address \"0.0.0.0:9001\" /data"]
+
+          Network=container.network
+
+          Volume=/var/containers/minio/data:/data:Z,U
+
+          Environment=MINIO_PROMETHEUS_AUTH_TYPE=public
+          Environment=MINIO_UPDATE=off
+
+          EnvironmentFile=/var/containers/secrets/minio/root_credentials.env
+
+          HealthCmd=curl -f http://localhost:9000/minio/health/live
+          HealthInterval=15s
+          HealthRetries=5
+          HealthStartPeriod=20s
+          HealthTimeout=20s
+
+          [Service]
+          Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
+
+          [Install]
+          WantedBy=multi-user.target default.target
+    - path: /etc/containers/systemd/caddy.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=Reverse Proxy
+          After=network-online.target local-fs.target grafana.service prometheus.service loki-read.service loki-write.service
+
+          [Container]
+          Image=docker.io/library/caddy:${caddy_version}
+          Pull=newer
+          AutoUpdate=registry
+          LogDriver=journald
+          UserNS=auto
+
+          PublishPort=443:443
+          PublishPort=443:443/udp
+          PublishPort=3100:3100
+
+          Volume=/var/containers/caddy/config:/config:Z,U
+          Volume=/var/containers/caddy/data:/data:Z,U
+          Volume=/etc/caddy/Caddyfile:/etc/caddy/Caddyfile:Z,ro
+
+          Network=container.network
+
+          [Service]
+          Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
+
+          [Install]
+          WantedBy=multi-user.target default.target
+    - path: /etc/caddy/Caddyfile
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          {
+            acme_ca ${acme_ca}
+            auto_https disable_redirects
+            servers {
+              trusted_proxies static ${trusted_proxies}
+            }
+            fallback_sni ${service_fqdn}
+          }
+
+          https://${fqdn}, https://${service_fqdn}, https:// {
+            tls {
+              issuer acme {
+                # disable http challenge because only https port is published
+                disable_http_challenge
+              }
+            }
+
+            handle_errors {
+              respond "Error {err.status_code} {err.status_text} on ${fqdn}: {err.message} ({err.trace}, {err.id})"
+            }
+
+            log
+
+            reverse_proxy http://systemd-grafana:3000
+          }
+
+          :3100 {
+            tls {
+              issuer acme {
+                # disable http challenge because only https port is published
+                disable_http_challenge
+              }
+            }
+
+            handle_errors {
+              respond "Error {err.status_code} {err.status_text} on ${fqdn}: {err.message} ({err.trace}, {err.id})"
+            }
+
+            log
+            
+            respond / 200
+
+            @push path /api/prom/push /loki/api/v1/push
+            @tail path /api/prom/tail /loki/api/v1/tail
+            @wildcard path /api/prom/* /loki/api/v1/*
+
+            reverse_proxy @push http://systemd-loki-write:3100
+
+            reverse_proxy @tail http://systemd-loki-read:3100
+
+            reverse_proxy @wildcard http://systemd-loki-read:3100
+
+          }
+
+    - path: /etc/vault-agent/config.d/grafana.hcl
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          template {
+            contents = <<-EOT
+              {{ with secret "kv/data/service/${ service_fqdn }/grafana" -}}
+              {{ .Data.data.admin_password }}
+              {{- end }}
+              EOT
+            destination = "/vault/secrets/grafana/admin_password"
+          }
+    - path: /etc/vault-agent/config.d/minio.hcl
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          template {
+            contents = <<-EOT
+              {{ with secret "kv/data/service/${ service_fqdn }/minio" -}}
+              MINIO_ROOT_USER={{ .Data.data.root_user }}
+              MINIO_ROOT_PASSWORD={{ .Data.data.root_password }}
+              {{- end }}
+              EOT
+            destination = "/vault/secrets/minio/root_credentials.env"
+          }
+    - path: /etc/vault-agent/config.d/xo-sd-proxy.hcl
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          template {
+            contents = <<-EOT
+              {{ with secret "kv/data/service/${ service_fqdn }/minio" -}}
+              {{ .Data.data.token }}
+              {{- end }}
+              EOT
+            destination = "/vault/secrets/xo-sd-proxy/xoa_token"
+          }
