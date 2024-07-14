@@ -38,7 +38,6 @@ No modules.
 | <a name="input_memory"></a> [memory](#input\_memory) | Memory in MB | `number` | n/a | yes |
 | <a name="input_name"></a> [name](#input\_name) | Name of the new Virtual Machine | `string` | n/a | yes |
 | <a name="input_network_id"></a> [network\_id](#input\_network\_id) | XenOrchestra Network UUID | `string` | n/a | yes |
-| <a name="input_protect_vm"></a> [protect\_vm](#input\_protect\_vm) | Protect VM from accidental deletion and shutdown | `bool` | `true` | no |
 | <a name="input_sr_id"></a> [sr\_id](#input\_sr\_id) | XenOrchestra Storage Repository UUID | `string` | n/a | yes |
 | <a name="input_tags"></a> [tags](#input\_tags) | List of additional tags that should be attached to the VM | `list(string)` | `[]` | no |
 | <a name="input_template_id"></a> [template\_id](#input\_template\_id) | XenOrchestra Template UUID | `string` | n/a | yes |
@@ -79,8 +78,6 @@ module "" {
   # affinity_host_id = <no value>
   /* Description of the VM visible in XenOrchestra (optional) */
   # desc = 
-  /* Protect VM from accidental deletion and shutdown (optional) */
-  # protect_vm = true
   /* List of additional tags that should be attached to the VM (optional) */
   # tags = []
 }

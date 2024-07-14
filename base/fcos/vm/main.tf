@@ -35,15 +35,16 @@ resource "xenorchestra_vm" "this" {
     create = "10m"
   }
 
-  blocked_operations = var.protect_vm ? [
-    "clean_reboot",
-    "clean_shutdown",
-    "destroy",
-    "hard_reboot",
-    "hard_shutdown",
-    "pause",
-    "shutdown",
-    "suspend",
-  ] : []
+  # https://github.com/vatesfr/terraform-provider-xenorchestra/issues/318
+  # blocked_operations = var.protect_vm ? [
+  #   "clean_reboot",
+  #   "clean_shutdown",
+  #   "destroy",
+  #   "hard_reboot",
+  #   "hard_shutdown",
+  #   "pause",
+  #   "shutdown",
+  #   "suspend",
+  # ] : []
 
 }

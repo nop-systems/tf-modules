@@ -64,8 +64,9 @@ variable "tags" {
   default     = []
 }
 
-variable "protect_vm" {
-  type        = bool
-  description = "Protect VM from accidental deletion and shutdown"
-  default     = true
-}
+# https://github.com/vatesfr/terraform-provider-xenorchestra/issues/318
+# variable "protect_vm" {
+#   type        = bool
+#   description = "Protect VM from accidental deletion and shutdown"
+#   default     = true
+# }
