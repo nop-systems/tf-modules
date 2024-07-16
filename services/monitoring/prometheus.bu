@@ -56,7 +56,7 @@ storage:
                 - source_labels: [__param_target]
                   target_label: instance
                 - target_label: __address__
-                  replacement: blackbox_exporter:9115
+                  replacement: systemd-blackbox-exporter:9115
 
             - job_name: blackbox_pings
               metrics_path: /probe
@@ -72,7 +72,7 @@ storage:
                 - source_labels: [__param_target]
                   target_label: instance
                 - target_label: __address__
-                  replacement: blackbox_exporter:9115
+                  replacement: systemd-blackbox-exporter:9115
     - path: /usr/local/bin/promtool
       mode: 0755
       overwrite: true
@@ -238,7 +238,7 @@ storage:
 ####
 ##    Exporters
 ####
-    - path: /etc/containers/systemd/blackbox_exporter.container
+    - path: /etc/containers/systemd/blackbox-exporter.container
       mode: 0644
       contents:
         inline: |
@@ -263,7 +263,7 @@ storage:
 
           [Install]
           WantedBy=multi-user.target default.target
-    - path: /etc/containers/systemd/snmp_exporter.container
+    - path: /etc/containers/systemd/snmp-exporter.container
       mode: 0644
       contents:
         inline: |

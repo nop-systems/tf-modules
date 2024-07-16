@@ -52,21 +52,37 @@ storage:
 
           # Loki
           (loki_handlers) {
-            @cluster path /ring /memberlist /config /metrics /ready
-            @write path /api/prom/push /loki/api/v1/push
-            @read path /api/prom/* /loki/api/v1/*
+            @cluster path /ring /memberlist /config /metrics /ready /services /log_level /flush /loki/api/v1/format_query
+            @write {
+              path /loki/api/v1/push
+              path /distributor/* /ingester/*
+            }
+            @read path /loki/api/v1/*
+            @backend {
+              path /indexgateway/* /ruler/* /compactor/*
+              path /loki/api/v1/rules/* /api/prom/rules/* /prometheus/api/v1/rules /prometheus/api/v1/alerts
+              path /loki/api/v1/delete
+            }
+            @deprecated path /api/prom/push /api/prom/tail /api/prom/query /api/prom/label /api/prom/label/*/values /api/prom/series
 
             handle @cluster {
               reverse_proxy {
                 to systemd-loki-write:3100
                 to systemd-loki-read:3100
+                to systemd-loki-backend:3100
               }
+            }
+            handle @deprecated {
+              respond "Deprecated endpoint (see https://grafana.com/docs/loki/latest/reference/loki-http-api/#deprecated-endpoints)" 410
             }
             handle @write {
               reverse_proxy systemd-loki-write:3100
             }
             handle @read {
               reverse_proxy systemd-loki-read:3100
+            }
+            handle @backend {
+              reverse_proxy systemd-loki-backend:3100
             }
             respond loki.${fqdn} 404
           }
@@ -93,7 +109,7 @@ storage:
           https://alertmanager.${fqdn}, https://${alertmanager_fqdn} {
             import common
             import tls_client_admin
-            reverse_proxy systemd-alertmanager:9090
+            reverse_proxy systemd-alertmanager:9093
           }
 
           # Ingress
@@ -103,7 +119,7 @@ storage:
               client_auth {
                 mode require_and_verify
                 # Use Root CA of large PKI so any host can use its certificate for writing
-                trust_pool file /tls/root_ca.pem
+                trust_pool file /tls/root_ca.pem /tls/admin_client_ca.pem
               }
             }
 
@@ -129,7 +145,7 @@ storage:
               reverse_proxy systemd-prometheus:9090
             }
           }
-    - path: /etc/ault-agent/config.d/caddy.hcl
+    - path: /etc/vault-agent/config.d/caddy.hcl
       mode: 0644
       overwrite: true
       contents:
@@ -142,13 +158,26 @@ storage:
               EOT
             destination = "/vault/secrets/tls-admin/admin_client_ca.pem"
           }
+    - path: /usr/local/bin/caddy
+      mode: 0755
+      overwrite: true
+      contents:
+        inline: |
+          #!/usr/bin/env sh
+          CONTAINER_NAME=systemd-caddy
+          COMMAND=caddy
+
+          podman container exists $CONTAINER_NAME ||
+              echo "Must be run as root to access container $CONTAINER_NAME"
+          # shellcheck disable=SC2086
+          podman exec -it $CONTAINER_NAME $COMMAND "$@"
     - path: /etc/containers/systemd/caddy.container
       mode: 0644
       contents:
         inline: |
           [Unit]
           Description=Reverse Proxy
-          After=network-online.target local-fs.target grafana.service prometheus.service loki-read.service loki-write.service
+          After=network-online.target local-fs.target vault-agent.service
 
           [Container]
           Image=docker.io/library/caddy:${caddy_version}
