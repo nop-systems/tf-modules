@@ -46,7 +46,7 @@ storage:
 
           [Container]
           Image=docker.io/grafana/alloy:${grafana_alloy_version}
-          Exec= run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /config
+          Exec= run -disable-reporting --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /config
 
           Pull=newer
           AutoUpdate=registry
@@ -56,8 +56,8 @@ storage:
           Volume=/var/log/journal:/var/log/journal:z,idmap,ro
           Volume=/run/log/journal:/run/log/journal:z,idmap,ro
           Volume=/etc/monitoring/alloy.d:/config:Z,U,ro
-          Volume=/vault/secrets/tls/${fqdn}:/tls:z,idmap,ro
-          Volume=/vault/secrets/tls-admin:/tls-admin:z,idmap,ro
+          Volume=/var/containers/secrets/tls/this:/tls:z,idmap,ro
+          Volume=/var/containers/secrets/tls-admin:/tls-admin:z,idmap,ro
           Pod=monitoring.pod
 
           [Service]
@@ -81,19 +81,23 @@ storage:
             }
           }
 
-          prometheus.remote_write "monitoring-ingress" {
+          prometheus.remote_write "monitoring_ingress" {
             endpoint {
               url = "https://monitoring-ingress.service.studis-bht.de/prom/api/v1/push"
-              cert_pem = "/tls/fullchain.pem"
-              key_pem = "/tls/privkey.pem"
+              tls_config {
+                cert_pem = "/tls/fullchain.pem"
+                key_pem = "/tls/privkey.pem"
+              }
             }
           }
 
-          loki.write "monitoring-ingress" {
+          loki.write "monitoring_ingress" {
             endpoint {
               url = "https://monitoring-ingress.service.studis-bht.de/loki/api/v1/push"
-              cert_pem = "/tls/fullchain.pem"
-              key_pem = "/tls/privkey.pem"
+              tls_config {
+                cert_pem = "/tls/fullchain.pem"
+                key_pem = "/tls/privkey.pem"
+              }
             }
           }
 
@@ -124,7 +128,7 @@ storage:
 
           loki.source.journal "read" {
             forward_to = [
-              loki.write.monitoring-ingress.receiver,
+              loki.write.monitoring_ingress.receiver,
             ]
             relabel_rules = loki.relabel.journal.rules
             labels = {
@@ -137,28 +141,28 @@ storage:
           prometheus.scrape "alloy" {
             targets    = prometheus.exporter.self.alloy.targets
             forward_to = [
-              prometheus.remote_write.montoring-ingress.receiver,
+              prometheus.remote_write.monitoring_ingress.receiver,
             ]
           }
 
           prometheus.scrape "node" {
             forward_to = [
-              prometheus.remote_write.monitoring-ingress.receiver,
+              prometheus.remote_write.monitoring_ingress.receiver,
             ]
             targets = [
               {
                 "__address__" = "host.containers.internal:9100",
-              }
+              },
             ]
           }
           prometheus.scrape "podman" {
             forward_to = [
-              prometheus.remote_write.monitoring-ingress.receiver,
+              prometheus.remote_write.monitoring_ingress.receiver,
             ]
             targets = [
               {
                 "__address__" = "host.containers.internal:9882",
-              }
+              },
             ]
           }
 
