@@ -143,16 +143,9 @@ storage:
           AutoUpdate=registry
           LogDriver=journald
           UserNS=auto
-          Notify=healthy
 
           EnvironmentFile=/var/containers/secrets/grafana-image-renderer.env
           Network=container.network
-
-          HealthCmd="wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1
-          HealthInterval=10s
-          HealthRetries=5
-          HealthStartPeriod=20s
-          HealthTimeout=5s
 
           [Service]
           Restart=always

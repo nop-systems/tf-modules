@@ -129,7 +129,7 @@ storage:
               reverse_proxy systemd-prometheus:9090
             }
           }
-    - path: /etc/ault-agent/config.d/xo-sd-proxy.hcl
+    - path: /etc/ault-agent/config.d/caddy.hcl
       mode: 0644
       overwrite: true
       contents:
