@@ -52,16 +52,16 @@ module "fcos" {
     })
   ]
 
-  cloudflare_zone_id          = var.cloudflare_zone_id
-  xo_sr_id                    = var.xo_sr_id
-  xo_network_id               = var.xo_network_id
-  xo_template_id              = var.xo_template_id
-  vault_url                   = var.vault_url
-  monitoring_client_pki_mount = var.monitoring_client_pki_mount
-  root_ca_pem                 = var.root_ca_pem
-  matchbox_http_endpoint      = var.matchbox_http_endpoint
-  services                    = [var.service_fqdn]
-  cnames                      = concat(local.cnames, local.internal_fqdns)
+  cloudflare_zone_id     = var.cloudflare_zone_id
+  xo_sr_id               = var.xo_sr_id
+  xo_network_id          = var.xo_network_id
+  xo_template_id         = var.xo_template_id
+  vault_url              = var.vault_url
+  admin_pki_mount        = var.admin_pki_mount
+  root_ca_pem            = var.root_ca_pem
+  matchbox_http_endpoint = var.matchbox_http_endpoint
+  services               = [var.service_fqdn]
+  cnames                 = concat(local.cnames, local.internal_fqdns)
 }
 
 module "cname_records" {
