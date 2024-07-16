@@ -1,10 +1,10 @@
 locals {
-  services = toset(["loki", "prometheus", "grafana", "alertmanager", "ingress"])
-  cnames   = toset([for name in local.services : "${name}.${var.fqdn}"])
-  internal_fqdns = toset([
+  services = ["loki", "prometheus", "grafana", "alertmanager", "ingress"]
+  cnames   = [for name in local.services : "${name}.${var.fqdn}"]
+  internal_fqdns = [
     var.grafana_fqdn, var.loki_fqdn, var.prometheus_fqdn,
     var.alertmanager_fqdn, var.ingress_fqdn
-  ])
+  ]
 }
 
 module "fcos" {
@@ -64,7 +64,7 @@ module "fcos" {
 }
 
 module "cname_records" {
-  for_each = local.cnames
+  for_each = toset(local.cnames)
 
   source  = "git@github.com:nop-systems/tf-modules.git//base/dns-record?ref=dns-record/v0.1.0"
   name    = each.key
@@ -74,7 +74,7 @@ module "cname_records" {
 }
 
 module "internal_records" {
-  for_each = local.internal_fqdns
+  for_each = toset(local.internal_fqdns)
 
   source  = "git@github.com:nop-systems/tf-modules.git//base/dns-record?ref=dns-record/v0.1.0"
   name    = each.key
