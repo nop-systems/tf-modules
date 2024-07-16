@@ -88,8 +88,3 @@ variable "acme_ca" {
   type        = string
   description = "URL to ACME directory for internal CA"
 }
-
-variable "admin_pki_mount" {
-  type        = string
-  description = "PKI mount path for admin client certificates (e.g. pki-admin)"
-}

@@ -29,7 +29,7 @@ No resources.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_acme_ca"></a> [acme\_ca](#input\_acme\_ca) | URL to ACME directory for internal CA | `string` | n/a | yes |
-| <a name="input_admin_pki_mount"></a> [admin\_pki\_mount](#input\_admin\_pki\_mount) | PKI mount path for admin client certificates (e.g. pki-admin) | `string` | n/a | yes |
+| <a name="input_admin_pki_mount"></a> [admin\_pki\_mount](#input\_admin\_pki\_mount) | vault mount whose default issuer should be used for validating admin client certificates | `string` | n/a | yes |
 | <a name="input_alertmanager_fqdn"></a> [alertmanager\_fqdn](#input\_alertmanager\_fqdn) | Internal FQDN where Altermanager will be reachable | `string` | n/a | yes |
 | <a name="input_cloudflare_zone_id"></a> [cloudflare\_zone\_id](#input\_cloudflare\_zone\_id) | Cloudflare Zone ID | `string` | n/a | yes |
 | <a name="input_fqdn"></a> [fqdn](#input\_fqdn) | Fully Qualified Domain Name of VM | `string` | n/a | yes |
@@ -59,7 +59,7 @@ module "" {
   
   /* URL to ACME directory for internal CA (required) */
   acme_ca =
-  /* PKI mount path for admin client certificates (e.g. pki-admin) (required) */
+  /* vault mount whose default issuer should be used for validating admin client certificates (required) */
   admin_pki_mount =
   /* Internal FQDN where Altermanager will be reachable (required) */
   alertmanager_fqdn =
