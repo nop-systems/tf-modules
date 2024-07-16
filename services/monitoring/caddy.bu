@@ -93,7 +93,7 @@ storage:
             import loki_handlers
           }
 
-          :3100 {
+          http://:3100 {
             handle_errors {
               respond "Error {err.status_code} {err.status_text} on ${fqdn}: {err.message} ({err.trace}, {err.id})"
             }
