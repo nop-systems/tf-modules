@@ -42,7 +42,7 @@ storage:
           template {
             contents = <<-EOT
               {{ with secret "${ admin_pki_mount }/cert/ca" -}}
-              {{ .Data.data.certificate }}
+              {{ .Data.certificate }}
               {{- end }}
               EOT
             destination = "/vault/secrets/tls-admin/admin_client_ca.pem"
