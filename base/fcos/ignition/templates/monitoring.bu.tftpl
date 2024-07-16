@@ -11,7 +11,7 @@ storage:
       mode: 0644
       contents:
         inline: |
-          #Type Path         Mode User Group Age Argument 
+          #Type Path         Mode User Group Age Argument
           d     /run/metrics -    -    -     ~7d -
     - path: /etc/containers/systemd/monitoring.network
       mode: 0644
@@ -177,7 +177,7 @@ systemd:
             ExecStart=
             ExecStart=/usr/bin/prometheus-node-exporter \
               --web.listen-address 10.89.255.1:9100 \
-              --collector.systemd
+              --collector.systemd \
               --collector.textfile.directory /run/metrics
     - name: prometheus-podman-exporter.service
       dropins:
