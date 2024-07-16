@@ -33,6 +33,20 @@ storage:
             destination = "/vault/secrets/tls/${fqdn}/root_ca.pem"
             error_on_missing_key = true
           }
+
+    - path: /etc/vault-agent/config.d/pki-admin.hcl
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          template {
+            contents = <<-EOT
+              {{ with secret "${ admin_pki_mount }/cert/ca" -}}
+              {{ .Data.data.certificate }}
+              {{- end }}
+              EOT
+            destination = "/vault/secrets/tls-admin/admin_client_ca.pem"
+          }
   links:
     - path: /var/containers/secrets/tls/this
       target: ${fqdn}
