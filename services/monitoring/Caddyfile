@@ -1,0 +1,116 @@
+{
+	acme_ca ${acme_ca}
+	auto_https disable_redirects
+	servers {
+		trusted_proxies static ${trusted_proxies}
+	}
+	fallback_sni ${service_fqdn}
+}
+
+(common) {
+	handle_errors {
+		respond "Error {err.status_code} {err.status_text} on ${fqdn}: {err.message} ({err.trace}, {err.id})"
+	}
+	tls {
+		issuer acme {
+			# disable http challenge because only https port is published
+			disable_http_challenge
+		}
+	}
+	log
+}
+
+(tls_client_admin) {
+	tls {
+		client_auth {
+			mode require_and_verify
+			trust_pool file /tls/admin_client_ca.pem
+		}
+	}
+}
+
+# Grafana
+https://${fqdn}, https://${grafana_fqdn}, https://${service_fqdn}, https:// {
+	import common
+	reverse_proxy systemd-grafana:3000
+}
+
+(loki_handlers) {
+	@cluster path /ring /memberlist /config /metrics /ready
+	@write path /api/prom/push /loki/api/v1/push
+	@read path /api/prom/* /loki/api/v1/*
+
+	handle @cluster {
+		reverse_proxy {
+			to systemd-loki-write:3100
+			to systemd-loki-read:3100
+		}
+	}
+	handle @write {
+		reverse_proxy systemd-loki-write:3100
+	}
+	handle @read {
+		reverse_proxy systemd-loki-read:3100
+	}
+	respond loki.${fqdn} 404
+}
+
+# Loki
+https://loki.${fqdn}, https://${loki_fqdn} {
+	import common
+	import tls_client_admin
+	import loki_handlers
+}
+
+:3100 {
+	import common
+	import loki_handlers
+}
+
+# Prometheus
+https://prometheus.${fqdn}, https://${prometheus_fqdn} {
+	import common
+	import tls_client_admin
+	reverse_proxy systemd-prometheus:9090
+}
+
+# Alertmanager
+https://alertmanager.${fqdn}, https://${alertmanager_fqdn} {
+	import common
+	import tls_client_admin
+	reverse_proxy systemd-alertmanager:9090
+}
+
+# Ingress
+https://ingress.${fqdn}, https://${ingress_fqdn} {
+	import common
+	tls {
+		client_auth {
+			mode require_and_verify
+			# Use Root CA of large PKI so any host can use its certificate for writing
+			trust_pool file /tls/root_ca.pem
+		}
+	}
+
+	# https://grafana.com/docs/loki/latest/reference/loki-http-api/#ingest-logs
+	handle /loki/api/v1/push {
+		reverse_proxy systemd-loki-write:3100
+	}
+
+	# https://grafana.com/docs/loki/latest/reference/loki-http-api/#ingest-logs-using-otlp
+	handle /otlp/v1/logs {
+		reverse_proxy systemd-loki-write:3100
+	}
+
+	# https://prometheus.io/docs/prometheus/latest/querying/api/#remote-write-receiver
+	handle /prom/api/v1/write {
+		uri strip_prefix /prom
+		reverse_proxy systemd-prometheus:9090
+	}
+
+	# https://prometheus.io/docs/prometheus/latest/querying/api/#otlp-receiver
+	handle /otlp/v1/metrics {
+		rewrite * /api/v1{uri}
+		reverse_proxy systemd-prometheus:9090
+	}
+}

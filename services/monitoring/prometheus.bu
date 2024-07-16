@@ -1,0 +1,290 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Relativ-IT/Butane-Schemas/Release/Butane-Schema.json
+variant: fcos
+version: "1.5.0"
+storage:
+  directories:
+    - path: /etc/alertmanager
+    - path: /etc/prometheus
+    - path: /var/containers/alertmanager/data
+    - path: /var/containers/prometheus/data
+    - path: /var/containers/secrets/xo-sd-proxy
+  files:
+####
+##    Prometheus
+####
+    - path: /etc/prometheus/prometheus.yml
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          global:
+            scrape_interval:     15s
+            evaluation_interval: 15s
+            # scrape_timeout is set to the global default (10s).
+
+          rule_files:
+            - 'alert.rules'
+
+          alerting:
+            alertmanagers:
+              - scheme: http
+                static_configs:
+                  - targets:
+                    - 'systemd-alertmanager:9093'
+
+          scrape_configs:
+            - job_name: prometheus
+              scrape_interval: 10s
+              static_configs:
+                - targets: [ 'localhost:9090' ]
+            - job_name: blackbox_websites
+              metrics_path: /probe
+              params:
+                module: [ http_2xx ]
+              static_configs:
+                - targets:
+                  - https://asta.studis-bht.de
+                  - https://stupa.studis-bht.de
+                  - https://login.studis-bht.de
+                  - https://openproject.studis-bht.de
+                  - https://zammad.studis-bht.de
+                  - https://grafana.studis-bht.de
+                  - https://bht-berlin.de
+              relabel_configs:
+                - source_labels: [__address__]
+                  target_label: __param_target
+                - source_labels: [__param_target]
+                  target_label: instance
+                - target_label: __address__
+                  replacement: blackbox_exporter:9115
+
+            - job_name: blackbox_pings
+              metrics_path: /probe
+              params:
+                module: [ icmp ]
+              static_configs:
+                - targets:
+                  - 1.1.1.1
+                  - 8.8.8.8
+              relabel_configs:
+                - source_labels: [__address__]
+                  target_label: __param_target
+                - source_labels: [__param_target]
+                  target_label: instance
+                - target_label: __address__
+                  replacement: blackbox_exporter:9115
+    - path: /usr/local/bin/promtool
+      mode: 0755
+      overwrite: true
+      contents:
+        inline: |
+          #!/usr/bin/env sh
+          CONTAINER_NAME=systemd-prometheus
+          COMMAND=promtool
+
+          podman container exists $CONTAINER_NAME ||
+              echo "Must be run as root to access container $CONTAINER_NAME"
+          # shellcheck disable=SC2086
+          podman exec -it $CONTAINER_NAME $COMMAND "$@"
+    - path: /etc/containers/systemd/prometheus.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=prometheus
+          After=network-online.target local-fs.target
+
+          [Container]
+          Image=docker.io/prom/prometheus:${prometheus_version}
+          Pull=newer
+          LogDriver=journald
+          UserNS=auto
+          Notify=healthy
+
+          Volume=/etc/prometheus:/etc/prometheus:Z,U
+          Volume=/var/containers/prometheus/data:/prometheus:Z,U
+          Network=container.network
+
+          HealthCmd=promtool check healthy
+          HealthInterval=10s
+          HealthRetries=5
+          HealthStartPeriod=20s
+          HealthTimeout=5s
+          HealthStartupCmd=promtool check ready
+          HealthStartupInterval=10s
+          HealthStartupRetries=30
+          HealthStartupSuccess=2
+          HealthStartupTimeout=5s
+
+          [Service]
+          Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
+
+          [Install]
+          WantedBy=multi-user.target default.target
+####
+##    XO-SD-Proxy
+####
+    - path: /etc/vault-agent/config.d/xo-sd-proxy.hcl
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          template {
+            contents = <<-EOT
+              {{ with secret "kv/data/service/${ service_fqdn }/minio" -}}
+              {{ .Data.data.token }}
+              {{- end }}
+              EOT
+            destination = "/vault/secrets/xo-sd-proxy/xoa_token"
+          }
+    - path: /etc/containers/systemd/xo-sd-proxy.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=xo-sd-proxy
+          After=network-online.target local-fs.target vault-agent.service
+
+          [Container]
+          Image=ghcr.io/nop-systems/xo-sd-proxy:${xo_sd_proxy_version}
+          Pull=newer
+          LogDriver=journald
+          UserNS=auto
+          # Notify=healthy
+
+          Environment=XOA_URL=https://xenorchestra.base.panke.studis-bht.de
+          Environment=XOA_TOKEN_FILE=/secrets/xoa_token
+          Environment=SSL_CERT_FILE=/etc/ssl/certs/root_ca.pem
+          Volume=/var/containers/secrets/xo-sd-proxy/xoa_token:/secrets/xoa_token:z,idmap,ro
+          Volume=/var/containers/secrets/tls/this/root_ca.pem:/etc/ssl/certs/root_ca.pem:ro
+          Network=container.network
+
+          [Service]
+          Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
+
+          [Install]
+          WantedBy=multi-user.target default.target
+####
+##    Alertmanager
+####
+    - path: /etc/alertmanager/alertmanager.yml
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          global:
+            resolve_timeout: 5m
+
+          route:
+            group_by: ['alertname', 'job', 'instance']
+            group_wait: 30s
+            group_interval: 5m
+            repeat_interval: 12h
+            receiver: 'slack'
+
+          receivers:
+            - name: 'slack'
+              # slack_configs:
+              #   - send_resolved: true
+              #     username: 'alertmanager'
+              #     channel: '#alerts'
+              #     api_url: 'https://hooks.slack.com/services/T01JZQZQZ6V/B01JZQZQZ6V/1JZQZQZ6V'
+    - path: /usr/local/bin/amtool
+      mode: 0755
+      overwrite: true
+      contents:
+        inline: |
+          #!/usr/bin/env sh
+          CONTAINER_NAME=systemd-alertmanager
+          COMMAND=amtool
+
+          podman container exists $CONTAINER_NAME ||
+              echo "Must be run as root to access container $CONTAINER_NAME"
+          # shellcheck disable=SC2086
+          podman exec -it $CONTAINER_NAME $COMMAND "$@"
+    - path: /etc/containers/systemd/alertmanager.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=alertmanager
+          After=network-online.target local-fs.target
+
+          [Container]
+          Image=docker.io/prom/alertmanager:${alertmanager_version}
+          Pull=newer
+          LogDriver=journald
+          UserNS=auto
+          # Notify=healthy
+
+          Volume=/etc/alertmanager:/etc/alertmanager:Z,U
+          Volume=/var/containers/alertmanager/data:/alertmanager:Z,U
+          Network=container.network
+
+          [Service]
+          Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
+
+          [Install]
+          WantedBy=multi-user.target default.target
+####
+##    Exporters
+####
+    - path: /etc/containers/systemd/blackbox_exporter.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=blackbox exporter
+          After=network-online.target local-fs.target
+
+          [Container]
+          Image=docker.io/prom/blackbox-exporter:${blackbox_exporter_version}
+          Pull=newer
+          LogDriver=journald
+          UserNS=auto
+          # Notify=healthy
+
+          Network=container.network
+
+          [Service]
+          Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
+
+          [Install]
+          WantedBy=multi-user.target default.target
+    - path: /etc/containers/systemd/snmp_exporter.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=snmp exporter
+          After=network-online.target local-fs.target
+
+          [Container]
+          Image=docker.io/prom/snmp-exporter:${snmp_exporter_version}
+          Pull=newer
+          LogDriver=journald
+          UserNS=auto
+          # Notify=healthy
+
+          Network=container.network
+
+          [Service]
+          Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
+
+          [Install]
+          WantedBy=multi-user.target default.target

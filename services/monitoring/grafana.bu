@@ -1,0 +1,165 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Relativ-IT/Butane-Schemas/Release/Butane-Schema.json
+variant: fcos
+version: "1.5.0"
+storage:
+  directories:
+    - path: /var/containers/grafana/data
+    - path: /var/containers/secrets/grafana
+    - path: /var/containers/grafana/data
+  files:
+    - path: /etc/grafana/provisioning/datasources/datasources.yaml
+      mode: 0644
+      contents:
+        inline: |
+          apiVersion: 1
+          datasources:
+            - name: Prometheus
+              type: prometheus
+              access: proxy
+              orgId: 1
+              uid: 1837c7f7-179a-4ad5-bb9e-8cde30d94f75
+              url: http://systemd-prometheus:9090
+              jsonData:
+                manageAlerts: true
+                prometheusType: Prometheus
+              isDefault: true
+              version: 1
+              editable: false
+            - name: Altertmanager
+              type: alertmanager
+              access: proxy
+              orgId: 1
+              uid: 5166f262-1d0b-4b49-8840-7ac9c871caef
+              url: http://systemd-alertmanager:9093
+              jsonData:
+                implementation: prometheus
+                handleGrafanaManagedAlerts: true
+                version: 1
+                editable: false
+            - name: Loki
+              type: loki
+              access: proxy
+              url: https://systemd-caddy:3100
+              jsonData:
+
+              version: 1
+              editable: false
+    - path: /usr/local/bin/grafana-cli
+      mode: 0755
+      overwrite: true
+      contents:
+        inline: |
+          #!/usr/bin/env sh
+          CONTAINER_NAME=systemd-grafana
+          COMMAND="grafana cli"
+
+          podman container exists $CONTAINER_NAME ||
+              echo "Must be run as root to access container $CONTAINER_NAME"
+          # shellcheck disable=SC2086
+          podman exec -it $CONTAINER_NAME $COMMAND "$@"
+    - path: /etc/vault-agent/config.d/grafana.hcl
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          template {
+            contents = <<-EOT
+              {{ with secret "kv/data/service/${ service_fqdn }/grafana" -}}
+              {{ .Data.data.admin_password }}
+              {{- end }}
+              EOT
+            destination = "/vault/secrets/grafana/admin_password"
+          }
+
+          template {
+            contents = <<-EOT
+              {{ with secret "kv/data/service/${ service_fqdn }/grafana" -}}
+              {{ .Data.data.image_renderer_token }}
+              {{- end }}
+              EOT
+            destination = "/vault/secrets/grafana/grafana_image_renderer_token"
+          }
+
+          template {
+            contents = <<-EOT
+              {{ with secret "kv/data/service/${ service_fqdn }/grafana" -}}
+              AUTH_TOKEN={{ .Data.data.image_renderer_token }}
+              {{- end }}
+              EOT
+            destination = "/vault/secrets/grafana-image-renderer.env"
+            perms = 0600
+          }
+    - path: /etc/containers/systemd/grafana.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=grafana
+          After=network-online.target local-fs.target vault-agent.service
+
+          [Container]
+          Image=docker.io/grafana/grafana-oss:${grafana_version}
+          Pull=newer
+          LogDriver=journald
+          UserNS=auto
+          Notify=healthy
+
+          Environment=GF_SECURITY_ADMIN_PASSWORD__FILE=/secrets/admin_password
+          Environment=GF_USERS_ALLOW_SIGN_UP=false
+          Environment=GF_RENDERING_SERVER_URL=http://systemd-grafana-image-renderer:8081/render
+          Environment=GF_RENDERING_CALLBACK_URL=http://systemd-grafana:3000/
+          Environment=GF_LOG_FILTERS=rendering:debug
+          Environment=GF_RENDERING_RENDERER_TOKEN__FILE=/secrets/grafana_image_renderer_token
+
+          Network=container.network
+
+          Volume=/var/containers/grafana/data:/var/lib/grafana:Z,U
+          Volume=/var/containers/secrets/grafana:/secrets:z,idmap,ro
+
+          HealthCmd="wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1
+          HealthInterval=10s
+          HealthRetries=5
+          HealthStartPeriod=20s
+          HealthTimeout=5s
+
+          [Service]
+          Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
+
+          [Install]
+          WantedBy=multi-user.target default.target
+    - path: /etc/containers/systemd/grafana-image-renderer.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=grafana
+          After=network-online.target local-fs.target vault-agent.service
+
+          [Container]
+          Image=docker.io/grafana/grafana-image-renderer:${grafana_image_renderer_version}
+          Pull=newer
+          AutoUpdate=registry
+          LogDriver=journald
+          UserNS=auto
+          Notify=healthy
+
+          EnvironmentFile=/var/containers/secrets/grafana-image-renderer.env
+          Network=container.network
+
+          HealthCmd="wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1
+          HealthInterval=10s
+          HealthRetries=5
+          HealthStartPeriod=20s
+          HealthTimeout=5s
+
+          [Service]
+          Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
+
+          [Install]
+          WantedBy=multi-user.target default.target

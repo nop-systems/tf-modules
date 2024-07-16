@@ -49,14 +49,39 @@ variable "service_fqdn" {
   description = "A FQDN defining the service, independent of the host"
 }
 
-variable "public_fqdn" {
+variable "grafana_fqdn" {
   type        = string
-  description = "Public FQDN where Nextcloud is reachable externally"
+  description = "Internal FQDN where Grafana will be reachable"
+}
+
+variable "loki_fqdn" {
+  type        = string
+  description = "Internal FQDN where Loki will be reachable"
+}
+
+variable "prometheus_fqdn" {
+  type        = string
+  description = "Internal FQDN where Prometheus will be reachable"
+}
+
+variable "alertmanager_fqdn" {
+  type        = string
+  description = "Internal FQDN where Altermanager will be reachable"
+}
+
+variable "ingress_fqdn" {
+  type        = string
+  description = "Internal FQDN where hosts can drop off their metrics and logs"
 }
 
 variable "trusted_proxies" {
-  description = "List of CIDRs that proxy headers should be accepted from"
   type        = list(string)
+  description = "List of CIDRs that proxy headers should be accepted from"
+}
+
+variable "admin_pki_mount" {
+  type        = string
+  description = "vault mount whose default issuer should be used for validating admin client certificates"
 }
 
 variable "acme_ca" {

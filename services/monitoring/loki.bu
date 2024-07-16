@@ -1,0 +1,301 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Relativ-IT/Butane-Schemas/Release/Butane-Schema.json
+variant: fcos
+version: "1.5.0"
+storage:
+  directories:
+    - path: /etc/loki
+    - path: /var/containers/loki/ruler-wal
+    - path: /var/containers/loki/rules
+    - path: /var/containers/loki/wal
+    - path: /var/containers/minio/data/loki-data
+    - path: /var/containers/secrets/minio
+  files:
+    - path: /etc/loki/loki.yaml
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          auth_enabled: true
+
+          server:
+            http_listen_address: 0.0.0.0
+            grpc_listen_address: 0.0.0.0
+            http_listen_port: 3100
+            grpc_listen_port: 9095
+            log_level: info
+
+          common:
+            path_prefix: /loki
+            compactor_address: http://systemd-loki-backend:3100
+            replication_factor: 1
+
+          storage_config:
+            aws:
+              endpoint: systemd-minio:9000
+              insecure: true
+              bucketnames: loki-data
+              access_key_id: $${MINIO_ROOT_USER}
+              secret_access_key: $${MINIO_ROOT_PASSWORD}
+              s3forcepathstyle: true
+
+          memberlist:
+            join_members:
+              - systemd-loki-read
+              - systemd-loki-write
+              - systemd-loki-backend
+            dead_node_reclaim_time: 30s
+            gossip_to_dead_nodes_time: 15s
+            left_ingesters_timeout: 30s
+            bind_addr: ['0.0.0.0']
+            bind_port: 7946
+            gossip_interval: 2s
+
+          ingester:
+            lifecycler:
+              join_after: 10s
+              observe_period: 5s
+              ring:
+                replication_factor: 1
+                kvstore:
+                  store: memberlist
+              final_sleep: 0s
+            chunk_idle_period: 1m
+            wal:
+              enabled: true
+              dir: /loki/wal
+            max_chunk_age: 1m
+            chunk_retain_period: 30s
+            chunk_encoding: snappy
+            chunk_target_size: 1.572864e+06
+            chunk_block_size: 262144
+            flush_op_timeout: 10s
+
+          ruler:
+            enable_api: true
+            enable_sharding: true
+            wal:
+              dir: /loki/ruler-wal
+            evaluation:
+              mode: remote
+              query_frontend:
+                address: dns:///systemd-loki-read:9095
+            storage:
+              type: local
+              local:
+                directory: /loki/rules
+            rule_path: /loki/prom-rules
+            alertmanager_url: http://systemd-alertmanager:9093
+            enable_alertmanager_v2: true
+            remote_write:
+              enabled: true
+              clients:
+                local:
+                  url: http://systemd-prometheus:9090/api/v1/write
+                  queue_config:
+                    # send immediately as soon as a sample is generated
+                    capacity: 1
+                    batch_send_deadline: 0s
+
+          schema_config:
+            configs:
+            - from: 2020-08-01
+              store: tsdb
+              object_store: s3
+              schema: v13
+              index:
+                prefix: index_
+                period: 24h
+
+          limits_config:
+            max_cache_freshness_per_query: '10m'
+            reject_old_samples: true
+            reject_old_samples_max_age: 30m
+            ingestion_rate_mb: 10
+            ingestion_burst_size_mb: 20
+            # parallelize queries in 15min intervals
+            split_queries_by_interval: 15m
+            volume_enabled: true
+
+          table_manager:
+            retention_deletes_enabled: true
+            retention_period: 336h
+
+          query_range:
+            # make queries more cache-able by aligning them with their step intervals
+            align_queries_with_step: true
+            max_retries: 5
+            parallelise_shardable_queries: true
+            cache_results: true
+
+          frontend:
+            log_queries_longer_than: 5s
+            compress_responses: true
+            max_outstanding_per_tenant: 2048
+
+          query_scheduler:
+            max_outstanding_requests_per_tenant: 1024
+
+          querier:
+            query_ingesters_within: 2h
+
+          compactor:
+            working_directory: /tmp/compactor
+    - path: /etc/containers/systemd/loki-read.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=loki read
+          After=network-online.target local-fs.target minio.service vault-agent.service
+
+          [Container]
+          Image=docker.io/grafana/loki:${loki_version}
+          Exec=-config.file=/etc/loki/loki.yaml -config.expand-env=true -target=read -legacy-read-mode=false
+          Pull=newer
+          LogDriver=journald
+          UserNS=auto
+          Notify=healthy
+
+          EnvironmentFile=/var/containers/secrets/minio/root_credentials.env
+          Volume=/etc/loki:/etc/loki:z,idmap,ro
+          Network=container.network
+
+          HealthCmd="wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1"
+          HealthInterval=10s
+          HealthRetries=5
+          HealthStartPeriod=20s
+          HealthTimeout=5s
+
+          [Service]
+          Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
+
+          [Install]
+          WantedBy=multi-user.target default.target
+    - path: /etc/containers/systemd/loki-write.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=loki write
+          After=network-online.target local-fs.target minio.service vault-agent.service
+
+          [Container]
+          Image=docker.io/grafana/loki:${loki_version}
+          Exec=-config.file=/etc/loki/loki.yaml -config.expand-env=true -target=write
+          Pull=newer
+          LogDriver=journald
+          UserNS=auto
+          Notify=healthy
+
+          EnvironmentFile=/var/containers/secrets/minio/root_credentials.env
+          Volume=/etc/loki:/etc/loki:z,idmap,ro
+          Volume=/var/containers/loki/wal:/loki/wal:Z,U
+          Network=container.network
+
+          HealthCmd="wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1"
+          HealthInterval=10s
+          HealthRetries=5
+          HealthStartPeriod=20s
+          HealthTimeout=5s
+
+          [Service]
+          Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
+
+          [Install]
+          WantedBy=multi-user.target default.target
+    - path: /etc/containers/systemd/loki-backend.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=loki backend
+          After=network-online.target local-fs.target minio.service vault-agent.service
+
+          [Container]
+          Image=docker.io/grafana/loki:${loki_version}
+          Exec=-config.file=/etc/loki/loki.yaml -config.expand-env=true -target=backend -legacy-read-mode=false
+          Pull=newer
+          LogDriver=journald
+          UserNS=auto
+          Notify=healthy
+
+          EnvironmentFile=/var/containers/secrets/minio/root_credentials.env
+          Volume=/etc/loki:/etc/loki:z,idmap,ro
+          Volume=/var/containers/loki/ruler-wal:/loki/ruler-wal:Z,U
+          Volume=/var/containers/loki/rules:/loki/rules:z,idmap,ro
+          Network=container.network
+
+          HealthCmd="wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1"
+          HealthInterval=10s
+          HealthRetries=5
+          HealthStartPeriod=20s
+          HealthTimeout=5s
+
+          [Service]
+          Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
+
+          [Install]
+          WantedBy=multi-user.target default.target
+####
+##    MinIO
+####
+    - path: /etc/vault-agent/config.d/minio.hcl
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          template {
+            contents = <<-EOT
+              {{ with secret "kv/data/service/${ service_fqdn }/minio" -}}
+              MINIO_ROOT_USER={{ .Data.data.root_user }}
+              MINIO_ROOT_PASSWORD={{ .Data.data.root_password }}
+              {{- end }}
+              EOT
+            destination = "/vault/secrets/minio/root_credentials.env"
+            perms = 0600
+          }
+    - path: /etc/containers/systemd/minio.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=minio S3 compatible object storage
+          After=network-online.target local-fs.target vault-agent.service
+
+          [Container]
+          Image=docker.io/minio/minio:${minio_version}
+          Exec=server --address 0.0.0.0:9000 --console-address 0.0.0.0:9001 /data
+          Pull=newer
+          LogDriver=journald
+          UserNS=auto
+          Notify=healthy
+
+          Environment=MINIO_PROMETHEUS_AUTH_TYPE=public
+          Environment=MINIO_UPDATE=off
+          EnvironmentFile=/var/containers/secrets/minio/root_credentials.env
+          Volume=/var/containers/minio/data:/data:Z,U
+          Network=container.network
+
+          HealthCmd=curl -f http://localhost:9000/minio/health/live
+          HealthInterval=15s
+          HealthRetries=5
+          HealthStartPeriod=20s
+          HealthTimeout=20s
+
+          [Service]
+          Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
+
+          [Install]
+          WantedBy=multi-user.target default.target
