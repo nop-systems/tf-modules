@@ -60,7 +60,7 @@ module "fcos" {
   root_ca_pem                 = var.root_ca_pem
   matchbox_http_endpoint      = var.matchbox_http_endpoint
   services                    = [var.service_fqdn]
-  cnames                      = concat(local.cnames, internal_fqdns)
+  cnames                      = concat(local.cnames, local.internal_fqdns)
 }
 
 module "cname_records" {
