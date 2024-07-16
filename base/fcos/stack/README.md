@@ -40,6 +40,7 @@ Combined Ignition + Matchbox + VM modules for standard deployments
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_additional_token_policies"></a> [additional\_token\_policies](#input\_additional\_token\_policies) | List of additional Policies assigned to the VM’s approle | `list(string)` | `[]` | no |
+| <a name="input_admin_pki_mount"></a> [admin\_pki\_mount](#input\_admin\_pki\_mount) | PKI mount path for admin client certificates (e.g. pki-admin) | `string` | n/a | yes |
 | <a name="input_butane_snippets"></a> [butane\_snippets](#input\_butane\_snippets) | (application specific) butane config | `list(string)` | n/a | yes |
 | <a name="input_cloudflare_zone_id"></a> [cloudflare\_zone\_id](#input\_cloudflare\_zone\_id) | Cloudflare Zone ID | `string` | n/a | yes |
 | <a name="input_cnames"></a> [cnames](#input\_cnames) | List of CNAMEs as FQDNs | `list(string)` | `[]` | no |
@@ -49,7 +50,6 @@ Combined Ignition + Matchbox + VM modules for standard deployments
 | <a name="input_fqdn"></a> [fqdn](#input\_fqdn) | Fully Qualified Domain Name of VM | `string` | n/a | yes |
 | <a name="input_matchbox_http_endpoint"></a> [matchbox\_http\_endpoint](#input\_matchbox\_http\_endpoint) | matchbox http endpoint | `string` | n/a | yes |
 | <a name="input_memory"></a> [memory](#input\_memory) | Memory in MB | `number` | `2048` | no |
-| <a name="input_monitoring_client_pki_mount"></a> [monitoring\_client\_pki\_mount](#input\_monitoring\_client\_pki\_mount) | PKI mount path for monitoring client certificates (e.g. pki-monitoring) | `string` | n/a | yes |
 | <a name="input_root_ca_pem"></a> [root\_ca\_pem](#input\_root\_ca\_pem) | Private Root Certificate (PEM) | `string` | n/a | yes |
 | <a name="input_services"></a> [services](#input\_services) | List of Services as shared FQDNs (possibly with shared secrets) | `list(string)` | `[]` | no |
 | <a name="input_vault_url"></a> [vault\_url](#input\_vault\_url) | Vault URL | `string` | n/a | yes |
@@ -72,6 +72,8 @@ Combined Ignition + Matchbox + VM modules for standard deployments
 module "" {
   source = "git@github.com:nop-systems/tf-modules.git//<module-path>?ref=<tag>"
   
+  /* PKI mount path for admin client certificates (e.g. pki-admin) (required) */
+  admin_pki_mount =
   /* (application specific) butane config (required) */
   butane_snippets =
   /* Cloudflare Zone ID (required) */
@@ -80,8 +82,6 @@ module "" {
   fqdn =
   /* matchbox http endpoint (required) */
   matchbox_http_endpoint =
-  /* PKI mount path for monitoring client certificates (e.g. pki-monitoring) (required) */
-  monitoring_client_pki_mount =
   /* Private Root Certificate (PEM) (required) */
   root_ca_pem =
   /* Vault URL (required) */
@@ -115,11 +115,11 @@ module "" {
 module "" {
   source = "git@github.com:nop-systems/tf-modules.git//?ref="
   
+  admin_pki_mount =
   butane_snippets =
   cloudflare_zone_id =
   fqdn =
   matchbox_http_endpoint =
-  monitoring_client_pki_mount =
   root_ca_pem =
   vault_url =
   xo_network_id =

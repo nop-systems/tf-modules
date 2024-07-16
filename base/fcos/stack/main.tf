@@ -19,15 +19,15 @@ module "approle" {
 module "ignition" {
   source = "../ignition"
 
-  approle_role_id             = module.approle.roleid
-  approle_wrapped_secret_id   = module.approle.secretid
-  butane_snippets             = var.butane_snippets
-  fqdn                        = var.fqdn
-  cnames                      = var.cnames
-  services                    = var.services
-  root_ca_pem                 = var.root_ca_pem
-  vault_url                   = var.vault_url
-  monitoring_client_pki_mount = var.monitoring_client_pki_mount
+  approle_role_id           = module.approle.roleid
+  approle_wrapped_secret_id = module.approle.secretid
+  butane_snippets           = var.butane_snippets
+  fqdn                      = var.fqdn
+  cnames                    = var.cnames
+  services                  = var.services
+  root_ca_pem               = var.root_ca_pem
+  vault_url                 = var.vault_url
+  admin_pki_mount           = var.admin_pki_mount
 }
 
 module "matchbox" {

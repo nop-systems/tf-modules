@@ -93,7 +93,7 @@ variable "cloudflare_zone_id" {
   type        = string
 }
 
-variable "monitoring_client_pki_mount" {
+variable "admin_pki_mount" {
   type        = string
-  description = "PKI mount path for monitoring client certificates (e.g. pki-monitoring)"
+  description = "PKI mount path for admin client certificates (e.g. pki-admin)"
 }
