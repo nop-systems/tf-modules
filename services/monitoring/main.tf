@@ -1,7 +1,10 @@
 locals {
-  services       = ["loki", "prometheus", "grafana", "alertmanager", "ingress"]
-  cnames         = [for name in local.services : "${name}.${fqdn}"]
-  internal_fqdns = [var.grafana_fqdn, var.loki_fqdn, var.prometheus_fqdn, var.alertmanager_fqdn, var.ingress_fqdn]
+  services = toset(["loki", "prometheus", "grafana", "alertmanager", "ingress"])
+  cnames   = toset([for name in local.services : "${name}.${var.fqdn}"])
+  internal_fqdns = toset([
+    var.grafana_fqdn, var.loki_fqdn, var.prometheus_fqdn,
+    var.alertmanager_fqdn, var.ingress_fqdn
+  ])
 }
 
 module "fcos" {
@@ -42,7 +45,7 @@ module "fcos" {
       grafana_fqdn      = var.grafana_fqdn
       ingress_fqdn      = var.ingress_fqdn
       loki_fqdn         = var.loki_fqdn
-      prometheus.fqdn   = var.prometheus_fqdn
+      prometheus_fqdn   = var.prometheus_fqdn
       service_fqdn      = var.service_fqdn
       trusted_proxies   = join(" ", var.trusted_proxies)
     })
