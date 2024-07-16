@@ -38,9 +38,7 @@ storage:
             - name: Loki
               type: loki
               access: proxy
-              url: https://systemd-caddy:3100
-              jsonData:
-
+              url: http://systemd-caddy:3100
               version: 1
               editable: false
     - path: /usr/local/bin/grafana-cli

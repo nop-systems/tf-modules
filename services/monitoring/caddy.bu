@@ -94,7 +94,10 @@ storage:
           }
 
           :3100 {
-            import common
+            handle_errors {
+              respond "Error {err.status_code} {err.status_text} on ${fqdn}: {err.message} ({err.trace}, {err.id})"
+            }
+            log
             import loki_handlers
           }
 
