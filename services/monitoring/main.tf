@@ -18,7 +18,7 @@ module "fcos" {
   disk_size = 50
 
   butane_snippets = [
-    templatefile("${path.module}/monitoring.bu", {
+    templatefile("${path.module}/prometheus.bu", {
       alertmanager_version      = "v0.27.0"
       blackbox_exporter_version = "v0.25.0"
       prometheus_version        = "v2.45.6"
