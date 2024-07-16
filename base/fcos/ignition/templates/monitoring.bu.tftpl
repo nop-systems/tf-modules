@@ -56,7 +56,7 @@ storage:
           Volume=/var/log/journal:/var/log/journal:z,idmap,ro
           Volume=/run/log/journal:/run/log/journal:z,idmap,ro
           Volume=/etc/monitoring/alloy.d:/config:Z,U,ro
-          Volume=/var/containers/secrets/tls/this:/tls:z,idmap,ro
+          Volume=/var/containers/secrets/tls/${fqdn}:/tls:z,idmap,ro
           Volume=/var/containers/secrets/tls-admin:/tls-admin:z,idmap,ro
           Pod=monitoring.pod
 
