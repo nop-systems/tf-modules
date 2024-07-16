@@ -99,8 +99,6 @@ resource "vault_pki_secret_backend_role" "entity_metadata" {
   allow_subdomains            = true
   allow_ip_sans               = false
   allow_localhost             = false
-
-  client_flag = false
 }
 
 #####
