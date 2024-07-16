@@ -60,14 +60,14 @@ storage:
           Volume=/etc/ssh/certs/:/data/certs/:z,idmap
           Volume=/etc/vault-ssh-cli/config.yaml:/etc/vault-ssh-cli/config.yaml:Z,ro
           Volume=/var/containers/vault-agent/token/vault-token:/root/.vault-token:ro
-          Volume=%t/metrics/%N:/data/metrics:z,idmap
+          Volume=%t/metrics:/data/metrics:z,idmap
 
           Pod=vault-agent.pod
 
           [Service]
           Type=oneshot
 
-          RuntimeDirectory=metrics/%N
+          RuntimeDirectory=metrics
           RuntimeDirectoryPreserve=yes
 
           Restart=on-failure
@@ -77,13 +77,7 @@ storage:
 
           [Install]
           WantedBy=multi-user.target default.target
-    - path: /etc/monitoring/expexp.d/vault-ssh-signer.yaml
-      mode: 0644
-      contents:
-        inline: |
-          method: file
-          file:
-            path: /metrics/vault-ssh-signer/vault-ssh-signer.prom
+
 systemd:
   units:
     - name: vault-ssh-signer.timer

@@ -1,11 +1,6 @@
 locals {
   xo_tags = [
     "os=Fedora Core OS",
-    "prom:node=9999",
-    "prom:podman=9999",
-    "prom:vault-agent=9999",
-    "prom:vault-ssh-signer=9999",
-    "prom:zincati=9999"
   ]
 }
 
@@ -26,15 +21,15 @@ data "ct_config" "this" {
       vault_ssh_cli_version = "latest"
     }),
     templatefile("${path.module}/templates/pki.bu.tftpl", {
-      fqdn        = var.fqdn
-      alt_names   = join(",", concat(var.cnames, var.services))
-      vault_url   = var.vault_url
-      root_ca_pem = jsonencode(var.root_ca_pem)
+      fqdn            = var.fqdn
+      alt_names       = join(",", concat(var.cnames, var.services))
+      vault_url       = var.vault_url
+      root_ca_pem     = jsonencode(var.root_ca_pem)
+      admin_pki_mount = var.admin_pki_mount
     }),
     templatefile("${path.module}/templates/monitoring.bu.tftpl", {
-      fqdn                        = var.fqdn
-      exporter_exporter_version   = "latest"
-      monitoring_client_pki_mount = var.monitoring_client_pki_mount
+      fqdn                  = var.fqdn
+      grafana_alloy_version = "latest"
     })
   ], var.butane_snippets)
   # pretty_print = true

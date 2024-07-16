@@ -43,7 +43,7 @@ variable "root_ca_pem" {
   description = "Private Root Certificate (PEM)"
 }
 
-variable "monitoring_client_pki_mount" {
+variable "admin_pki_mount" {
   type        = string
-  description = "PKI mount path for monitoring client certificates (e.g. pki-monitoring)"
+  description = "Vault PKI mount for admin client certificates"
 }

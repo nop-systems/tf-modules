@@ -3,14 +3,15 @@ variant: fcos
 version: "1.5.0"
 storage:
   directories:
-    - path: /etc/monitoring/expexp.d
+    - path: /etc/monitoring/alloy.d
       mode: 0755
+    - path: /var/containers/alloy/data
   files:
     - path: /etc/tmpfiles.d/metrics.conf
       mode: 0644
       contents:
         inline: |
-          #Type Path         Mode User Group Age Argument
+          #Type Path         Mode User Group Age Argument 
           d     /run/metrics -    -    -     ~7d -
     - path: /etc/containers/systemd/monitoring.network
       mode: 0644
@@ -31,36 +32,32 @@ storage:
           Network=monitoring.network
           PodmanArgs=--userns=auto --exit-policy=continue
 
-          PublishPort=9999:9999
+          PublishPort=12345:12345
           Network=monitoring.network
           Network=vault-agent.network
           Network=container.network
-    - path: /etc/containers/systemd/exporter-exporter.container
+    - path: /etc/containers/systemd/alloy.container
       mode: 0644
       contents:
         inline: |
           [Unit]
-          Description=Exporter Exporter - prometheus exporter proxy
+          Description= Grafana Alloy metrics and logs agent
           After=network-online.target local-fs.target
 
           [Container]
-          Image=docker.io/qubitproducts/exporter_exporter:${exporter_exporter_version}
-          Exec= -config.file /config/expexp.yaml \
-            -config.dirs=/config/expexp.d \
-            -web.listen-address="" \
-            -web.tls.listen-address="[::]:9999" \
-            -web.tls.cert=/tls/fullchain.pem \
-            -web.tls.key=/tls/privkey.pem \
-            -web.tls.ca=/tls/client_ca.pem \
-            -web.tls.verify
+          Image=docker.io/grafana/alloy:${grafana_alloy_version}
+          Exec= run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /config
 
           Pull=newer
           AutoUpdate=registry
           LogDriver=journald
 
-          Volume=/run/metrics:/metrics:z,idmap,ro
-          Volume=/etc/monitoring:/config:Z,U,ro
-          Volume=/var/containers/secrets/tls-monitoring:/tls:z,idmap,ro
+          Volume=/var/containers/alloy/data:/var/lib/alloy/data:Z,U
+          Volume=/var/log/journal:/var/log/journal:z,idmap,ro
+          Volume=/run/log/journal:/run/log/journal:z,idmap,ro
+          Volume=/etc/monitoring/alloy.d:/config:Z,U,ro
+          Volume=/vault/secrets/tls/${fqdn}:/tls:z,idmap,ro
+          Volume=/vault/secrets/tls-admin:/tls-admin:z,idmap,ro
           Pod=monitoring.pod
 
           [Service]
@@ -71,54 +68,98 @@ storage:
 
           [Install]
           WantedBy=multi-user.target default.target
-    - path: /etc/monitoring/expexp.yaml
+    - path: /etc/monitoring/alloy.d/main.alloy
       mode: 0644
       contents:
         inline: |
-          modules:
-            node:
-              method: http
-              http:
-                address: host.containers.internal
-                port: 9100
-            podman:
-              method: http
-              http:
-                address: host.containers.internal
-                port: 9882
-            zincati:
-              method: file
-              file:
-                path: /metrics/zincati/zincati.prom
-    - path: /etc/vault-agent/config.d/monitoring.hcl
-      mode: 0644
-      contents:
-        inline: |
-          # https://github.com/hashicorp/consul-template/blob/main/docs/templating-language.md#pkicert
-          template {
-            contents = <<-EOT
-              {{ with pkiCert "pki-servers/issue/entity-metadata" "common_name=monitoring.${fqdn}" -}}
-              {{ .Cert }}{{ .CA }}{{ .Key }}
-              {{- .Cert | writeToFile "/vault/secrets/tls-monitoring/fullchain.pem" "" "" "0644" -}}
-              {{- .CA | writeToFile "/vault/secrets/tls-monitoring/fullchain.pem" "" "" "0644" "append" -}}
-              {{- .Key | writeToFile "/vault/secrets/tls-monitoring/privkey.pem" "" "" "0644" -}}
-              {{- .Cert | writeToFile "/vault/secrets/tls-monitoring/cert.pem" "" "" "0644" -}}
-              {{- end }}
-            EOT
-            destination = "/vault/secrets/tls-monitoring/fullchain+privkey.pem"
-            error_on_missing_key = true
+          http {
+            tls {
+              cert_pem = "/tls/fullchain.pem"
+              key_pem = "/tls/privkey.pem"
+              client_auth_type = "RequireAndVerifyClientCert"
+              client_ca_pem = "/tls-admin/admin_client_ca.pem"
+            }
           }
 
-          template {
-            contents = "{{ with secret \"pki-root/cert/ca\" }}{{ .Data.certificate }}{{ end }}"
-            destination = "/vault/secrets/tls-monitoring/root_ca.pem"
-            error_on_missing_key = true
+          prometheus.remote_write "monitoring-ingress" {
+            endpoint {
+              url = "https://monitoring-ingress.service.studis-bht.de/prom/api/v1/push"
+              cert_pem = "/tls/fullchain.pem"
+              key_pem = "/tls/privkey.pem"
+            }
           }
 
-          template {
-            contents = "{{ with secret \"${monitoring_client_pki_mount}/cert/ca\" }}{{ .Data.certificate }}{{ end }}"
-            destination = "/vault/secrets/tls-monitoring/client_ca.pem"
-            error_on_missing_key = true
+          loki.write "monitoring-ingress" {
+            endpoint {
+              url = "https://monitoring-ingress.service.studis-bht.de/loki/api/v1/push"
+              cert_pem = "/tls/fullchain.pem"
+              key_pem = "/tls/privkey.pem"
+            }
+          }
+
+          loki.relabel "journal" {
+            forward_to = []
+
+            rule {
+              source_labels = ["__journal__systemd_unit"]
+              target_label  = "unit"
+            }
+            rule {
+              source_labels = ["__journal__boot_id"]
+              target_label  = "boot_id"
+            }
+            rule {
+              source_labels = ["__journal__transport"]
+              target_label  = "transport"
+            }
+            rule {
+              source_labels = ["__journal_priority_keyword"]
+              target_label  = "level"
+            }
+            rule {
+              source_labels = ["__journal__hostname"]
+              target_label  = "instance"
+            }
+          }
+
+          loki.source.journal "read" {
+            forward_to = [
+              loki.write.monitoring-ingress.receiver,
+            ]
+            relabel_rules = loki.relabel.journal.rules
+            labels = {
+              "job" = "journal",
+            }
+          }
+
+          prometheus.exporter.self "alloy" {}
+
+          prometheus.scrape "alloy" {
+            targets    = prometheus.exporter.self.alloy.targets
+            forward_to = [
+              prometheus.remote_write.montoring-ingress.receiver,
+            ]
+          }
+
+          prometheus.scrape "node" {
+            forward_to = [
+              prometheus.remote_write.monitoring-ingress.receiver,
+            ]
+            targets = [
+              {
+                "__address__" = "host.containers.internal:9100",
+              }
+            ]
+          }
+          prometheus.scrape "podman" {
+            forward_to = [
+              prometheus.remote_write.monitoring-ingress.receiver,
+            ]
+            targets = [
+              {
+                "__address__" = "host.containers.internal:9882",
+              }
+            ]
           }
 
 systemd:
@@ -137,6 +178,7 @@ systemd:
             ExecStart=/usr/bin/prometheus-node-exporter \
               --web.listen-address 10.89.255.1:9100 \
               --collector.systemd
+              --collector.textfile.directory /run/metrics
     - name: prometheus-podman-exporter.service
       dropins:
         - name: args.conf
@@ -160,16 +202,16 @@ systemd:
         Type=oneshot
         ExecStart=socat -u \
           UNIX-CONNECT:/run/zincati/public/metrics.promsock \
-          OPEN:/run/metrics/zincati/zincati.prom,creat
-        ExecStartPost=chcon system_u:object_r:container_file_t:s0 /run/metrics/zincati/zincati.prom
+          OPEN:/run/metrics/zincati.prom,creat
+        ExecStartPost=chcon system_u:object_r:container_file_t:s0 /run/metrics/zincati.prom
 
-        RuntimeDirectory=metrics/zincati
+        RuntimeDirectory=metrics
         RuntimeDirectoryPreserve=yes
     - name: zincati-metrics-export.timer
       enabled: true
       contents: |
         [Unit]
-        Description=export zincati metrics from socket to /run/metrics/zincati/zincati.prom
+        Description=export zincati metrics from socket to /run/metrics/zincati.prom
         After=zincati.service
         Requires=zincati.service
 
