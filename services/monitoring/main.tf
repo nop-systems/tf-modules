@@ -27,6 +27,7 @@ module "fcos" {
       xo_sd_proxy_version       = "v0.1.0"
     }),
     templatefile("${path.module}/grafana.bu", {
+      grafana_fqdn                   = var.grafana_fqdn
       grafana_image_renderer_version = "latest"
       grafana_version                = "11.1.0"
       service_fqdn                   = var.service_fqdn

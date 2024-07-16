@@ -107,6 +107,7 @@ storage:
           Environment=GF_RENDERING_CALLBACK_URL=http://systemd-grafana:3000/
           Environment=GF_LOG_FILTERS=rendering:debug
           Environment=GF_RENDERING_RENDERER_TOKEN__FILE=/secrets/grafana_image_renderer_token
+          Environment=GF_SERVER_ROOT_URL=https://${grafana_fqdn}
 
           Network=container.network
 
