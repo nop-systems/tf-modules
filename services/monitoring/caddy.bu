@@ -45,7 +45,7 @@ storage:
           }
 
           # Grafana
-          https://${fqdn}, https://${grafana_fqdn}, https://${service_fqdn}, https:// {
+          https://${fqdn}, https://grafana.${fqdn}, https://${grafana_fqdn}, https://${service_fqdn}, https:// {
             import common
             reverse_proxy systemd-grafana:3000
           }
@@ -147,19 +147,6 @@ storage:
               rewrite * /api/v1{uri}
               reverse_proxy systemd-prometheus:9090
             }
-          }
-    - path: /etc/vault-agent/config.d/caddy.hcl
-      mode: 0644
-      overwrite: true
-      contents:
-        inline: |
-          template {
-            contents = <<-EOT
-              {{ with secret "${ admin_pki_mount }/cert/ca" -}}
-              {{ .Data.data.certificate }}
-              {{- end }}
-              EOT
-            destination = "/vault/secrets/tls-admin/admin_client_ca.pem"
           }
     - path: /usr/local/bin/caddy
       mode: 0755
