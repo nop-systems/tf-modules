@@ -8,7 +8,7 @@ locals {
 }
 
 module "fcos" {
-  source = "git@github.com:nop-systems/tf-modules.git//base/fcos/stack?ref=fcos/v0.5.0"
+  source = "git@github.com:nop-systems/tf-modules.git//base/fcos/stack?ref=fcos/v0.5.2"
 
   fqdn      = var.fqdn
   desc      = "Monitoring Stack"
@@ -21,7 +21,7 @@ module "fcos" {
     templatefile("${path.module}/prometheus.bu", {
       alertmanager_version      = "v0.27.0"
       blackbox_exporter_version = "v0.25.0"
-      prometheus_version        = "v2.45.6"
+      prometheus_version        = "v2.53.1"
       service_fqdn              = var.service_fqdn
       snmp_exporter_version     = "v0.26.0"
       xo_sd_proxy_version       = "v0.1.0"

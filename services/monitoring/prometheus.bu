@@ -101,6 +101,8 @@ storage:
           UserNS=auto
           Notify=healthy
 
+          Exec=--web.enable-remote-write-receiver --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/prometheus --web.console.libraries=/usr/share/prometheus/console_libraries --web.console.templates=/usr/share/prometheus/consoles
+
           Volume=/etc/prometheus:/etc/prometheus:Z,U
           Volume=/var/containers/prometheus/data:/prometheus:Z,U
           Network=container.network

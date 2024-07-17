@@ -147,6 +147,8 @@ storage:
               rewrite * /api/v1{uri}
               reverse_proxy systemd-prometheus:9090
             }
+
+            respond "Not Found" 404
           }
     - path: /usr/local/bin/caddy
       mode: 0755
