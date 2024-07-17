@@ -158,18 +158,21 @@ storage:
 
           [Install]
           WantedBy=multi-user.target default.target
-    - path: /etc/monitoring/alloy.d/main.alloy
+    - path: /etc/monitoring/alloy.d/vault-agent.alloy
       mode: 0644
       contents:
         inline: |
-          prometheus.scrape "vault-agent.alloy" {
+          prometheus.scrape "vault_agent" {
             forward_to = [
-              prometheus.remote_write.monitoring-ingress.receiver,
+              prometheus.relabel.replace_instance.receiver,
             ]
             targets = [
               {
                 "__address__" = "systemd-vault-agent:8299",
               }
             ]
-            metrics_path = "/agent/v1/metrics?format=prometheus"
+            metrics_path = "/agent/v1/metrics"
+            params = {
+              "format" = ["prometheus"],
+            }
           }

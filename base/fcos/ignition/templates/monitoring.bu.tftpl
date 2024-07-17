@@ -33,7 +33,6 @@ storage:
           PodmanArgs=--userns=auto --exit-policy=continue
 
           PublishPort=12345:12345
-          Network=monitoring.network
           Network=vault-agent.network
           Network=container.network
     - path: /etc/containers/systemd/alloy.container
@@ -83,10 +82,11 @@ storage:
 
           prometheus.remote_write "monitoring_ingress" {
             endpoint {
-              url = "https://monitoring-ingress.service.studis-bht.de/prom/api/v1/push"
+              url = "https://monitoring-ingress.service.studis-bht.de/prom/api/v1/write"
               tls_config {
                 cert_pem = "/tls/fullchain.pem"
                 key_pem = "/tls/privkey.pem"
+                ca_file = "/tls/root_ca.pem"
               }
             }
           }
@@ -97,6 +97,7 @@ storage:
               tls_config {
                 cert_pem = "/tls/fullchain.pem"
                 key_pem = "/tls/privkey.pem"
+                ca_file = "/tls/root_ca.pem"
               }
             }
           }
@@ -134,34 +135,46 @@ storage:
             labels = {
               "job" = "journal",
             }
+            path = "/var/log/journal"
+          }
+
+          prometheus.relabel "replace_instance" {
+            forward_to = [
+              prometheus.remote_write.monitoring_ingress.receiver,
+            ]
+
+            rule {
+              replacement = "${fqdn}"
+              target_label = "instance"
+            }
           }
 
           prometheus.exporter.self "alloy" {}
 
           prometheus.scrape "alloy" {
-            targets    = prometheus.exporter.self.alloy.targets
             forward_to = [
-              prometheus.remote_write.monitoring_ingress.receiver,
+              prometheus.relabel.replace_instance.receiver,
             ]
+            targets    = prometheus.exporter.self.alloy.targets
           }
 
           prometheus.scrape "node" {
             forward_to = [
-              prometheus.remote_write.monitoring_ingress.receiver,
+              prometheus.relabel.replace_instance.receiver,
             ]
             targets = [
               {
-                "__address__" = "host.containers.internal:9100",
+                "__address__" = "10.89.255.1:9100",
               },
             ]
           }
           prometheus.scrape "podman" {
             forward_to = [
-              prometheus.remote_write.monitoring_ingress.receiver,
+              prometheus.relabel.replace_instance.receiver,
             ]
             targets = [
               {
-                "__address__" = "host.containers.internal:9882",
+                "__address__" = "10.89.255.1:9882",
               },
             ]
           }
