@@ -300,3 +300,21 @@ storage:
             contents = "{{ with secret \"kv/data/service/${ service_fqdn }/authentik_ldap\" }}{{ .Data.data.token }}{{ end }}"
             destination = "/vault/secrets/authentik_ldap/token"
           }
+    - path: /etc/monitoring/alloy.d/authentik.alloy
+      mode: 0644
+      contents:
+        inline: |
+          prometheus.scrape "authentik" {
+            forward_to = [
+              prometheus.relabel.replace_instance.receiver,
+            ]
+            targets = [
+              {
+                "__address__" = "systemd-authentik:9119",
+              },
+              {
+                "__address__" = "systemd-authentik-ldap:9119",
+              },
+            ]
+            metrics_path = "/metrics"
+          }

@@ -1,5 +1,5 @@
 module "fcos" {
-  source = "git@github.com:nop-systems/tf-modules.git//base/fcos/stack?ref=fcos/v0.2.6"
+  source = "git@github.com:nop-systems/tf-modules.git//base/fcos/stack?ref=fcos/v0.5.3"
   # source = "../../base/fcos/stack"
 
   fqdn      = var.fqdn
@@ -12,7 +12,7 @@ module "fcos" {
   butane_snippets = [templatefile("${path.module}/authentik.bu", {
     service_fqdn        = var.service_fqdn
     trusted_proxy_cidrs = var.trusted_proxy_cidrs
-    authentik_version   = "2024.6.0"
+    authentik_version   = "2024.6.1"
   })]
 
   cloudflare_zone_id     = var.cloudflare_zone_id
@@ -21,6 +21,7 @@ module "fcos" {
   xo_template_id         = var.xo_template_id
   vault_url              = var.vault_url
   root_ca_pem            = var.root_ca_pem
+  admin_pki_mount        = var.admin_pki_mount
   matchbox_http_endpoint = var.matchbox_http_endpoint
   services               = [var.service_fqdn]
 }

@@ -15,7 +15,7 @@ No providers.
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_fcos"></a> [fcos](#module\_fcos) | git@github.com:nop-systems/tf-modules.git//base/fcos/stack | fcos/v0.2.6 |
+| <a name="module_fcos"></a> [fcos](#module\_fcos) | git@github.com:nop-systems/tf-modules.git//base/fcos/stack | fcos/v0.5.3 |
 | <a name="module_service_cname_record"></a> [service\_cname\_record](#module\_service\_cname\_record) | git@github.com:nop-systems/tf-modules.git//base/dns-record | dns-record/v0.1.0 |
 
 ## Resources
@@ -26,6 +26,7 @@ No resources.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_admin_pki_mount"></a> [admin\_pki\_mount](#input\_admin\_pki\_mount) | vault mount whose default issuer should be used for validating admin client certificates | `string` | n/a | yes |
 | <a name="input_cloudflare_zone_id"></a> [cloudflare\_zone\_id](#input\_cloudflare\_zone\_id) | Cloudflare Zone ID | `string` | n/a | yes |
 | <a name="input_fqdn"></a> [fqdn](#input\_fqdn) | Fully Qualified Domain Name of VM | `string` | n/a | yes |
 | <a name="input_matchbox_http_endpoint"></a> [matchbox\_http\_endpoint](#input\_matchbox\_http\_endpoint) | matchbox http endpoint | `string` | n/a | yes |
@@ -48,6 +49,8 @@ No outputs.
 module "" {
   source = "git@github.com:nop-systems/tf-modules.git//<module-path>?ref=<tag>"
   
+  /* vault mount whose default issuer should be used for validating admin client certificates (required) */
+  admin_pki_mount =
   /* Cloudflare Zone ID (required) */
   cloudflare_zone_id =
   /* Fully Qualified Domain Name of VM (required) */
@@ -77,6 +80,7 @@ module "" {
 module "" {
   source = "git@github.com:nop-systems/tf-modules.git//?ref="
   
+  admin_pki_mount =
   cloudflare_zone_id =
   fqdn =
   matchbox_http_endpoint =
