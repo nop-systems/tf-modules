@@ -23,5 +23,4 @@ module "hello-world" {
   admin_pki_mount        = var.admin_pki_mount
   root_ca_pem            = var.root_ca_pem
   matchbox_http_endpoint = var.matchbox_http_endpoint
-  services               = [var.service_fqdn]
 }
