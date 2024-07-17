@@ -45,7 +45,7 @@ storage:
 
           [Container]
           Image=docker.io/grafana/alloy:${grafana_alloy_version}
-          Exec= run -disable-reporting --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /config
+          Exec= run --disable-reporting --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /config
 
           Pull=newer
           AutoUpdate=registry
@@ -73,10 +73,10 @@ storage:
         inline: |
           http {
             tls {
-              cert_pem = "/tls/fullchain.pem"
-              key_pem = "/tls/privkey.pem"
+              cert_file = "/tls/fullchain.pem"
+              key_file = "/tls/privkey.pem"
               client_auth_type = "RequireAndVerifyClientCert"
-              client_ca_pem = "/tls-admin/admin_client_ca.pem"
+              client_ca_file = "/tls-admin/admin_client_ca.pem"
             }
           }
 
@@ -84,8 +84,8 @@ storage:
             endpoint {
               url = "https://monitoring-ingress.service.studis-bht.de/prom/api/v1/write"
               tls_config {
-                cert_pem = "/tls/fullchain.pem"
-                key_pem = "/tls/privkey.pem"
+                cert_file = "/tls/fullchain.pem"
+                key_file = "/tls/privkey.pem"
                 ca_file = "/tls/root_ca.pem"
               }
             }
@@ -95,8 +95,8 @@ storage:
             endpoint {
               url = "https://monitoring-ingress.service.studis-bht.de/loki/api/v1/push"
               tls_config {
-                cert_pem = "/tls/fullchain.pem"
-                key_pem = "/tls/privkey.pem"
+                cert_file = "/tls/fullchain.pem"
+                key_file = "/tls/privkey.pem"
                 ca_file = "/tls/root_ca.pem"
               }
             }
@@ -237,4 +237,4 @@ systemd:
         OnUnitActiveSec=5min
 
         [Install]
-        WantedBy=multi-user.target
+        WantedBy=timers.target
