@@ -30,7 +30,7 @@ storage:
 
           Volume=/var/containers/caddy/config:/config:Z,U
           Volume=/var/containers/caddy/data:/data:Z,U
-          Volume=/var/containers/caddy/Caddyfile:/etc/caddy/Caddyfile:Z,ro
+          Volume=/etc/caddy/Caddyfile:/etc/caddy/Caddyfile:Z,ro
           # Volume=secrets.volume:/secrets:z,idmap,ro
 
           Network=container.network
@@ -70,12 +70,16 @@ storage:
     #         EOT
     #         destination = "/secrets/fortune"
     #       }
-    - path: /var/containers/caddy/Caddyfile
+    - path: /etc/caddy/Caddyfile
       overwrite: true
       contents:
         inline: |
           {
             acme_ca ${acme_url}
+
+            servers {
+              metrics
+            }
           }
 
           ${fqdn} {
@@ -85,4 +89,23 @@ storage:
 
           :443, :80 {
             respond ${fqdn}
+          }
+
+          :9119 {
+            metrics /metrics
+          }
+    - path: /etc/monitoring/alloy.d/caddy.alloy
+      mode: 0644
+      contents:
+        inline: |
+          prometheus.scrape "caddy" {
+            forward_to = [
+              prometheus.relabel.replace_instance.receiver,
+            ]
+            targets = [
+              {
+                "__address__" = "systemd-caddy:9119",
+              },
+            ]
+            metrics_path = "/metrics"
           }

@@ -54,7 +54,8 @@ variable "acme_url" {
   description = "URL to ACME directory"
 }
 
-variable "monitoring_client_pki_mount" {
+variable "admin_pki_mount" {
   type        = string
-  description = "PKI mount path for monitoring client certificates (e.g. pki-monitoring)"
+  description = "vault mount whose default issuer should be used for validating admin client certificates"
 }
+
