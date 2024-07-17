@@ -310,10 +310,10 @@ storage:
             ]
             targets = [
               {
-                "__address__" = "systemd-authentik:9119",
+                "__address__" = "systemd-authentik:9300",
               },
               {
-                "__address__" = "systemd-authentik-ldap:9119",
+                "__address__" = "systemd-authentik-ldap:9300",
               },
             ]
             metrics_path = "/metrics"
