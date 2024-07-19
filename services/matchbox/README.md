@@ -40,9 +40,7 @@ No resources.
 
 ## Outputs
 
-| Name | Description |
-|------|-------------|
-| <a name="output_ignition"></a> [ignition](#output\_ignition) | n/a |
+No outputs.
 
 ## Usage
 
