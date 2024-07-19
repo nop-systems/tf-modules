@@ -5,7 +5,7 @@ module "fcos" {
   fqdn      = var.fqdn
   desc      = "matchbox"
   xo_tags   = var.xo_tags
-  memory    = 2048
+  memory    = 3072
   cpu_cores = 1
   disk_size = 20
 
