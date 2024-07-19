@@ -48,3 +48,13 @@ variable "admin_pki_mount" {
   type        = string
   description = "PKI mount path for admin client certificates (e.g. pki-admin)"
 }
+
+variable "service_fqdn" {
+  type        = string
+  description = "FQDN defining service"
+}
+
+variable "internal_fqdn" {
+  type        = string
+  description = "FQDN for internal access"
+}

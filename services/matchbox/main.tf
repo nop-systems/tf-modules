@@ -22,4 +22,6 @@ module "fcos" {
   root_ca_pem            = var.root_ca_pem
   matchbox_http_endpoint = var.matchbox_http_endpoint
   admin_pki_mount        = var.admin_pki_mount
+  cnames                 = [var.internal_fqdn]
+  services               = [var.service_fqdn]
 }
