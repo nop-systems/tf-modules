@@ -138,10 +138,10 @@ systemd:
         After=vault-agent.service
 
         [Path]
-        PathChanged=/var/containers/secrets/tls/this/fullchain.pem
+        PathChanged=/var/containers/secrets/tls/this/fullchain+privkey.pem
 
         [Install]
-        WantedBy=multi-user.target
+        WantedBy=paths.target
     - name: xenorchestra-reload-on-cert-renew.service
       contents: |
         [Unit]
