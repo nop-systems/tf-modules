@@ -23,7 +23,6 @@ Combined Ignition + Matchbox + VM modules for standard deployments
 | <a name="module_approle"></a> [approle](#module\_approle) | git@github.com:nop-systems/tf-modules.git//base/approle | approle/v0.1.2 |
 | <a name="module_dns-record_A"></a> [dns-record\_A](#module\_dns-record\_A) | git@github.com:nop-systems/tf-modules.git//base/dns-record | dns-record/v0.1.0 |
 | <a name="module_dns-record_AAAA"></a> [dns-record\_AAAA](#module\_dns-record\_AAAA) | git@github.com:nop-systems/tf-modules.git//base/dns-record | dns-record/v0.1.0 |
-| <a name="module_dns-record_monitoring"></a> [dns-record\_monitoring](#module\_dns-record\_monitoring) | git@github.com:nop-systems/tf-modules.git//base/dns-record | dns-record/v0.1.0 |
 | <a name="module_domain"></a> [domain](#module\_domain) | git@github.com:nop-systems/tf-modules.git//helpers/parse-domain | parse-domain/v1.0.0 |
 | <a name="module_ignition"></a> [ignition](#module\_ignition) | ../ignition | n/a |
 | <a name="module_matchbox"></a> [matchbox](#module\_matchbox) | ../matchbox | n/a |
