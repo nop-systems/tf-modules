@@ -50,8 +50,10 @@ storage:
           After=network-online.target local-fs.target
 
           [Container]
+          # https://github.com/containers/podman/issues/23215
+          ContainerName=systemd-%p-%i
           Image=quay.io/coreos/coreos-installer:release
-          Entrypoint=python
+          Entrypoint=python3
           Exec=/usr/local/bin/download_fcos.py
           Pull=newer
           LogDriver=journald
