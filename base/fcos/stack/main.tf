@@ -82,18 +82,3 @@ module "dns-record_AAAA" {
 
   zone_id = var.cloudflare_zone_id
 }
-
-module "dns-record_monitoring" {
-  source = "git@github.com:nop-systems/tf-modules.git//base/dns-record?ref=dns-record/v0.1.0"
-
-  name  = "monitoring.${module.domain.record_name}"
-  type  = "CNAME"
-  value = var.fqdn
-
-  zone_id = var.cloudflare_zone_id
-}
-
-moved {
-  from = module.dns-recorrd_monitoring
-  to   = module.dns-record_monitoring
-}
