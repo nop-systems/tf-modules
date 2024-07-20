@@ -1,0 +1,120 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Relativ-IT/Butane-Schemas/Release/Butane-Schema.json
+variant: fcos
+version: "1.5.0"
+storage:
+  directories:
+    - path: /var/containers/matchbox/data
+    - path: /var/containers/matchbox/assets
+  files:
+    - path: /etc/containers/systemd/matchbox.container
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          [Unit]
+          Description=Matchbox
+          After=network-online.target local-fs.target vault-agent.service
+
+          [Container]
+          Image=quay.io/poseidon/matchbox:v0.11.0
+          LogDriver=journald
+          UserNS=auto
+
+          PublishPort=8080:8080
+          PublishPort=8081:8081
+          Volume=/var/containers/matchbox/data:/var/lib/matchbox:Z,U
+          Volume=/var/containers/matchbox/assets:/var/lib/matchbox/assets:z,idmap,ro
+          Volume=/var/containers/secrets/tls/${fqdn}:/etc/tls:z,idmap,ro
+          Volume=/var/containers/secrets/tls-admin/admin_client_ca.pem:/tls-admin/admin_client_ca.pem:z,idmap,ro
+
+          Environment=MATCHBOX_ADDRESS=0.0.0.0:8080
+          Environment=MATCHBOX_RPC_ADDRESS=0.0.0.0:8081
+          Environment=MATCHBOX_CERT_FILE=/etc/tls/fullchain.pem
+          Environment=MATCHBOX_KEY_FILE=/etc/tls/privkey.pem
+          Environment=MATCHBOX_CA_FILE=/tls-admin/admin_client_ca.pem
+
+          Network=container.network
+
+          [Service]
+          Restart=always
+
+          [Install]
+          WantedBy=multi-user.target default.target
+    - path: /etc/containers/systemd/download-fcos@.container
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          [Unit]
+          Description=Download FCOS %i to assets volume
+          After=network-online.target local-fs.target
+
+          [Container]
+          # https://github.com/containers/podman/issues/23215
+          ContainerName=systemd-%p-%i
+          Image=quay.io/coreos/coreos-installer:release
+          Entrypoint=python3
+          Exec=/usr/local/bin/download_fcos.py
+          Pull=newer
+          LogDriver=journald
+          UserNS=auto
+
+          Volume=/etc/coreos-downloader/download_fcos.py:/usr/local/bin/download_fcos.py:Z,idmap,ro
+          Volume=/var/containers/matchbox/assets:/assets:z,idmap
+
+          Environment=FCOS_STREAM=%i
+          Environment=DOWNLOAD_DIR=/assets/fcos-%i/
+
+          Network=container.network
+
+          [Service]
+          Type=oneshot
+          Restart=on-failure
+
+          [Install]
+          WantedBy=multi-user.target default.target
+    - path: /etc/coreos-downloader/download_fcos.py
+      mode: 0755
+      contents:
+        inline: ${download_fcos_script}
+    - path: /usr/local/bin/matchbox
+      mode: 0755
+      overwrite: true
+      contents:
+        inline: |
+          #!/usr/bin/env sh
+          CONTAINER_NAME=systemd-matchbox
+          COMMAND=matchbox
+
+          podman container exists $CONTAINER_NAME ||
+              echo "Must be run as root to access container $CONTAINER_NAME"
+          # shellcheck disable=SC2086
+          podman exec -it $CONTAINER_NAME $COMMAND "$@"
+    - path: /usr/local/bin/bootcmd
+      mode: 0755
+      overwrite: true
+      contents:
+        inline: |
+          #!/usr/bin/env sh
+          CONTAINER_NAME=systemd-matchbox
+          COMMAND=bootcmd
+
+          podman container exists $CONTAINER_NAME ||
+              echo "Must be run as root to access container $CONTAINER_NAME"
+          # shellcheck disable=SC2086
+          podman exec -it $CONTAINER_NAME $COMMAND "$@"
+systemd:
+  units:
+    - name: download-fcos@.timer
+      contents: |
+        [Unit]
+        Description=Download newest version of Fedora CoreOS
+
+        [Timer]
+        OnBootSec=30s
+        OnUnitAciveSec=6h
+
+        [Install]
+        WantedBy=timers.target
+    - name: download-fcos@stable.timer
+      enabled: true
