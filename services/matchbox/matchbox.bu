@@ -13,7 +13,7 @@ storage:
         inline: |
           [Unit]
           Description=Matchbox
-          After=network-online.target local-fs.target
+          After=network-online.target local-fs.target vault-agent.service
 
           [Container]
           Image=quay.io/poseidon/matchbox:v0.11.0
@@ -25,7 +25,7 @@ storage:
           Volume=/var/containers/matchbox/data:/var/lib/matchbox:Z,U
           Volume=/var/containers/matchbox/assets:/var/lib/matchbox/assets:z,idmap,ro
           Volume=/var/containers/secrets/tls/${fqdn}:/etc/tls:z,idmap,ro
-          Volume=/vault/secrets/tls-admin/admin_client_ca.pem:/tls-admin/admin_client_ca.pem:z,idmap,ro
+          Volume=/var/containers/secrets/tls-admin/admin_client_ca.pem:/tls-admin/admin_client_ca.pem:z,idmap,ro
 
           Environment=MATCHBOX_ADDRESS=0.0.0.0:8080
           Environment=MATCHBOX_RPC_ADDRESS=0.0.0.0:8081
@@ -40,26 +40,28 @@ storage:
 
           [Install]
           WantedBy=multi-user.target default.target
-    - path: /etc/containers/systemd/download-fcos.container
+    - path: /etc/containers/systemd/download-fcos@.container
       mode: 0644
       overwrite: true
       contents:
         inline: |
           [Unit]
-          Description=Download FCOS to assets volume
+          Description=Download FCOS %i to assets volume
           After=network-online.target local-fs.target
 
           [Container]
           Image=quay.io/coreos/coreos-installer:release
+          Entrypoint=python
+          Exec=/usr/local/bin/download_fcos.py
           Pull=newer
           LogDriver=journald
           UserNS=auto
 
-          Volume=/var/containers/coreos-downloader/download_fcos.sh:/usr/local/bin/download_fcos.sh:Z,idmap,ro
-          Volume=/var/containers/matchbox/assets:/assets:z,idmap,ro
+          Volume=/etc/coreos-downloader/download_fcos.py:/usr/local/bin/download_fcos.py:Z,idmap,ro
+          Volume=/var/containers/matchbox/assets:/assets:z,idmap
 
-          Environment=FCOS_STREAM=stable
-          Environment=DOWNLOAD_DIR=/assets/fcos-stable/
+          Environment=FCOS_STREAM=%i
+          Environment=DOWNLOAD_DIR=/assets/fcos-%i/
 
           Network=container.network
 
@@ -69,7 +71,7 @@ storage:
 
           [Install]
           WantedBy=multi-user.target default.target
-    - path: /var/containers/coreos-downloader/download_fcos.sh
+    - path: /etc/coreos-downloader/download_fcos.py
       mode: 0755
       contents:
         inline: ${download_fcos_script}
@@ -101,8 +103,7 @@ storage:
           podman exec -it $CONTAINER_NAME $COMMAND "$@"
 systemd:
   units:
-    - name: download-fcos.timer
-      enabled: true
+    - name: download-fcos@.timer
       contents: |
         [Unit]
         Description=Download newest version of Fedora CoreOS
@@ -113,3 +114,5 @@ systemd:
 
         [Install]
         WantedBy=timers.target
+    - name: download-fcos@stable.timer
+      enabled: true

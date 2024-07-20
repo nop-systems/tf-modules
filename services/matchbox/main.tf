@@ -11,7 +11,7 @@ module "fcos" {
 
   butane_snippets = [templatefile("${path.module}/matchbox.bu", {
     fqdn                 = var.fqdn
-    download_fcos_script = jsonencode(file("${path.module}/download_fcos.sh"))
+    download_fcos_script = jsonencode(file("${path.module}/download_fcos.py"))
   })]
 
   cloudflare_zone_id     = var.cloudflare_zone_id
