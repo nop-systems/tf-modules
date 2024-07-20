@@ -25,3 +25,23 @@ module "fcos" {
   cnames                 = [var.internal_fqdn]
   services               = [var.service_fqdn]
 }
+
+module "internal_cname" {
+  source = "git@github.com:nop-systems/tf-modules.git//base/dns-record?ref=dns-record/v0.1.0"
+
+  name  = var.internal_fqdn
+  type  = "CNAME"
+  value = var.fqdn
+
+  zone_id = var.cloudflare_zone_id
+}
+
+module "service_cname" {
+  source = "git@github.com:nop-systems/tf-modules.git//base/dns-record?ref=dns-record/v0.1.0"
+
+  name  = var.service_fqdn
+  type  = "CNAME"
+  value = var.fqdn
+
+  zone_id = var.cloudflare_zone_id
+}
