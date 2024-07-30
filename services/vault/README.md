@@ -18,7 +18,7 @@ No providers.
 | <a name="module_cluster_AAAA_record"></a> [cluster\_AAAA\_record](#module\_cluster\_AAAA\_record) | git@github.com:nop-systems/tf-modules.git//base/dns-record | dns-record/v0.1.0 |
 | <a name="module_cluster_A_record"></a> [cluster\_A\_record](#module\_cluster\_A\_record) | git@github.com:nop-systems/tf-modules.git//base/dns-record | dns-record/v0.1.0 |
 | <a name="module_cluster_node_cname"></a> [cluster\_node\_cname](#module\_cluster\_node\_cname) | git@github.com:nop-systems/tf-modules.git//base/dns-record | dns-record/v0.1.0 |
-| <a name="module_fcos"></a> [fcos](#module\_fcos) | git@github.com:nop-systems/tf-modules.git//base/fcos/stack | fcos/v0.2.6 |
+| <a name="module_fcos"></a> [fcos](#module\_fcos) | git@github.com:nop-systems/tf-modules.git//base/fcos/stack | fcos/v0.5.4 |
 
 ## Resources
 
@@ -29,6 +29,7 @@ No resources.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_acme_email"></a> [acme\_email](#input\_acme\_email) | E-Mail address for ACME account | `string` | n/a | yes |
+| <a name="input_admin_pki_mount"></a> [admin\_pki\_mount](#input\_admin\_pki\_mount) | vault mount whose default issuer should be used for validating admin client certificates | `string` | n/a | yes |
 | <a name="input_cloudflare_zone_id"></a> [cloudflare\_zone\_id](#input\_cloudflare\_zone\_id) | Cloudflare Zone ID | `string` | n/a | yes |
 | <a name="input_cluster_fqdn"></a> [cluster\_fqdn](#input\_cluster\_fqdn) | n/a | `string` | n/a | yes |
 | <a name="input_cluster_members"></a> [cluster\_members](#input\_cluster\_members) | map of node name to FQDNs of all cluster members | `map(string)` | n/a | yes |
@@ -55,6 +56,8 @@ module "" {
   
   /* E-Mail address for ACME account (required) */
   acme_email =
+  /* vault mount whose default issuer should be used for validating admin client certificates (required) */
+  admin_pki_mount =
   /* Cloudflare Zone ID (required) */
   cloudflare_zone_id =
   /*  (required) */
@@ -89,6 +92,7 @@ module "" {
   source = "git@github.com:nop-systems/tf-modules.git//?ref="
   
   acme_email =
+  admin_pki_mount =
   cloudflare_zone_id =
   cluster_fqdn =
   cluster_members =

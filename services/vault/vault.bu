@@ -8,10 +8,10 @@ storage:
   directories:
     - path: /var/containers/vault/logs
     - path: /var/containers/vault/raft
-    - path: /var/containers/vault/config
+    - path: /etc/vault/config
     - path: /var/containers/dnsrobocert/certs
-    - path: /var/containers/dnsrobocert/config
-    - path: /var/containers/haproxy
+    - path: /etc/dnsrobocert/config
+    - path: /etc/haproxy
   files:
     - path: /etc/systemd/resolved.conf.d/80-disable-cache.conf
       overwrite: true
@@ -20,7 +20,7 @@ storage:
           # Disable Cache to prevent failing ACME challenges
           [Resolve]
           Cache=no
-    - path: /var/containers/vault/config/vault.hcl
+    - path: /etc/vault/config/vault.hcl
       mode: 0644
       overwrite: true
       contents:
@@ -73,8 +73,8 @@ storage:
 
           Volume=/var/containers/vault/raft:/vault/file:Z,U
           Volume=/var/containers/vault/logs:/vault/logs:Z,U
-          Volume=/var/containers/vault/config:/vault/config:Z,U
-          Volume=/var/containers/dnsrobocert/certs:/vault/certs:z,idmap
+          Volume=/etc/vault/config:/vault/config:Z,U,ro
+          Volume=/var/containers/dnsrobocert/certs:/vault/certs:z,idmap,ro
 
           UserNS=auto
           AddCapability=IPC_LOCK
@@ -113,7 +113,7 @@ storage:
 
           EnvironmentFile=/var/containers/dnsrobocert/dnsrobocert_token.env
           Volume=/var/containers/dnsrobocert/certs:/etc/letsencrypt:z,idmap
-          Volume=/var/containers/dnsrobocert/config:/etc/dnsrobocert:Z,ro,idmap
+          Volume=/etc/dnsrobocert/config:/etc/dnsrobocert:Z,ro,idmap
 
           UserNS=auto
 
@@ -129,7 +129,7 @@ storage:
 
           [Install]
           WantedBy=multi-user.target default.target
-    - path: /var/containers/dnsrobocert/config/config.yml
+    - path: /etc/dnsrobocert/config/config.yml
       mode: 0644
       overwrite: true
       contents:
@@ -175,7 +175,7 @@ storage:
           Pull=always
           LogDriver=journald
 
-          Volume=/var/containers/haproxy:/usr/local/etc/haproxy:Z,ro,idmap
+          Volume=/etc/haproxy:/usr/local/etc/haproxy:Z,ro,idmap
 
           UserNS=auto
 
@@ -192,7 +192,7 @@ storage:
 
           [Install]
           WantedBy=multi-user.target default.target
-    - path: /var/containers/haproxy/haproxy.cfg
+    - path: /etc/haproxy/haproxy.cfg
       mode: 0644
       overwrite: true
       contents:
@@ -230,6 +230,40 @@ storage:
               stats show-node
               stats refresh 10s
               stats admin if LOCALHOST
+    - path: /etc/monitoring/alloy.d/vault.alloy
+      mode: 0644
+      contents:
+        inline: |
+          prometheus.scrape "vault" {
+            forward_to = [
+              prometheus.relabel.replace_instance.receiver,
+            ]
+            targets = [
+              {
+                "__address__" = "${cluster_node_fqdn}:8200",
+              },
+            ]
+            scheme = "https"
+            metrics_path = "/v1/sys/metrics"
+            params = {
+              "format" = ["prometheus"],
+            }
+          }
+    - path: /etc/monitoring/alloy.d/haproxy.alloy
+      mode: 0644
+      contents:
+        inline: |
+          prometheus.scrape "haproxy" {
+            forward_to = [
+              prometheus.relabel.replace_instance.receiver,
+            ]
+            targets = [
+              {
+                "__address__" = "systemd-haproxy:8404",
+              },
+            ]
+            metrics_path = "/metrics"
+          }
 
 systemd:
   units:

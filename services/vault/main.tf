@@ -3,7 +3,7 @@ locals {
 }
 
 module "fcos" {
-  source = "git@github.com:nop-systems/tf-modules.git//base/fcos/stack?ref=fcos/v0.2.5"
+  source = "git@github.com:nop-systems/tf-modules.git//base/fcos/stack?ref=fcos/v0.5.4"
   #source = "../../base/fcos/stack"
 
   fqdn      = var.fqdn
@@ -19,9 +19,10 @@ module "fcos" {
   xo_template_id         = var.xo_template_id
   vault_url              = var.vault_url
   root_ca_pem            = var.root_ca_pem
+  admin_pki_mount        = var.admin_pki_mount
   matchbox_http_endpoint = var.matchbox_http_endpoint
   services               = [var.cluster_fqdn]
-  cnames                 = [cluster_node_fqdn]
+  cnames                 = [local.cluster_node_fqdn]
 
   butane_snippets = [templatefile("${path.module}/vault.bu", {
     fqdn                = var.fqdn
