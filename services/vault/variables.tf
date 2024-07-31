@@ -67,3 +67,8 @@ variable "cluster_members" {
 variable "cluster_fqdn" {
   type = string
 }
+
+variable "admin_pki_mount" {
+  type        = string
+  description = "vault mount whose default issuer should be used for validating admin client certificates"
+}
