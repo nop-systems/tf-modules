@@ -6,7 +6,7 @@ storage:
     - path: /var/containers/nextcloud/data
     - path: /var/containers/nextcloud/html
     - path: /var/containers/postgres/data
-    - path: /var/containers/redis/data
+    - path: /var/containers/valkey/data
     - path: /var/containers/secrets/nextcloud
     - path: /var/containers/caddy/data
     - path: /var/containers/caddy/config
@@ -17,7 +17,7 @@ storage:
         inline: |
           [Unit]
           Wants=postgres.service
-          Wants=redis.service
+          Wants=valkey.service
 
           [Pod]
           Network=container.network
@@ -33,7 +33,7 @@ storage:
         inline: |
           NEXTCLOUD_TRUSTED_DOMAINS=${public_fqdn} ${service_fqdn} ${fqdn}
           TRUSTED_PROXIES=${trusted_proxies}
-          REDIS_HOST=systemd-redis
+          REDIS_HOST=systemd-valkey
           POSTGRES_HOST=systemd-postgres
           POSTGRES_USER=nextcloud
           POSTGRES_DB=nextcloud
@@ -65,7 +65,7 @@ storage:
           Description=nextcloud app
           After=network-online.target local-fs.target vault-agent.service
           Wants=postgres.service
-          Wants=redis.service
+          Wants=valkey.service
 
           [Container]
           Image=nextcloud.image
@@ -92,7 +92,7 @@ storage:
           Description=nextcloud cron
           After=network-online.target local-fs.target vault-agent.service
           Wants=postgres.service
-          Wants=redis.service
+          Wants=valkey.service
 
           [Container]
           Image=nextcloud.image
@@ -339,25 +339,25 @@ storage:
           [Install]
           WantedBy=multi-user.target default.target
 
-    - path: /etc/containers/systemd/redis.container
+    - path: /etc/containers/systemd/valkey.container
       mode: 0644
       contents:
         inline: |
           [Unit]
-          Description=Redis Cache
+          Description=Valkey Cache
           After=network-online.target local-fs.target
 
           [Container]
-          Image=docker.io/library/redis:${redis_version}
+          Image=docker.io/valkey/valkey:${valkey_version}
 
           Pull=newer
           LogDriver=journald
           UserNS=auto
           Notify=healthy
 
-          Volume=/var/containers/redis/data:/data:Z,U
+          Volume=/var/containers/valkey/data:/data:Z,U
 
-          HealthCmd=redis-cli ping | grep PONG
+          HealthCmd=valkey-cli ping | grep PONG
           HealthInterval=30s
           HealthRetries=5
           HealthStartPeriod=20s

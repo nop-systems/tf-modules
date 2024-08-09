@@ -1,5 +1,5 @@
 module "fcos" {
-  source = "git@github.com:nop-systems/tf-modules.git//base/fcos/stack?ref=fcos/v0.2.6"
+  source = "git@github.com:nop-systems/tf-modules.git//base/fcos/stack?ref=fcos/v0.5.4"
   # source = "../../base/fcos/stack"
 
   fqdn      = var.fqdn
@@ -18,10 +18,10 @@ module "fcos" {
     php_memory_limit      = var.php_memory_limit
     php_upload_limit      = var.php_upload_limit
     trusted_proxies       = "0.0.0.0/0 ::/0"
-    nextcloud_fpm_version = "29.0.3-fpm"
+    nextcloud_fpm_version = "29.0.4-fpm"
     caddy_version         = "2.8"
     postgres_version      = "16-alpine"
-    redis_version         = "7.2.5-alpine"
+    valkey_version        = "7.2.6-alpine"
   })]
 
   cloudflare_zone_id     = var.cloudflare_zone_id
@@ -41,4 +41,3 @@ module "service_cname_record" {
   value   = var.fqdn               # record value (e.g. IP address)
   zone_id = var.cloudflare_zone_id # Cloudflare Zone ID
 }
-
