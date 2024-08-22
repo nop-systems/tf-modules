@@ -44,15 +44,26 @@ variable "cloudflare_zone_id" {
   type        = string
 }
 
-variable "service_fqdn" {
+variable "nextcloud_service_fqdn" {
   type        = string
-  description = "A FQDN defining the service, independent of the host"
+  description = "A FQDN defining the nextcloud service, independent of the host"
 }
 
-variable "public_fqdn" {
+variable "collabora_service_fqdn" {
+  type        = string
+  description = "A FQDN defining the collabora service, independent of the host"
+}
+
+variable "nextcloud_public_fqdn" {
   type        = string
   description = "Public FQDN where Nextcloud is reachable externally"
 }
+
+variable "collabora_public_fqdn" {
+  type        = string
+  description = "Public FQDN where Collabora CODE is reachable externally"
+}
+
 
 variable "trusted_proxies" {
   description = "List of CIDRs that proxy headers should be accepted from"

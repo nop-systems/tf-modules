@@ -8,8 +8,6 @@ storage:
     - path: /var/containers/postgres/data
     - path: /var/containers/valkey/data
     - path: /var/containers/secrets/nextcloud
-    - path: /var/containers/caddy/data
-    - path: /var/containers/caddy/config
   files:
     - path: /etc/containers/systemd/nextcloud.pod
       mode: 0644
@@ -26,13 +24,13 @@ storage:
           Volume=/var/containers/nextcloud/html:/var/www/html:z,idmap
           Volume=/var/containers/nextcloud/data:/data:Z,U
           Volume=/vault/secrets/nextcloud/:/secrets:z,idmap,ro
-    - path: /var/containers/nextcloud/nextcloud.env
+    - path: /etc/nextcloud.env
       mode: 0644
       overwrite: true
       contents:
         inline: |
-          NEXTCLOUD_TRUSTED_DOMAINS=${public_fqdn} ${service_fqdn} ${fqdn}
-          TRUSTED_PROXIES=${trusted_proxies}
+          NEXTCLOUD_TRUSTED_DOMAINS=${nextcloud_public_fqdn} ${nextcloud_service_fqdn} ${fqdn}
+          TRUSTED_PROXIES=0.0.0.0/0 ::/0
           REDIS_HOST=systemd-valkey
           POSTGRES_HOST=systemd-postgres
           POSTGRES_USER=nextcloud
@@ -47,6 +45,7 @@ storage:
           NC_trashbin_retention_obligation='auto, 90'
           NC_maintenance_window_start=2
           NEXTCLOUD_DATA_DIR=/data
+          OVERWRITECLIURL=${nextcloud_service_fqdn}
     - path: /etc/containers/systemd/nextcloud.image
       mode: 0644
       contents:
@@ -64,8 +63,7 @@ storage:
           [Unit]
           Description=nextcloud app
           After=network-online.target local-fs.target vault-agent.service
-          Wants=postgres.service
-          Wants=valkey.service
+          Wants=postgres.service valkey.service imaginary.service
 
           [Container]
           Image=nextcloud.image
@@ -91,13 +89,14 @@ storage:
           [Unit]
           Description=nextcloud cron
           After=network-online.target local-fs.target vault-agent.service
-          Wants=postgres.service
-          Wants=valkey.service
+          Wants=postgres.service valkey.service
 
           [Container]
           Image=nextcloud.image
           Exec=php -f /var/www/html/cron.php
           LogDriver=journald
+
+          AddCapability=SYS_NICE
 
           EnvironmentFile=/var/containers/nextcloud/nextcloud.env
 
@@ -108,37 +107,22 @@ storage:
 
           [Install]
           WantedBy=multi-user.target default.target
-    - path: /etc/containers/systemd/caddy.container
+    - path: /etc/containers/systemd/imaginary.container
       mode: 0644
       contents:
         inline: |
           [Unit]
-          Description=Reverse Proxy
+          Description=HTTP microservice for high-level image processing
           After=network-online.target local-fs.target
 
           [Container]
-          Image=docker.io/library/caddy:${caddy_version}
+          Image=docker.io/nextcloud/aio-imaginary:latest
           Pull=newer
           AutoUpdate=registry
           LogDriver=journald
           UserNS=auto
-          Notify=healthy
-
-          PublishPort=443:443
-          PublishPort=443:443/udp
-
-          Volume=/var/containers/caddy/config:/config:Z,U
-          Volume=/var/containers/caddy/data:/data:Z,U
-          Volume=/var/containers/caddy/Caddyfile:/etc/caddy/Caddyfile:Z,ro
-          Volume=/var/containers/nextcloud/html:/var/www/html:z,idmap,ro
 
           Network=container.network
-
-          HealthCmd=php -f /var/www/html/occ status -e
-          HealthInterval=30s
-          HealthRetries=5
-          HealthStartPeriod=20s
-          HealthTimeout=5s
 
           [Service]
           Restart=always
@@ -148,160 +132,6 @@ storage:
 
           [Install]
           WantedBy=multi-user.target default.target
-    - path: /var/containers/caddy/Caddyfile
-      mode: 0644
-      overwrite: true
-      contents:
-        inline: |
-          {
-            acme_ca ${acme_ca}
-            auto_https disable_redirects
-            servers {
-              trusted_proxies static ${trusted_proxies}
-            }
-            fallback_sni ${service_fqdn}
-          }
-
-          https://${fqdn}, https://${service_fqdn}, https:// {
-            tls {
-              issuer acme {
-                # disable http challenge because only https port is published
-                disable_http_challenge
-              }
-            }
-
-            handle_errors {
-              respond "Error {err.status_code} {err.status_text} on ${fqdn}: {err.message} ({err.trace}, {err.id})"
-            }
-
-            log
-
-            # Static content
-            root * /var/www/html
-
-            # PHP fast cgi
-            php_fastcgi systemd-nextcloud:9000 {
-              env front_controller_active true
-            }
-
-            file_server
-
-            # Redirects for DAV apps
-            redir /.well-known/carddav /remote.php/dav/ 301
-            redir /.well-known/caldav /remote.php/dav/ 301
-
-            respond /.well-known/acme-challenge 404
-            respond /.well-known/pki-validation 404
-
-            # redir /.well-known/* /index.php/.well-known/webfinger 301
-            # redir /.well-known/nodeinfo /index.php/.well-known/nodeinfo 301
-            redir /.well-known/* /index.php{uri} 301
-
-            # Headers
-            header {
-              # If staging acme_ca is enabled, this needs to be commented out!
-              # Otherwise, it is not possible to add browser exception
-              Strict-Transport-Security "max-age=31536000; includeSubDomains"
-
-              # More security hardening headers
-              Referrer-Policy "no-referrer"
-              X-Content-Type-Options "nosniff"
-              X-Download-Options "noopen"
-              X-Frame-Options "SAMEORIGIN"
-              X-Permitted-Cross-Domain-Policies "none"
-              X-Robots-Tag "noindex, nofollow"
-              X-XSS-Protection "1; mode=block"
-              # Permissions-Policy "interest-cohort=()"
-
-              # Remove X-Powered-By header, which is an information leak
-              -X-Powered-By
-
-              # Replace http with https in any Location header
-              Location http:// https://
-            }
-
-            # Cache control
-            @static {
-              file
-              path *.css *.js *.svg *.gif
-            }
-
-            header @static {
-              Cache-Control "max-age=360"
-            }
-
-            @fonts {
-              path /core/fonts
-            }
-
-            header @fonts {
-              Cache-Control "max-age=604800"
-            }
-
-            # gzip encoding
-            encode {
-              gzip 4
-              minimum_length 256
-
-              match {
-                header Content-Type application/atom+xml*
-                header Content-Type application/javascript*
-                header Content-Type application/json*
-                header Content-Type application/ld+json*
-                header Content-Type application/manifest+json*
-                header Content-Type application/rss+xml*
-                header Content-Type application/vnd.geo+json*
-                header Content-Type application/vnd.ms-fontobject*
-                header Content-Type application/x-font-ttf*
-                header Content-Type application/x-web-app-manifest+json*
-                header Content-Type application/xhtml+xml*
-                header Content-Type application/xml*
-                header Content-Type font/opentype*
-                header Content-Type image/bmp*
-                header Content-Type image/svg+xml*
-                header Content-Type image/x-icon*
-                header Content-Type application/atom+xmlapplication/javascript*
-                # Would this be a good idea?
-                header Content-Type text/*
-                # header Content-Type text/cache-manifest*
-                # header Content-Type text/css*
-                # header Content-Type text/plain*
-                # header Content-Type text/vcard*
-                # header Content-Type text/vnd.rim.location.xloc*
-                # header Content-Type text/vtt*
-                # header Content-Type text/x-component*
-                # header Content-Type text/x-cross-domain-policy*
-              }
-            }
-
-            # .htaccess / data / config / ... shouldn't be accessible from outside
-            @forbidden {
-              path /.htaccess
-              path /.user.ini
-              path /.xml
-              path /3rdparty/*
-              path /autotest
-              path /build/*
-              path /config/*
-              path /console
-              path /console.php
-              path /data/*
-              path /db_
-              path /db_structure
-              path /indie
-              path /issue
-              path /lib/*
-              path /occ
-              path /README
-              path /templates/*
-              path /tests/*
-            }
-
-            respond @forbidden 404
-            # not sure if this is 100% safe, but it looks nicer when you hit a 404
-            # rewrite @forbidden '/index.php/error/404'
-          }
-
     - path: /etc/containers/systemd/postgres.container
       mode: 0644
       contents:
@@ -338,7 +168,6 @@ storage:
 
           [Install]
           WantedBy=multi-user.target default.target
-
     - path: /etc/containers/systemd/valkey.container
       mode: 0644
       contents:
@@ -373,7 +202,7 @@ storage:
 
           [Install]
           WantedBy=multi-user.target default.target
-    - path: /var/containers/vault-agent/config.d/nextcloud.hcl
+    - path: /etc/vault-agent/config.d/nextcloud.hcl
       mode: 0644
       overwrite: true
       contents:
@@ -395,13 +224,20 @@ storage:
               EOT
             destination = "/vault/secrets/nextcloud/postgres_password"
           }
-    - path: /usr/local/sbin/occ
+    - path: /usr/local/bin/occ
       mode: 0755
       overwrite: true
       contents:
         inline: |
           #!/usr/bin/env sh
-          podman exec -it --user 33 systemd-nextcloud-app /var/www/html/occ "$@"
+          CONTAINER_NAME=systemd-nextcloud-app
+          COMMAND=/var/www/html/occ
+          USER=33
+
+          podman container exists $CONTAINER_NAME ||
+              echo "Container $CONTAINER_NAME not found (must be run as root to access container)"
+          # shellcheck disable=SC2086
+          podman exec -it --user $USER $CONTAINER_NAME $COMMAND "$@"
 systemd:
   units:
     - name: nextcloud-cron.timer

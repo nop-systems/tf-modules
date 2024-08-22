@@ -1,0 +1,63 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Relativ-IT/Butane-Schemas/Release/Butane-Schema.json
+variant: fcos
+version: "1.5.0"
+storage:
+  directories:
+    - path: /var/containers/secrets/collabora
+  files:
+    - path: /etc/containers/systemd/collabora.network
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=Custom Podman Network to slightly isolate collabora
+          [Network]
+          IPv6=true
+          #Subnet=
+    - path: /etc/collabora.env
+      mode: 0644
+      contents:
+        inline: |
+          DONT_GEN_SSL_CERT=anyvalue
+          server_name=${collabora_public_fqdn}
+          aliasgroup1=https://${nextcloud_public_fqdn}:443
+          extra_params=--o:ssl.enable=false --o:ssl.termination=true --o:ssl.sts.enabled=true
+    - path: /etc/vault-agent/config.d/collabora.hcl
+      mode: 0644
+      contents:
+        inline: |
+          template {
+            contents = <<-EOT
+              {{- with secret "kv/data/service/${ collabora_service_fqdn }/admin" -}}
+              username=admin
+              password={{ .Data.data.admin_password }}
+              {{- end }}
+              EOT
+            destination = "/vault/secrets/collabora/collabora_admin.env"
+          }
+    - path: /etc/containers/systemd/collabora.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=Collabora Online Development Edition (CODE)
+          After=network-online.target local-fs.target vault-agent.service
+
+          [Container]
+          Image=docker.io/collabora/code:${collabora_code_version}
+          Pull=newer
+          LogDriver=journald
+
+          EnvironmentFile=/etc/collabora.env
+          EnvironmentFile=/var/containers/secrets/collabora/collabora_admin.env
+
+          Network=collabora.network
+
+          [Service]
+          Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
+
+          [Install]
+          WantedBy=multi-user.target default.target
