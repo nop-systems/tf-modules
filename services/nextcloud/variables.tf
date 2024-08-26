@@ -64,6 +64,10 @@ variable "collabora_public_fqdn" {
   description = "Public FQDN where Collabora CODE is reachable externally"
 }
 
+variable "admin_pki_mount" {
+  type        = string
+  description = "vault mount whose default issuer should be used for validating admin client certificates"
+}
 
 variable "trusted_proxies" {
   description = "List of CIDRs that proxy headers should be accepted from"

@@ -15,8 +15,9 @@ No providers.
 
 | Name | Source | Version |
 |------|--------|---------|
+| <a name="module_collabora_service_cname_record"></a> [collabora\_service\_cname\_record](#module\_collabora\_service\_cname\_record) | git@github.com:nop-systems/tf-modules.git//base/dns-record | dns-record/v0.1.0 |
 | <a name="module_fcos"></a> [fcos](#module\_fcos) | git@github.com:nop-systems/tf-modules.git//base/fcos/stack | fcos/v0.5.4 |
-| <a name="module_service_cname_record"></a> [service\_cname\_record](#module\_service\_cname\_record) | git@github.com:nop-systems/tf-modules.git//base/dns-record | dns-record/v0.1.0 |
+| <a name="module_nextcloud_service_cname_record"></a> [nextcloud\_service\_cname\_record](#module\_nextcloud\_service\_cname\_record) | git@github.com:nop-systems/tf-modules.git//base/dns-record | dns-record/v0.1.0 |
 
 ## Resources
 
@@ -27,6 +28,7 @@ No resources.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_acme_ca"></a> [acme\_ca](#input\_acme\_ca) | URL to ACME directory for internal CA | `string` | n/a | yes |
+| <a name="input_admin_pki_mount"></a> [admin\_pki\_mount](#input\_admin\_pki\_mount) | vault mount whose default issuer should be used for validating admin client certificates | `string` | n/a | yes |
 | <a name="input_cloudflare_zone_id"></a> [cloudflare\_zone\_id](#input\_cloudflare\_zone\_id) | Cloudflare Zone ID | `string` | n/a | yes |
 | <a name="input_collabora_public_fqdn"></a> [collabora\_public\_fqdn](#input\_collabora\_public\_fqdn) | Public FQDN where Collabora CODE is reachable externally | `string` | n/a | yes |
 | <a name="input_collabora_service_fqdn"></a> [collabora\_service\_fqdn](#input\_collabora\_service\_fqdn) | A FQDN defining the collabora service, independent of the host | `string` | n/a | yes |
@@ -56,6 +58,8 @@ module "" {
   
   /* URL to ACME directory for internal CA (required) */
   acme_ca =
+  /* vault mount whose default issuer should be used for validating admin client certificates (required) */
+  admin_pki_mount =
   /* Cloudflare Zone ID (required) */
   cloudflare_zone_id =
   /* Public FQDN where Collabora CODE is reachable externally (required) */
@@ -96,6 +100,7 @@ module "" {
   source = "git@github.com:nop-systems/tf-modules.git//?ref="
   
   acme_ca =
+  admin_pki_mount =
   cloudflare_zone_id =
   collabora_public_fqdn =
   collabora_service_fqdn =

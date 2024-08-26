@@ -10,7 +10,7 @@ storage:
       contents:
         inline: |
           [Unit]
-          Description=Custom Podman Network to slightly isolate collabora
+          Description=Special Podman Network to slightly isolate collabora
           [Network]
           IPv6=true
           #Subnet=
@@ -47,6 +47,7 @@ storage:
           Image=docker.io/collabora/code:${collabora_code_version}
           Pull=newer
           LogDriver=journald
+          UserNS=auto
 
           EnvironmentFile=/etc/collabora.env
           EnvironmentFile=/var/containers/secrets/collabora/collabora_admin.env
@@ -60,4 +61,4 @@ storage:
           RestartMaxDelaySec=5m
 
           [Install]
-          WantedBy=multi-user.target default.target
+          WantedBy=default.target

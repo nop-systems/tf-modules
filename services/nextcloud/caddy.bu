@@ -46,7 +46,7 @@ storage:
           RestartMaxDelaySec=5m
 
           [Install]
-          WantedBy=multi-user.target default.target
+          WantedBy=default.target
     - path: /var/containers/caddy/Caddyfile
       mode: 0644
       overwrite: true

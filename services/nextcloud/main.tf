@@ -5,7 +5,7 @@ module "fcos" {
   fqdn      = var.fqdn
   desc      = "Nextcloud file sharing and collaboration platform"
   xo_tags   = concat(var.xo_tags, ["service:nextcloud"])
-  memory    = 1024 * 4
+  memory    = 1024 * 8
   cpu_cores = 4
   disk_size = 500
 
@@ -16,7 +16,7 @@ module "fcos" {
       nextcloud_service_fqdn = var.nextcloud_service_fqdn
       php_memory_limit       = var.php_memory_limit
       php_upload_limit       = var.php_upload_limit
-      nextcloud_fpm_version  = "29.0.4-fpm"
+      nextcloud_fpm_version  = "29.0.5-fpm"
       postgres_version       = "16-alpine"
       valkey_version         = "7.2.6"
     }),
@@ -30,9 +30,11 @@ module "fcos" {
     }),
     templatefile("${path.module}/collabora.bu", {
       collabora_public_fqdn  = var.collabora_public_fqdn
+      collabora_service_fqdn = var.collabora_service_fqdn
       nextcloud_public_fqdn  = var.nextcloud_public_fqdn
       collabora_code_version = "24.04.6.1.1"
-    })
+    }),
+    file("${path.module}/helper-services.bu"),
   ]
 
   cloudflare_zone_id     = var.cloudflare_zone_id
@@ -42,13 +44,22 @@ module "fcos" {
   vault_url              = var.vault_url
   root_ca_pem            = var.root_ca_pem
   matchbox_http_endpoint = var.matchbox_http_endpoint
-  services               = [var.service_fqdn]
+  admin_pki_mount        = var.admin_pki_mount
+  services               = [var.nextcloud_service_fqdn, var.collabora_service_fqdn]
 }
 
-module "service_cname_record" {
+module "nextcloud_service_cname_record" {
   source  = "git@github.com:nop-systems/tf-modules.git//base/dns-record?ref=dns-record/v0.1.0"
-  name    = var.service_fqdn       # DNS record name
-  type    = "CNAME"                # record type (e.g. A, AAAA)
-  value   = var.fqdn               # record value (e.g. IP address)
-  zone_id = var.cloudflare_zone_id # Cloudflare Zone ID
+  name    = var.nextcloud_service_fqdn
+  type    = "CNAME"
+  value   = var.fqdn
+  zone_id = var.cloudflare_zone_id
+}
+
+module "collabora_service_cname_record" {
+  source  = "git@github.com:nop-systems/tf-modules.git//base/dns-record?ref=dns-record/v0.1.0"
+  name    = var.collabora_service_fqdn
+  type    = "CNAME"
+  value   = var.fqdn
+  zone_id = var.cloudflare_zone_id
 }
