@@ -18,7 +18,7 @@ data "ct_config" "this" {
     }),
     templatefile("${path.module}/templates/ssh.bu.tftpl", {
       vault_url             = var.vault_url
-      vault_ssh_cli_version = "latest"
+      vault_ssh_cli_version = "1.8.1"
     }),
     templatefile("${path.module}/templates/pki.bu.tftpl", {
       fqdn            = var.fqdn
