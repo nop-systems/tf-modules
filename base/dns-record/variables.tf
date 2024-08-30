@@ -16,4 +16,5 @@ variable "type" {
 variable "value" {
   description = "record value (e.g. IP address)"
   type        = string
+  nullable    = false
 }
