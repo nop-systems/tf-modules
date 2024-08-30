@@ -4,46 +4,79 @@ version: "1.5.0"
 storage:
   directories:
     - path: /etc/nextcloud
+    - path: /etc/nextcloud/logs_stub
     - path: /var/containers/nextcloud/data
-    - path: /var/containers/nextcloud/html
+    - path: /var/containers/nextcloud/config
+    - path: /var/containers/nextcloud/apps2
+    - path: /var/containers/nextcloud/themes
+    - path: /var/containers/nextcloud/session
     - path: /var/containers/postgres/data
     - path: /var/containers/valkey/data
     - path: /var/containers/secrets/nextcloud
-    - path: /var/containers/secrets/nextcloud/postgres
+    - path: /var/containers/secrets/postgres
   files:
     - path: /etc/nextcloud/nextcloud.env
       mode: 0644
       contents:
         inline: |
-          NC_default_phone_region=DE
           NC_maintenance_window_start=2
-          NC_trashbin_retention_obligation='auto, 90'
-          NEXTCLOUD_ADMIN_PASSWORD_FILE=/secrets/nextcloud_admin_password
-          NEXTCLOUD_ADMIN_USER=admin
-          NEXTCLOUD_DATA_DIR=/data
-          NEXTCLOUD_TRUSTED_DOMAINS=${nextcloud_public_fqdn} ${nextcloud_service_fqdn} ${fqdn}
           OVERWRITECLIURL=${nextcloud_service_fqdn}
-          PHP_MEMORY_LIMIT=${php_memory_limit}
-          PHP_UPLOAD_LIMIT=${php_upload_limit}
-          POSTGRES_DB_FILE=/secrets/postgres/db
-          POSTGRES_HOST=systemd-postgres
-          POSTGRES_PASSWORD_FILE=/secrets/postgres/password
-          POSTGRES_USER_FILE=/secrets/postgres/user
-          REDIS_HOST=systemd-valkey
-          # REDIS_PASSWORD_FILE=/secrets/redis_password
-          TRUSTED_PROXIES=0.0.0.0/0 ::/0
           TZ='Europe/Berlin'
-    - path: /etc/nextcloud/php-custom-config.ini
-      mode: 0644
-      contents:
-        inline: |
-          opcache.memory_consumption=256
+
+          UPLOAD_MAX_SIZE=${upload_limit}
+          APC_SHM_SIZE=${php_apc_shm_size}
+          OPCACHE_MEM_SIZE=${php_opcache_memory_size}
+          MEMORY_LIMIT=${php_memory_limit}
+          CRON_PERIOD=5
+          CRON_MEMORY_LIMIT=1G
+          PHP_HARDENING=true
     - path: /etc/nextcloud/custom.config.php
       mode: 0644
       contents:
         inline: |
           <?php
             $CONFIG = array (
+              'apps_paths' => array (
+                0 => array (
+                  'path'     => '/nextcloud/apps',
+                  'url'      => '/apps',
+                  'writable' => false,
+                ),
+                1 => array (
+                  'path'     => '/nextcloud/apps2',
+                  'url'      => '/apps2',
+                  'writable' => true,
+                ),
+              ),
+              'upgrade.disable-web' => true,
+              'trusted_domains' => [
+                '${fqdn}',
+                '${nextcloud_public_fqdn},
+                '${nextcloud_service_fqdn}',
+              ],
+              'trusted_proxies' => ['0.0.0.0/0', '::/0'],
+
+              'log_type' => 'syslog',
+              'syslog_tag' => 'nextcloud',
+              'logfile' => '',
+              'loglevel' => 3,
+              'log_type_audit' => 'syslog',
+              'syslog_tag_audit' => 'nextcloud_audit',
+              'logfile_audit' => '',
+
+              'default_language' => '${default_language}',
+              'default_locale' => '${default_locale}',
+              'default_phone_region' => '${default_phone_region}',
+              'default_timezone' => '${default_timezone}',
+              'trashbin_retention_obligation' => 'auto, 90',
+              'maintenance_window_start' => 3,
+
+              'hide_login_form' => '${hide_login_form}',
+              'lost_password_link' => '${lost_password_link}',
+              'overwriteprotocol' => 'https',
+              //'overwritehost' => '${nextcloud_public_fqdn}',
+              'overwrite.cli.url' => '${nextcloud_service_fqdn}',
+
               'enabledPreviewProviders' => [
                   'OC\Preview\MP3',
                   'OC\Preview\TXT',
@@ -54,6 +87,15 @@ storage:
               ],
               'preview_imaginary_url' => 'http://systemd-imaginary:9000/',
               'preview_format' => 'webp',
+
+              'memcache.local' => '\OC\Memcache\APCu',
+              'memcache.distributed' => '\OC\Memcache\Redis',
+              'memcache.locking' => '\OC\Memcache\Redis',
+              'redis' => array(
+                'host' => 'systemd-valkey',
+                'port' => 6379,
+              ),
+
             );
     - path: /etc/containers/systemd/nextcloud.image
       mode: 0644
@@ -64,7 +106,7 @@ storage:
           After=network-online.target
 
           [Image]
-          Image=docker.io/library/nextcloud:${nextcloud_fpm_version}
+          Image=ghcr.io/hoellen/nextcloud:${nextcloud_version}
     - path: /etc/containers/systemd/nextcloud.pod
       mode: 0644
       contents:
@@ -78,19 +120,31 @@ storage:
           Network=clamav.network
           PodmanArgs=--userns=auto --exit-policy=continue
 
-          Volume=/var/containers/nextcloud/html:/var/www/html:z,idmap
           Volume=/var/containers/nextcloud/data:/data:Z,U
-          Volume=/vault/secrets/nextcloud/:/secrets:z,idmap,ro
-          Volume=/etc/nextcloud/php-custom-config.ini:/usr/local/etc/php/conf.d/zz-custom-config.ini:z,idmap,ro
-          Volume=/etc/nextcloud/custom.config.php:/var/www/html/config/custom.config.php:z,idmap,ro
-    - path: /etc/containers/systemd/nextcloud-app.container
+          Volume=/var/containers/nextcloud/config:/nextcloud/config:Z,U
+          Volume=/var/containers/nextcloud/apps2:/nextcloud/apps2:Z,U
+          Volume=/var/containers/nextcloud/themes:/nextcloud/themes:Z,U
+          Volume=/var/containers/nextcloud/session:/php/session:Z,U
+          Volume=/etc/nextcloud/custom.config.php:/nextcloud/config/custom.config.php:z,idmap,ro
+
+          # redirect logs to stdout/stderr by mounting symlinks
+          Volume=/etc/nextcloud/logs_stub:/nginx/logs:Z,ro
+          Volume=/etc/nextcloud/logs_stub:/php/logs:Z,ro
+
+          # expose journald's syslog socket to containter for nextcloud logs
+          Volume=/dev/log:/dev/log
+
+          Network=container.network
+          Network=clamav.network
+    - path: /etc/containers/systemd/nextcloud.container
       mode: 0644
       contents:
         inline: |
           [Unit]
           Description=nextcloud app
           After=network-online.target local-fs.target vault-agent.service
-          Wants=postgres.service valkey.service imaginary.service
+          Wants=postgres.service valkey.service imaginary.service clamav.service nextcloud-install.service
+          AssertPathExists=/var/containers/nextcloud/config/config.php
 
           [Container]
           Image=nextcloud.image
@@ -98,7 +152,6 @@ storage:
           LogDriver=journald
 
           EnvironmentFile=/etc/nextcloud/nextcloud.env
-          Volume=/var/containers/secrets/nextcloud:/secrets:z,idmap,ro
 
           Pod=nextcloud.pod
 
@@ -110,19 +163,25 @@ storage:
 
           [Install]
           WantedBy=default.target
-    - path: /etc/containers/systemd/nextcloud-cron.container
+
+    - path: /etc/containers/systemd/nextcloud-install.container
       mode: 0644
       contents:
         inline: |
           [Unit]
-          Description=nextcloud cron
-          After=network-online.target local-fs.target vault-agent.service
+          Description=nextcloud installation
+          After=network-online.target local-fs.target vault-agent.service postgres.service valkey.service
+          Before=nextcloud.container
           Wants=postgres.service valkey.service
+          ConditionPathExists=!/var/containers/nextcloud/config/config.php
+          AssertPathExists=/var/containers/secrets/nextcloud/autoconfig.php
 
           [Container]
           Image=nextcloud.image
-          Exec=php -f /var/www/html/cron.php
           LogDriver=journald
+
+          Exec=php index.php
+          WorkingDir=/nextcloud
 
           EnvironmentFile=/etc/nextcloud/nextcloud.env
 
@@ -130,6 +189,13 @@ storage:
 
           [Service]
           Type=oneshot
+          ExecStartPre=cp /var/containers/secrets/nextcloud/autoconfig.php /var/containers/nextcloud/config/
+          ExecStartPre=touch /var/containers/nextcloud/config/CAN_INSTALL
+
+          Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
 
           [Install]
           WantedBy=default.target
@@ -150,8 +216,8 @@ storage:
           Notify=healthy
 
           Environment=POSTGRES_PASSWORD_FILE=/secrets/password
-          Environment=POSTGRES_USER_FILE=/secrets/user
-          Environment=POSTGRES_DB_FILE=/secrets/db
+          Environment=POSTGRES_USER=nextcloud
+          Environment=POSTGRES_DB=nextcloud
 
           Volume=/var/containers/postgres/data:/var/lib/postgresql/data:Z,U
           Volume=/var/containers/secrets/nextcloud/postgres:/secrets:z,idmap,ro
@@ -213,33 +279,35 @@ storage:
         inline: |
           template {
             contents = <<-EOT
-              {{- with secret "kv/data/service/${ nextcloud_service_fqdn }/nextcloud" -}}
-              {{ .Data.data.admin_password }}
-              {{- end }}
-              EOT
-            perms = "0600"
-            destination = "/vault/secrets/nextcloud/nextcloud_admin_password"
-          }
-
-          template {
-            contents = <<-EOT
               {{- with secret "kv/data/service/${ nextcloud_service_fqdn }/postgres" -}}
               {{ .Data.data.password }}
               {{- end }}
               EOT
             perms = "0600"
-            destination = "/vault/secrets/nextcloud/postgres/password"
-          }
-
-          # db and user have to be read from files too
-          template {
-            contents = "nextcloud"
-            destination = "/vault/secrets/nextcloud/postgres/db"
+            destination = "/vault/secrets/postgres/password"
           }
 
           template {
-            contents = "nextcloud"
-            destination = "/vault/secrets/nextcloud/postgres/user"
+            contents = <<-EOT
+              <?php
+                $AUTOCONFIG = array (
+                  'directory' => '/data',
+                  'dbtype' => 'pgsql',
+                  'dbhost' => 'systemd-postgres',
+                  'dbname' => 'nextcloud',
+                  'dbuser' => 'nextcloud',
+                  'dbtableprefix' => '',
+                  {{- with secret "kv/data/service/${ nextcloud_service_fqdn }/postgres" -}}
+                  'dbpass' => '{{ .Data.data.password }}',
+                  {{- end }}
+                  {{- with secret "kv/data/service/${ nextcloud_service_fqdn }/admin" -}}
+                  'adminlogin' => '{{ .Data.data.username }}',
+                  'adminpass' => '{{ .Data.data.password }}',
+                  {{- end }}
+                );
+              EOT
+            perms = "0600"
+            destination = "/vault/secrets/nextcloud/autoconfig.php"
           }
     - path: /usr/local/bin/occ
       mode: 0755
@@ -247,27 +315,16 @@ storage:
       contents:
         inline: |
           #!/usr/bin/env sh
-          CONTAINER_NAME=systemd-nextcloud-app
-          COMMAND=/var/www/html/occ
-          USER=33
+          CONTAINER_NAME=systemd-nextcloud
+          COMMAND=occ
 
           podman container exists $CONTAINER_NAME ||
               echo "Container $CONTAINER_NAME not found (must be run as root to access container)"
           # shellcheck disable=SC2086
-          podman exec -it --user $USER $CONTAINER_NAME $COMMAND "$@"
-
-systemd:
-  units:
-    - name: nextcloud-cron.timer
-      enabled: true
-      contents: |
-        [Unit]
-        Description=Run nextcloud cron
-        After=nextcloud-app.service
-
-        [Timer]
-        OnBootSec=5min
-        OnUnitActiveSec=5min
-
-        [Install]
-        WantedBy=timers.target
+          podman exec -it $CONTAINER_NAME $COMMAND "$@"
+  links:
+    - path: /etc/nextcloud/logs_stub/access.log
+      target: /dev/stdout
+    - path: /etc/nextcloud/logs_stub/error.log
+      target: /dev/stderr
+      overwrite: true

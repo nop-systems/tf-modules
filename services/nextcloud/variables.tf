@@ -79,12 +79,52 @@ variable "acme_ca" {
   description = "URL to ACME directory for internal CA"
 }
 
-variable "php_memory_limit" {
-  type        = string
-  description = "PHP memory limit (1024M is a good default)"
-}
-
-variable "php_upload_limit" {
+variable "upload_limit" {
   type        = string
   description = "PHP (file) upload limit (20G is a good default)"
+}
+
+variable "php_apc_shm_size" {
+  type        = string
+  description = "PHP APCu shared memory size (128M is a good default)"
+}
+
+variable "php_opcache_memory_size" {
+  type        = string
+  description = "PHP OpCache Memory Size (128M is a good default)"
+}
+
+variable "php_memory_limit" {
+  type        = string
+  description = "PHP memory limit for occ commands (1024M is a good default)"
+}
+
+variable "default_language" {
+  type        = string
+  description = "default language (eg. 'de' or 'en')"
+}
+
+variable "default_locale" {
+  type        = string
+  description = "default language (eg. 'de' or 'en')"
+}
+
+variable "default_phone_region" {
+  type        = string
+  description = "default region for phone numbers (ISO 3166-1 country codes)"
+}
+
+variable "default_timezone" {
+  type        = string
+  description = "default IANA timezone"
+}
+
+variable "hide_login_form" {
+  type        = bool
+  description = "hide login form when using SSO"
+}
+
+variable "lost_password_link" {
+  type        = string
+  description = "Custom reset password URL or 'disabled'"
 }

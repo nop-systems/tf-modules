@@ -1,5 +1,5 @@
 module "fcos" {
-  source = "git@github.com:nop-systems/tf-modules.git//base/fcos/stack?ref=fcos/v0.5.4"
+  source = "git@github.com:nop-systems/tf-modules.git//base/fcos/stack?ref=fcos/v0.5.5"
   # source = "../../base/fcos/stack"
 
   fqdn      = var.fqdn
@@ -11,14 +11,25 @@ module "fcos" {
 
   butane_snippets = [
     templatefile("${path.module}/nextcloud.bu", {
-      fqdn                   = var.fqdn
-      nextcloud_public_fqdn  = var.nextcloud_public_fqdn
-      nextcloud_service_fqdn = var.nextcloud_service_fqdn
-      php_memory_limit       = var.php_memory_limit
-      php_upload_limit       = var.php_upload_limit
-      nextcloud_fpm_version  = "29.0.5-fpm"
-      postgres_version       = "16-alpine"
-      valkey_version         = "7.2.6"
+      fqdn                    = var.fqdn
+      nextcloud_public_fqdn   = var.nextcloud_public_fqdn
+      nextcloud_service_fqdn  = var.nextcloud_service_fqdn
+      upload_limit            = var.upload_limit
+      php_apc_shm_size        = var.php_apc_shm_size
+      php_opcache_memory_size = var.php_opcache_memory_size
+      php_memory_limit        = var.php_memory_limit
+
+      default_language     = var.default_language
+      default_locale       = var.default_locale
+      default_phone_region = var.default_phone_region
+      default_timezone     = var.default_timezone
+
+      hide_login_form    = var.hide_login_form
+      lost_password_link = var.lost_password_link
+
+      nextcloud_version = "29.0.5" # https://github.com/hoellen/docker-nextcloud/pkgs/container/nextcloud
+      postgres_version  = "16-alpine"
+      valkey_version    = "7.2.6"
     }),
     templatefile("${path.module}/caddy.bu", {
       fqdn                   = var.fqdn
