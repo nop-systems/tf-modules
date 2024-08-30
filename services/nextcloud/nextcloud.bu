@@ -19,10 +19,6 @@ storage:
       mode: 0644
       contents:
         inline: |
-          NC_maintenance_window_start=2
-          OVERWRITECLIURL=${nextcloud_service_fqdn}
-          TZ='Europe/Berlin'
-
           UPLOAD_MAX_SIZE=${upload_limit}
           APC_SHM_SIZE=${php_apc_shm_size}
           OPCACHE_MEM_SIZE=${php_opcache_memory_size}
