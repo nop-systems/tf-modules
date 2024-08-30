@@ -43,7 +43,7 @@ module "fcos" {
       collabora_public_fqdn  = var.collabora_public_fqdn
       collabora_service_fqdn = var.collabora_service_fqdn
       nextcloud_public_fqdn  = var.nextcloud_public_fqdn
-      collabora_code_version = "24.04.6.1.1"
+      collabora_code_version = "24.04.6.2.1"
     }),
     file("${path.module}/helper-services.bu"),
   ]

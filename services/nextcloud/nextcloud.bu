@@ -167,7 +167,7 @@ storage:
           [Unit]
           Description=nextcloud installation
           After=network-online.target local-fs.target vault-agent.service postgres.service valkey.service
-          Before=nextcloud.container
+          Before=nextcloud.service
           Wants=postgres.service valkey.service
           ConditionPathExists=!/var/containers/nextcloud/config/config.php
           AssertPathExists=/var/containers/secrets/nextcloud/autoconfig.php
@@ -188,7 +188,7 @@ storage:
           ExecStartPre=cp /var/containers/secrets/nextcloud/autoconfig.php /var/containers/nextcloud/config/
           ExecStartPre=touch /var/containers/nextcloud/config/CAN_INSTALL
 
-          Restart=always
+          Restart=on-failure
           RestartSec=1s
           RestartSteps=10
           RestartMaxDelaySec=5m
@@ -293,10 +293,10 @@ storage:
                   'dbname' => 'nextcloud',
                   'dbuser' => 'nextcloud',
                   'dbtableprefix' => '',
-                  {{- with secret "kv/data/service/${ nextcloud_service_fqdn }/postgres" -}}
+                  {{ with secret "kv/data/service/${ nextcloud_service_fqdn }/postgres" -}}
                   'dbpass' => '{{ .Data.data.password }}',
                   {{- end }}
-                  {{- with secret "kv/data/service/${ nextcloud_service_fqdn }/admin" -}}
+                  {{ with secret "kv/data/service/${ nextcloud_service_fqdn }/admin" -}}
                   'adminlogin' => '{{ .Data.data.username }}',
                   'adminpass' => '{{ .Data.data.password }}',
                   {{- end }}
