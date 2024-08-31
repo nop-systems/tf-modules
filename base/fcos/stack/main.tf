@@ -64,7 +64,7 @@ locals {
 }
 
 module "dns-record_A" {
-  source = "git@github.com:nop-systems/tf-modules.git//base/dns-record?ref=dns-record/v0.1.0"
+  source = "git@github.com:nop-systems/tf-modules.git//base/dns-record?ref=dns-record/v0.2.0"
 
   name  = module.domain.record_name
   type  = "A"
@@ -74,7 +74,7 @@ module "dns-record_A" {
 }
 
 module "dns-record_AAAA" {
-  source = "git@github.com:nop-systems/tf-modules.git//base/dns-record?ref=dns-record/v0.1.0"
+  source = "git@github.com:nop-systems/tf-modules.git//base/dns-record?ref=dns-record/v0.2.0"
 
   name  = module.domain.record_name
   type  = "AAAA"
