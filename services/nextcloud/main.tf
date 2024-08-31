@@ -60,7 +60,7 @@ module "fcos" {
 }
 
 module "nextcloud_service_cname_record" {
-  source  = "git@github.com:nop-systems/tf-modules.git//base/dns-record?ref=dns-record/v0.1.0"
+  source  = "git@github.com:nop-systems/tf-modules.git//base/dns-record?ref=dns-record/v0.2.0"
   name    = var.nextcloud_service_fqdn
   type    = "CNAME"
   value   = var.fqdn
@@ -68,7 +68,7 @@ module "nextcloud_service_cname_record" {
 }
 
 module "collabora_service_cname_record" {
-  source  = "git@github.com:nop-systems/tf-modules.git//base/dns-record?ref=dns-record/v0.1.0"
+  source  = "git@github.com:nop-systems/tf-modules.git//base/dns-record?ref=dns-record/v0.2.0"
   name    = var.collabora_service_fqdn
   type    = "CNAME"
   value   = var.fqdn
