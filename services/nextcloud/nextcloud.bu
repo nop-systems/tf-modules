@@ -518,7 +518,7 @@ storage:
           }
 
           template {
-            contents 0 <<-EOT
+            contents = <<-EOT
               {{ with secret "kv/data/service/${ nextcloud_service_fqdn }/nextcloud" -}}
               {
                 "apps": {
@@ -534,7 +534,7 @@ storage:
           }
 
           template {
-            contents 0 <<-EOT
+            contents = <<-EOT
               {{ with secret "kv/data/service/${ nextcloud_service_fqdn }/nextcloud" -}}
               NEXTCLOUD_AUTH_TOKEN={{ .Data.data.serverinfo_token }}
               {{- end }}
