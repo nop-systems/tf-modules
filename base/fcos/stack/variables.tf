@@ -100,5 +100,5 @@ variable "admin_pki_mount" {
 
 variable "monitoring_ingress_url" {
   type        = string
-  description = "value"
+  description = "Base URL of Loki/Prometheus where logs and metrics will be pushed to (e.g. https://monitoring-ingress.example.com)"
 }
