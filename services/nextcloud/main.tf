@@ -1,5 +1,9 @@
+locals {
+  upload_limit_bytes = var.upload_limit_GB * pow(10, 9)
+}
+
 module "fcos" {
-  source = "git@github.com:nop-systems/tf-modules.git//base/fcos/stack?ref=fcos/v0.5.5"
+  source = "git@github.com:nop-systems/tf-modules.git//base/fcos/stack?ref=fcos/v0.6.0"
   # source = "../../base/fcos/stack"
 
   fqdn      = var.fqdn
@@ -14,7 +18,8 @@ module "fcos" {
       fqdn                    = var.fqdn
       nextcloud_public_fqdn   = var.nextcloud_public_fqdn
       nextcloud_service_fqdn  = var.nextcloud_service_fqdn
-      upload_limit            = var.upload_limit
+      collabora_public_fqdn   = var.collabora_public_fqdn
+      upload_limit_bytes      = local.upload_limit_bytes
       php_apc_shm_size        = var.php_apc_shm_size
       php_opcache_memory_size = var.php_opcache_memory_size
       php_memory_limit        = var.php_memory_limit
@@ -24,10 +29,12 @@ module "fcos" {
       default_phone_region = var.default_phone_region
       default_timezone     = var.default_timezone
 
-      hide_login_form    = var.hide_login_form
-      lost_password_link = var.lost_password_link
+      apps = join(" ", toset(concat(["files_antivirus", "richdocuments"], var.apps)))
+      # merge into default object because occ complains about empty object
+      config = jsonencode(merge({ system = {} }, var.config))
 
-      nextcloud_version = "29.0.5" # https://github.com/hoellen/docker-nextcloud/pkgs/container/nextcloud
+      # https://github.com/hoellen/docker-nextcloud/pkgs/container/nextcloud
+      nextcloud_version = "29.0.5"
       postgres_version  = "16-alpine"
       valkey_version    = "7.2.6"
     }),
@@ -40,12 +47,17 @@ module "fcos" {
       caddy_version          = "2.8"
     }),
     templatefile("${path.module}/collabora.bu", {
+      fqdn                   = var.fqdn
       collabora_public_fqdn  = var.collabora_public_fqdn
       collabora_service_fqdn = var.collabora_service_fqdn
       nextcloud_public_fqdn  = var.nextcloud_public_fqdn
-      collabora_code_version = "24.04.6.2.1"
+      nextcloud_service_fqdn = var.nextcloud_service_fqdn
+      collabora_code_version = "24.04.7.1.1"
+      languagetool_version   = "v6.4"
     }),
-    file("${path.module}/helper-services.bu"),
+    templatefile("${path.module}/helper-services.bu", {
+      upload_limit_bytes = local.upload_limit_bytes
+    }),
   ]
 
   cloudflare_zone_id     = var.cloudflare_zone_id
@@ -53,6 +65,7 @@ module "fcos" {
   xo_network_id          = var.xo_network_id
   xo_template_id         = var.xo_template_id
   vault_url              = var.vault_url
+  monitoring_ingress_url = var.monitoring_ingress_url
   root_ca_pem            = var.root_ca_pem
   matchbox_http_endpoint = var.matchbox_http_endpoint
   admin_pki_mount        = var.admin_pki_mount

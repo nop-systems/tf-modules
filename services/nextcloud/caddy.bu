@@ -20,7 +20,6 @@ storage:
           AutoUpdate=registry
           LogDriver=journald
           UserNS=auto
-          Notify=healthy
 
           PublishPort=443:443
           PublishPort=443:443/udp
@@ -40,6 +39,19 @@ storage:
 
           [Install]
           WantedBy=default.target
+    - path: /etc/monitoring/alloy.d/nextcloud.alloy
+      contents:
+        inline: |
+          prometheus.scrape "caddy" {
+            forward_to = [
+              prometheus.relabel.replace_instance.receiver,
+            ]
+            targets = [
+              {
+                "__address__" = "systemd-caddy:9443",
+              },
+            ]
+          }
     - path: /var/containers/caddy/Caddyfile
       mode: 0644
       overwrite: true
@@ -50,8 +62,14 @@ storage:
             auto_https disable_redirects
             servers {
               trusted_proxies static ${trusted_proxies}
+              metrics
             }
             fallback_sni ${nextcloud_service_fqdn}
+          }
+
+          :9443 {
+            metrics /metrics
+            respond Nothing 404
           }
 
           (common) {
@@ -71,32 +89,26 @@ storage:
 
           https://${collabora_service_fqdn} {
             import common
-
             reverse_proxy systemd-collabora:9980
           }
 
           https://${fqdn}, https://${nextcloud_service_fqdn}, https:// {
             import common
-
             reverse_proxy systemd-nextcloud:8888
-
             encode zstd gzip
 
             # Headers
             header {
-              # If staging acme_ca is enabled, this needs to be commented out!
-              # Otherwise, it is not possible to add browser exception
               Strict-Transport-Security "max-age=31536000; includeSubDomains"
 
-              # # More security hardening headers
-              # Referrer-Policy "no-referrer"
-              # X-Content-Type-Options "nosniff"
-              # X-Download-Options "noopen"
-              # X-Frame-Options "SAMEORIGIN"
-              # X-Permitted-Cross-Domain-Policies "none"
-              # X-Robots-Tag "noindex, nofollow"
-              # X-XSS-Protection "1; mode=block"
-              # # Permissions-Policy "interest-cohort=()"
+              # More security hardening headers
+              Referrer-Policy "no-referrer"
+              X-Content-Type-Options "nosniff"
+              X-Download-Options "noopen"
+              X-Frame-Options "SAMEORIGIN"
+              X-Permitted-Cross-Domain-Policies "none"
+              X-Robots-Tag "noindex, nofollow"
+              X-XSS-Protection "1; mode=block"
 
               # Replace http with https in any Location header
               Location http:// https://

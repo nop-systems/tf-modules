@@ -79,9 +79,14 @@ variable "acme_ca" {
   description = "URL to ACME directory for internal CA"
 }
 
-variable "upload_limit" {
+variable "monitoring_ingress_url" {
   type        = string
-  description = "PHP (file) upload limit (20G is a good default)"
+  description = "Base URL of Loki/Prometheus where logs and metrics will be pushed to (e.g. https://monitoring-ingress.example.com)"
+}
+
+variable "upload_limit_GB" {
+  type        = number
+  description = "PHP (file) upload limit in GB (20GB is a good default)"
 }
 
 variable "php_apc_shm_size" {
@@ -106,7 +111,7 @@ variable "default_language" {
 
 variable "default_locale" {
   type        = string
-  description = "default language (eg. 'de' or 'en')"
+  description = "default locale (eg. 'de_DE' or 'en_GB')"
 }
 
 variable "default_phone_region" {
@@ -119,12 +124,12 @@ variable "default_timezone" {
   description = "default IANA timezone"
 }
 
-variable "hide_login_form" {
-  type        = bool
-  description = "hide login form when using SSO"
+variable "apps" {
+  type        = list(string)
+  description = "List of additional App names to be installed"
 }
 
-variable "lost_password_link" {
-  type        = string
-  description = "Custom reset password URL or 'disabled'"
+variable "config" {
+  type        = map(any)
+  description = "A nextcloud config snippet (will be converted to json, format see \"occ config:list\"). Must not contain secrets."
 }

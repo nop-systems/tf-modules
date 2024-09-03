@@ -4,13 +4,14 @@ version: "1.5.0"
 storage:
   directories:
     - path: /var/containers/secrets/collabora
+    - path: /var/containers/languagetool/ngrams
   files:
     - path: /etc/containers/systemd/collabora.network
       mode: 0644
       contents:
         inline: |
           [Unit]
-          Description=Special Podman Network to slightly isolate collabora
+          Description=Network for collabora and languagetool
           [Network]
           IPv6=true
           #Subnet=
@@ -19,9 +20,17 @@ storage:
       contents:
         inline: |
           DONT_GEN_SSL_CERT=anyvalue
-          server_name=${collabora_public_fqdn}
+          hostname=${collabora_public_fqdn}
           aliasgroup1=https://${nextcloud_public_fqdn}:443
-          extra_params=--o:ssl.enable=false --o:ssl.termination=true --o:ssl.sts.enabled=true
+          aliasgroup2=https://${nextcloud_service_fqdn}:443
+          aliasgroup2=https://${fqdn}:443
+          extra_params=--o:ssl.enable=false \
+            --o:ssl.termination=true \
+            --o:ssl.sts.enabled=true \
+            --o:ssl.ssl_verification=true \
+            --o:remote_font_config.url=https://${nextcloud_service_fqdn}/apps/richdocuments/settings/fonts.json \
+            --o:languagetool.enabled=true \
+            --o:languagetool.base_url=http://systemd-languagetool:8010/v2
     - path: /etc/vault-agent/config.d/collabora.hcl
       mode: 0644
       contents:
@@ -29,11 +38,20 @@ storage:
           template {
             contents = <<-EOT
               {{- with secret "kv/data/service/${ collabora_service_fqdn }/admin" -}}
-              username=admin
-              password={{ .Data.data.admin_password }}
+              username={{ .Data.data.username }}
+              password={{ .Data.data.password }}
               {{- end }}
               EOT
             destination = "/vault/secrets/collabora/collabora_admin.env"
+          }
+
+          template {
+            contents = <<-EOT
+              {{- with secret "kv/data/service/${ collabora_service_fqdn }/admin" -}}
+              {{ .Data.data.password }}
+              {{- end }}
+              EOT
+            destination = "/vault/secrets/monitoring/collabora_password"
           }
     - path: /etc/containers/systemd/collabora.container
       mode: 0644
@@ -47,10 +65,14 @@ storage:
           Image=docker.io/collabora/code:${collabora_code_version}
           Pull=newer
           LogDriver=journald
-          UserNS=auto
+          # collabora uses nobody (65534) and therefore needs more than 1024 ids
+          UserNS=auto:size=65536
 
           EnvironmentFile=/etc/collabora.env
           EnvironmentFile=/var/containers/secrets/collabora/collabora_admin.env
+
+          Volume=/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem:/host-tls-ca-bundle.pem:z,idmap,ro
+          Environment=SSL_CERT_FILE=/host-tls-ca-bundle.pem
 
           Network=collabora.network
 
@@ -62,3 +84,95 @@ storage:
 
           [Install]
           WantedBy=default.target
+    - path: /etc/languagetool.env
+      mode: 0644
+      contents:
+        inline: |
+          Java_Xms=512m
+          Java_Xmx=1g
+          langtool_languageModel=/ngrams
+    - path: /etc/containers/systemd/languagetool.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=LanguageTool proofreading software
+          After=network-online.target local-fs.target
+          Wants=languagetool-download-ngrams.target
+          After=languagetool-download-ngrams.target
+
+          [Container]
+          Image=docker.io/elestio/languagetool:${languagetool_version}
+          Pull=newer
+          LogDriver=journald
+          UserNS=auto
+
+          Volume=/var/containers/languagetool/ngrams:/ngrams:Z,U,ro
+          EnvironmentFile=/etc/languagetool.env
+
+          Network=collabora.network
+
+          [Service]
+          Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
+
+          [Install]
+          WantedBy=default.target
+
+    - path: /etc/monitoring/alloy.d/collabora.alloy
+      contents:
+        inline: |
+          prometheus.scrape "collabora" {
+            forward_to = [
+              prometheus.relabel.replace_instance.receiver,
+            ]
+            metrics_path = "/cool/getMetrics"
+            targets = [
+              {
+                "__address__" = "systemd-collabora:9205",
+              },
+            ]
+            basic_auth {
+              username = "admin"
+              password_file = "/secrets/collabora_password"
+            }
+          }
+
+          prometheus.exporter.blackbox "languagetool" {
+            config = "{ modules: { http_2xx: { prober: http, timeout: 5s } } }"
+            target {
+              name    = "example"
+              address = "http://systemd-languagetool:8010/v2/languages"
+              module  = "http_2xx"
+            }
+          }
+    - path: /etc/containers/systemd/monitoring.pod.d/collabora.conf
+      contents:
+        inline: |
+          [Pod]
+          Network=collabora.network
+systemd:
+  units:
+    - name: languagetool-download-ngrams@.service
+      contents: |
+        [Unit]
+        Description=Download ngrams zip and unzip
+        After=network-online.target local-fs.target var.mount
+        ConditionPathExists=!/var/containers/languagetool/ngrams/ngrams-%i.stamp
+
+        [Service]
+        Type=oneshot
+        WorkingDirectory=/var/containers/languagetool/ngrams
+        ExecStart=curl -O https://languagetool.org/download/ngram-data/ngrams-%i.zip
+        ExecStart=bsdtar -v -x -f ngrams-%i.zip
+        ExecStartPost=touch /var/containers/languagetool/ngrams/ngrams-%i.stamp
+    - name: languagetool-download-ngrams.target
+      contents: |
+        [Unit]
+        Wants=languagetool-download-ngrams@de-20150819.service
+        Wants=languagetool-download-ngrams@en-20150817.service
+        Wants=languagetool-download-ngrams@es-20150915.service
+        Wants=languagetool-download-ngrams@fr-20150913.service
+        PartOf=languagetool.service
