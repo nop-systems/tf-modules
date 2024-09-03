@@ -28,8 +28,9 @@ data "ct_config" "this" {
       admin_pki_mount = var.admin_pki_mount
     }),
     templatefile("${path.module}/templates/monitoring.bu.tftpl", {
-      fqdn                  = var.fqdn
-      grafana_alloy_version = "latest"
+      fqdn                   = var.fqdn
+      monitoring_ingress_url = var.monitoring_ingress_url
+      grafana_alloy_version  = "latest"
     })
   ], var.butane_snippets)
   # pretty_print = true

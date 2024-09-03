@@ -28,6 +28,7 @@ module "ignition" {
   root_ca_pem               = var.root_ca_pem
   vault_url                 = var.vault_url
   admin_pki_mount           = var.admin_pki_mount
+  monitoring_ingress_url    = var.monitoring_ingress_url
 }
 
 module "matchbox" {
