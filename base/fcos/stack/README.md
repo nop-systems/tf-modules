@@ -49,6 +49,7 @@ Combined Ignition + Matchbox + VM modules for standard deployments
 | <a name="input_fqdn"></a> [fqdn](#input\_fqdn) | Fully Qualified Domain Name of VM | `string` | n/a | yes |
 | <a name="input_matchbox_http_endpoint"></a> [matchbox\_http\_endpoint](#input\_matchbox\_http\_endpoint) | matchbox http endpoint | `string` | n/a | yes |
 | <a name="input_memory"></a> [memory](#input\_memory) | Memory in MB | `number` | `2048` | no |
+| <a name="input_monitoring_ingress_url"></a> [monitoring\_ingress\_url](#input\_monitoring\_ingress\_url) | value | `string` | n/a | yes |
 | <a name="input_root_ca_pem"></a> [root\_ca\_pem](#input\_root\_ca\_pem) | Private Root Certificate (PEM) | `string` | n/a | yes |
 | <a name="input_services"></a> [services](#input\_services) | List of Services as shared FQDNs (possibly with shared secrets) | `list(string)` | `[]` | no |
 | <a name="input_vault_url"></a> [vault\_url](#input\_vault\_url) | Vault URL | `string` | n/a | yes |
@@ -81,6 +82,8 @@ module "" {
   fqdn =
   /* matchbox http endpoint (required) */
   matchbox_http_endpoint =
+  /* value (required) */
+  monitoring_ingress_url =
   /* Private Root Certificate (PEM) (required) */
   root_ca_pem =
   /* Vault URL (required) */
@@ -119,6 +122,7 @@ module "" {
   cloudflare_zone_id =
   fqdn =
   matchbox_http_endpoint =
+  monitoring_ingress_url =
   root_ca_pem =
   vault_url =
   xo_network_id =

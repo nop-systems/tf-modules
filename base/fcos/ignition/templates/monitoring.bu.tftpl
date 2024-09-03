@@ -82,7 +82,7 @@ storage:
 
           prometheus.remote_write "monitoring_ingress" {
             endpoint {
-              url = "https://monitoring-ingress.service.studis-bht.de/prom/api/v1/write"
+              url = "${monitoring_ingress_url}/prom/api/v1/write"
               tls_config {
                 cert_file = "/tls/fullchain.pem"
                 key_file = "/tls/privkey.pem"
@@ -93,7 +93,7 @@ storage:
 
           loki.write "monitoring_ingress" {
             endpoint {
-              url = "https://monitoring-ingress.service.studis-bht.de/loki/api/v1/push"
+              url = "${monitoring_ingress_url}/loki/api/v1/push"
               tls_config {
                 cert_file = "/tls/fullchain.pem"
                 key_file = "/tls/privkey.pem"

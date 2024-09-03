@@ -47,3 +47,8 @@ variable "admin_pki_mount" {
   type        = string
   description = "Vault PKI mount for admin client certificates"
 }
+
+variable "monitoring_ingress_url" {
+  type        = string
+  description = "value"
+}
