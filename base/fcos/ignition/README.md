@@ -36,6 +36,7 @@ No modules.
 | <a name="input_butane_snippets"></a> [butane\_snippets](#input\_butane\_snippets) | (application specific) butane configs | `list(string)` | n/a | yes |
 | <a name="input_cnames"></a> [cnames](#input\_cnames) | List of CNAMEs as FQDNs | `list(string)` | `[]` | no |
 | <a name="input_fqdn"></a> [fqdn](#input\_fqdn) | FQDN of the new Virtual Machine | `string` | n/a | yes |
+| <a name="input_monitoring_ingress_url"></a> [monitoring\_ingress\_url](#input\_monitoring\_ingress\_url) | value | `string` | n/a | yes |
 | <a name="input_root_ca_pem"></a> [root\_ca\_pem](#input\_root\_ca\_pem) | Private Root Certificate (PEM) | `string` | n/a | yes |
 | <a name="input_services"></a> [services](#input\_services) | List of Services as shared FQDNs (possibly with shared secrets) | `list(string)` | `[]` | no |
 | <a name="input_vault_url"></a> [vault\_url](#input\_vault\_url) | Vault URL | `string` | n/a | yes |
@@ -63,6 +64,8 @@ module "" {
   butane_snippets =
   /* FQDN of the new Virtual Machine (required) */
   fqdn =
+  /* value (required) */
+  monitoring_ingress_url =
   /* Private Root Certificate (PEM) (required) */
   root_ca_pem =
   /* Vault URL (required) */
@@ -83,6 +86,7 @@ module "" {
   approle_wrapped_secret_id =
   butane_snippets =
   fqdn =
+  monitoring_ingress_url =
   root_ca_pem =
   vault_url =
 }

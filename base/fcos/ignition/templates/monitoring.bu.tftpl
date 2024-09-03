@@ -3,9 +3,11 @@ variant: fcos
 version: "1.5.0"
 storage:
   directories:
+    - path: /etc/containers/systemd/monitoring.pod.d
     - path: /etc/monitoring/alloy.d
       mode: 0755
     - path: /var/containers/alloy/data
+    - path: /var/containers/secrets/monitoring
   files:
     - path: /etc/tmpfiles.d/metrics.conf
       mode: 0644
@@ -20,7 +22,6 @@ storage:
           [Network]
           IPv6=true
           Subnet=10.89.255.0/24
-
     - path: /etc/containers/systemd/monitoring.pod
       mode: 0644
       contents:
@@ -29,12 +30,13 @@ storage:
           Description=Pod to keep monitoring network online
 
           [Pod]
-          Network=monitoring.network
           PodmanArgs=--userns=auto --exit-policy=continue
 
-          PublishPort=12345:12345
+          Network=monitoring.network
           Network=vault-agent.network
           Network=container.network
+          PublishPort=12345:12345
+
     - path: /etc/containers/systemd/alloy.container
       mode: 0644
       contents:
@@ -45,18 +47,21 @@ storage:
 
           [Container]
           Image=docker.io/grafana/alloy:${grafana_alloy_version}
-          Exec= run --disable-reporting --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /config
+          Exec=run --disable-reporting --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /config
 
           Pull=newer
           AutoUpdate=registry
           LogDriver=journald
 
           Volume=/var/containers/alloy/data:/var/lib/alloy/data:Z,U
-          Volume=/var/log/journal:/var/log/journal:z,idmap,ro
-          Volume=/run/log/journal:/run/log/journal:z,idmap,ro
           Volume=/etc/monitoring/alloy.d:/config:Z,U,ro
           Volume=/var/containers/secrets/tls/${fqdn}:/tls:z,idmap,ro
           Volume=/var/containers/secrets/tls-admin:/tls-admin:z,idmap,ro
+          Volume=/var/containers/secrets/monitoring:/secrets:z,idmap,ro
+
+          Volume=/var/log/journal:/var/log/journal:z,idmap,ro
+          Volume=/run/log/journal:/run/log/journal:z,idmap,ro
+
           Pod=monitoring.pod
 
           [Service]
@@ -82,7 +87,7 @@ storage:
 
           prometheus.remote_write "monitoring_ingress" {
             endpoint {
-              url = "https://monitoring-ingress.service.studis-bht.de/prom/api/v1/write"
+              url = "${monitoring_ingress_url}/prom/api/v1/write"
               tls_config {
                 cert_file = "/tls/fullchain.pem"
                 key_file = "/tls/privkey.pem"
@@ -93,7 +98,7 @@ storage:
 
           loki.write "monitoring_ingress" {
             endpoint {
-              url = "https://monitoring-ingress.service.studis-bht.de/loki/api/v1/push"
+              url = "${monitoring_ingress_url}/loki/api/v1/push"
               tls_config {
                 cert_file = "/tls/fullchain.pem"
                 key_file = "/tls/privkey.pem"

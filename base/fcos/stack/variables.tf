@@ -97,3 +97,8 @@ variable "admin_pki_mount" {
   type        = string
   description = "PKI mount path for admin client certificates (e.g. pki-admin)"
 }
+
+variable "monitoring_ingress_url" {
+  type        = string
+  description = "value"
+}
