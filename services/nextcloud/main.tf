@@ -8,7 +8,7 @@ module "fcos" {
 
   fqdn      = var.fqdn
   desc      = "Nextcloud file sharing and collaboration platform"
-  xo_tags   = concat(var.xo_tags, ["service:nextcloud"])
+  xo_tags   = concat(var.xo_tags, ["service=nextcloud"])
   memory    = 1024 * 8
   cpu_cores = 4
   disk_size = 500
