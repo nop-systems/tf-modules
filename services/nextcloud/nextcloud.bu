@@ -243,7 +243,7 @@ storage:
 
           Volume=/var/containers/nextcloud/data:/data:Z,U
           Volume=/var/containers/secrets/tls/this/root_ca.pem:/etc/ssl/certs/root_ca.pem:z,idmap,ro
-          Volume=/etc/nextcloud/script-entrypoint.sh:/script-entrypoint.sh:Z,U,ro
+          Volume=/etc/nextcloud/script-entrypoint.sh:/usr/local/bin/script-entrypoint.sh:Z,U,ro
 
           # redirect logs to stdout/stderr by mounting symlinks
           Volume=/etc/nextcloud/logs_stub:/nginx/logs:Z,ro
@@ -298,7 +298,7 @@ storage:
           After=network-online.target local-fs.target vault-agent.service postgres.service valkey.service
           Before=nextcloud.service
           Wants=postgres.service valkey.service
-          ConditionPathExists=!/var/containers/nextcloud/config/config.php
+          ConditionFileNotEmpty=!/var/containers/nextcloud/config/config.php
 
           [Container]
           Image=nextcloud.image
@@ -350,10 +350,9 @@ storage:
 
           EnvironmentFile=/etc/nextcloud/nextcloud.env
 
-          # mount volumes readonly
-          Volume=/var/containers/nextcloud/config:/nextcloud/config:Z,U,ro
-          Volume=/var/containers/nextcloud/apps2:/nextcloud/apps2:Z,U,ro
-          Volume=/var/containers/nextcloud/themes:/nextcloud/themes:Z,U,ro
+          Volume=/var/containers/nextcloud/config:/nextcloud/config:Z,U
+          Volume=/var/containers/nextcloud/apps2:/nextcloud/apps2:Z,U
+          Volume=/var/containers/nextcloud/themes:/nextcloud/themes:Z,U
 
           Volume=/etc/nextcloud/provision/:/provision:Z,U,ro
           Volume=/var/containers/secrets/nextcloud/provision/:/provision/secrets:Z,U,ro
@@ -670,7 +669,7 @@ systemd:
         [Unit]
         Description=Rerun provision script to update all apps every night
         Wants=postgres.service valkey.service
-        After=postgres.service valkey.service nextcloud-install.service nextcloud-provision.service
+        After=postgres.service valkey.service nextcloud-install.service
         Description=Run nextcloud cron
         [Timer]
         OnCalendar=*-*-* 04:00:00 UTC
