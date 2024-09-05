@@ -132,4 +132,8 @@ variable "apps" {
 variable "config" {
   type        = map(any)
   description = "A nextcloud config snippet (will be converted to json, format see \"occ config:list\"). Must not contain secrets."
+  validation {
+    condition     = alltrue([for k, v in var.config : contains(["system", "apps"], k)])
+    error_message = "Config snippet can only contain keys 'system' and 'apps'."
+  }
 }
