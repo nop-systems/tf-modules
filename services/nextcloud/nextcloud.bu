@@ -38,19 +38,6 @@ storage:
         inline: |
           {
             "system": {
-              "config_is_read_only": false,
-              "apps_paths": [
-                {
-                  "path": "/nextcloud/apps",
-                  "url": "/apps",
-                  "writable": false
-                },
-                {
-                  "path": "/nextcloud/apps2",
-                  "url": "/apps2",
-                  "writable": true
-                }
-              ],
               "upgrade.disable-web": true,
               "trusted_domains": [
                 "${fqdn}",
@@ -102,8 +89,8 @@ storage:
                 "enabled": "yes",
                 "types": "prevent_group_restriction",
                 "wopi_url": "http://systemd-collabora:9980",
-                "public_wopi_url": "${collabora_public_fqdn}",
-              },
+                "public_wopi_url": "${collabora_public_fqdn}"
+              }
               "files_antivirus": {
                 "enabled": "yes",
                 "av_mode": "daemon",
@@ -113,10 +100,10 @@ storage:
                 "av_stream_max_length": "${upload_limit_bytes}",
                 "av_max_file_size": "-1",
                 "av_scan_first_bytes": "-1",
-                "types": "filesystem,dav",
+                "types": "filesystem,dav"
               },
               "logreader": {
-                "enabled": "no",
+                "enabled": "no"
               }
             }
           }
@@ -125,6 +112,46 @@ storage:
       contents:
         inline: |
           ${config}
+    - path: /etc/nextcloud/rw.config.php
+      contents:
+        inline: |
+          <?php
+          $CONFIG = array (
+            'config_is_read_only' => false,
+            'apps_paths' => array (
+              0 => array (
+                    'path'     => '/nextcloud/apps',
+                    'url'      => '/apps',
+                    'writable' => false,
+              ),
+              1 => array (
+                    'path'     => '/nextcloud/apps2',
+                    'url'      => '/apps2',
+                    'writable' => true,
+              ),
+            ),
+            'appstoreenabled' => true
+          );
+    - path: /etc/nextcloud/ro.config.php
+      contents:
+        inline: |
+          <?php
+          $CONFIG = array (
+            'config_is_read_only' => 'true',
+            'apps_paths' => array (
+              0 => array (
+                    'path'     => '/nextcloud/apps',
+                    'url'      => '/apps',
+                    'writable' => false,
+              ),
+              1 => array (
+                    'path'     => '/nextcloud/apps2',
+                    'url'      => '/apps2',
+                    'writable' => false,
+              ),
+            ),
+            'appstoreenabled' => false
+          );
     - path: /etc/nextcloud/script-entrypoint.sh
       mode: 0755
       contents:
@@ -220,7 +247,6 @@ storage:
 
           [Image]
           Image=ghcr.io/hoellen/nextcloud:${nextcloud_version}
-
     - path: /etc/containers/systemd/nextcloud.network
       mode: 0644
       contents:
@@ -242,7 +268,7 @@ storage:
           Network=collabora.network
 
           Volume=/var/containers/nextcloud/data:/data:Z,U
-          Volume=/var/containers/secrets/tls/this/root_ca.pem:/etc/ssl/certs/root_ca.pem:z,idmap,ro
+          Volume=/var/containers/secrets/tls/this/root_ca.pem:/host-tls-ca-bundle.pem:z,idmap,ro
           Volume=/etc/nextcloud/script-entrypoint.sh:/usr/local/bin/script-entrypoint.sh:Z,U,ro
 
           # redirect logs to stdout/stderr by mounting symlinks
@@ -273,6 +299,7 @@ storage:
           Volume=/var/containers/nextcloud/config:/nextcloud/config:Z,U,ro
           Volume=/var/containers/nextcloud/apps2:/nextcloud/apps2:Z,U,ro
           Volume=/var/containers/nextcloud/themes:/nextcloud/themes:Z,U,ro
+          Volume=/etc/nextcloud/ro.config.php:/nextcloud/config:Z,U,ro
 
           Volume=/var/containers/nextcloud/session:/php/session:Z,U
 
@@ -311,6 +338,7 @@ storage:
           Volume=/var/containers/nextcloud/config:/nextcloud/config:Z,U
           Volume=/var/containers/nextcloud/apps2:/nextcloud/apps2:Z,U
           Volume=/var/containers/nextcloud/themes:/nextcloud/themes:Z,U
+          Volume=/etc/nextcloud/rw.config.php:/nextcloud/config:Z,U,ro
 
           EnvironmentFile=/etc/nextcloud/nextcloud.env
 
@@ -345,7 +373,7 @@ storage:
           LogDriver=journald
 
           Entrypoint=script-entrypoint.sh
-          Exec=/provision
+          Exec=/provision/provision.sh
           WorkingDir=/nextcloud
 
           EnvironmentFile=/etc/nextcloud/nextcloud.env
@@ -353,6 +381,7 @@ storage:
           Volume=/var/containers/nextcloud/config:/nextcloud/config:Z,U
           Volume=/var/containers/nextcloud/apps2:/nextcloud/apps2:Z,U
           Volume=/var/containers/nextcloud/themes:/nextcloud/themes:Z,U
+          Volume=/etc/nextcloud/rw.config.php:/nextcloud/config:Z,U,ro
 
           Volume=/etc/nextcloud/provision/:/provision:Z,U,ro
           Volume=/var/containers/secrets/nextcloud/provision/:/provision/secrets:Z,U,ro
@@ -363,7 +392,7 @@ storage:
           Type=oneshot
           RemainAfterExit=true
 
-          ExecStartPre=sh -c 'podman exec -t systemd-postgres pg_dumpall -c -U nextcloud | zstd > /var/containers/backup/postgres/dump_`date +%Y-%m-%d"_"%H-%M-%S`.sql.zstd'
+          ExecStartPre=sh -c 'podman exec systemd-postgres pg_dumpall -c -U nextcloud | zstd > /var/containers/backup/postgres/dump_`date +%%Y-%%m-%%d_%%H-%%M-%%S`.sql.zstd'
           ExecStartPre=find /var/containers/backup/postgres -maxdepth 1 -mtime +7 -type f -delete
           ExecStartPre=test -s /var/containers/secrets/nextcloud/provision/config.json
 
@@ -393,6 +422,7 @@ storage:
           Volume=/var/containers/nextcloud/config:/nextcloud/config:Z,U,ro
           Volume=/var/containers/nextcloud/apps2:/nextcloud/apps2:Z,U,ro
           Volume=/var/containers/nextcloud/themes:/nextcloud/themes:Z,U,ro
+          Volume=/etc/nextcloud/ro.config.php:/nextcloud/config:Z,U,ro
 
           EnvironmentFile=/etc/nextcloud/nextcloud.env
 
@@ -518,11 +548,11 @@ storage:
 
           template {
             contents = <<-EOT
-              {{ with secret "kv/data/service/${ nextcloud_service_fqdn }/nextcloud" -}}
+              {{ with secret "kv/data/service/${ nextcloud_service_fqdn }/settings" -}}
               {
                 "apps": {
                   "serverinfo": {
-                    "token": "{{ .Data.data.serverinfo_token }}",
+                    "token": "{{ .Data.data.serverinfo_token }}"
                   }
                 }
               }
@@ -534,7 +564,7 @@ storage:
 
           template {
             contents = <<-EOT
-              {{ with secret "kv/data/service/${ nextcloud_service_fqdn }/nextcloud" -}}
+              {{ with secret "kv/data/service/${ nextcloud_service_fqdn }/settings" -}}
               NEXTCLOUD_AUTH_TOKEN={{ .Data.data.serverinfo_token }}
               {{- end }}
               EOT
