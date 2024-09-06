@@ -663,14 +663,20 @@ storage:
       mode: 0755
       contents:
         inline: |
-          #!/usr/bin/env sh
-          CONTAINER_NAME=systemd-nextcloud
-          COMMAND=occ
+          #!/usr/bin/env bash
+          set -euo pipefail
 
-          podman container exists $CONTAINER_NAME ||
-              echo "Container $CONTAINER_NAME not found (must be run as root to access container)"
-          # shellcheck disable=SC2086
-          podman exec -it $CONTAINER_NAME $COMMAND -- "$@"
+          IMAGE=$(systemctl cat nextcloud-image.service | awk -F= '$1=="Image"{print $2}')
+          podman run --name "nextcloud-occ-$$" --rm -it \
+            --pod systemd-nextcloud \
+            --env-file /etc/nextcloud/nextcloud.env \
+            --entrypoint script-entrypoint.sh \
+            --workdir /nextcloud \
+            -v /var/containers/nextcloud/config:/nextcloud/config:Z,U \
+            -v /var/containers/nextcloud/apps2:/nextcloud/apps2:Z,U \
+            -v /var/containers/nextcloud/themes:/nextcloud/themes:Z,U \
+            -v /etc/nextcloud/rw.config.php:/nextcloud/config/mounted.config.php:Z,U,ro \
+            "$IMAGE" occ -- "$@"
   links:
     - path: /etc/nextcloud/logs_stub/access.log
       target: /dev/stdout
