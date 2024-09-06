@@ -1,5 +1,66 @@
 locals {
   upload_limit_bytes = var.upload_limit_GB * pow(10, 9)
+  nextcloud_config = {
+    system = {
+      "upgrade.disable-web"         = true
+      trusted_domains               = [var.fqdn, var.nextcloud_public_fqdn, var.nextcloud_service_fqdn]
+      trusted_proxies               = ["0.0.0.0/0", "::/0"]
+      log_type                      = "syslog"
+      syslog_tag                    = "nextcloud"
+      logfile                       = ""
+      loglevel                      = 2
+      log_type_audit                = "syslog"
+      syslog_tag_audit              = "nextcloud_audit"
+      logfile_audit                 = ""
+      default_language              = var.default_language
+      default_locale                = var.default_locale
+      default_phone_region          = var.default_phone_region
+      default_timezone              = var.default_timezone
+      trashbin_retention_obligation = "auto, 90"
+      maintenance_window_start      = 3
+      overwriteprotocol             = "https"
+      "overwrite.cli.url"           = "https://${var.nextcloud_public_fqdn}"
+      enabledPreviewProviders = [
+        "OC\\Preview\\MP3",
+        "OC\\Preview\\TXT",
+        "OC\\Preview\\MarkDown",
+        "OC\\Preview\\OpenDocument",
+        "OC\\Preview\\Krita",
+        "OC\\Preview\\Imaginary"
+      ]
+      preview_imaginary_url  = "http://systemd-imaginary:9000/"
+      preview_format         = "webp"
+      "memcache.local"       = "\\OC\\Memcache\\APCu"
+      "memcache.distributed" = "\\OC\\Memcache\\Redis"
+      "memcache.locking"     = "\\OC\\Memcache\\Redis"
+      redis = {
+        host = "systemd-valkey"
+        port = 6379
+      }
+    }
+    apps = {
+      richdocuments = {
+        enabled         = "yes"
+        types           = "prevent_group_restriction"
+        wopi_url        = "http://systemd-collabora:9980"
+        public_wopi_url = var.collabora_public_fqdn
+      }
+      files_antivirus = {
+        enabled              = "yes"
+        av_mode              = "daemon"
+        av_host              = "systemd-clamav"
+        av_port              = "3310"
+        av_infected_action   = "only_log"
+        av_stream_max_length = local.upload_limit_bytes
+        av_max_file_size     = "-1"
+        av_scan_first_bytes  = "-1"
+        types                = "filesystem,dav"
+      }
+      logreader = {
+        enabled = "no"
+      }
+    }
+  }
 }
 
 module "fcos" {
@@ -24,14 +85,10 @@ module "fcos" {
       php_opcache_memory_size = var.php_opcache_memory_size
       php_memory_limit        = var.php_memory_limit
 
-      default_language     = var.default_language
-      default_locale       = var.default_locale
-      default_phone_region = var.default_phone_region
-      default_timezone     = var.default_timezone
-
-      apps = join(" ", toset(concat(["files_antivirus", "richdocuments"], var.apps)))
+      apps             = join(" ", toset(concat(["files_antivirus", "richdocuments"], var.apps)))
+      nextcloud_config = jsonencode(local.nextcloud_config)
       # merge into default object because occ complains about empty object
-      config = jsonencode(merge({ system = {} }, var.config))
+      nextcloud_custom_config = jsonencode(merge({ system = {} }, var.config))
 
       # https://github.com/hoellen/docker-nextcloud/pkgs/container/nextcloud
       nextcloud_version = "29.0.5"
