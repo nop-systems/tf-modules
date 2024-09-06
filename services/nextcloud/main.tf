@@ -2,8 +2,12 @@ locals {
   upload_limit_bytes = var.upload_limit_GB * pow(10, 9)
   nextcloud_config = {
     system = {
-      "upgrade.disable-web"         = true
-      trusted_domains               = [var.fqdn, var.nextcloud_public_fqdn, var.nextcloud_service_fqdn]
+      "upgrade.disable-web" = true
+      trusted_domains = [
+        var.fqdn,
+        var.nextcloud_public_fqdn,
+        var.nextcloud_service_fqdn
+      ]
       trusted_proxies               = ["0.0.0.0/0", "::/0"]
       log_type                      = "syslog"
       syslog_tag                    = "nextcloud"
@@ -43,7 +47,7 @@ locals {
         enabled         = "yes"
         types           = "prevent_group_restriction"
         wopi_url        = "http://systemd-collabora:9980"
-        public_wopi_url = var.collabora_public_fqdn
+        public_wopi_url = "https://${var.collabora_public_fqdn}"
       }
       files_antivirus = {
         enabled              = "yes"
