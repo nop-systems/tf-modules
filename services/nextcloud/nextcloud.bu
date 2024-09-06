@@ -27,7 +27,7 @@ storage:
           OPCACHE_MEM_SIZE=${php_opcache_memory_size}
           MEMORY_LIMIT=${php_memory_limit}
           PHP_HARDENING=true
-          SSL_CERT_FILE=/host-tls-ca-bundle.pem
+          SSL_CERT_FILE=/run/host-tls-ca-bundle.pem
     - path: /etc/nextcloud/down
       mode: 0644
       contents:
@@ -200,14 +200,14 @@ storage:
             fi
           done
 
-          echo "→ Importing /provision/config.json…"
-          occ config:import /provision/config.json
-          echo "→ Importing /provision/custom.json…"
-          occ config:import /provision/custom.json
-          echo "→ Importing /provision/secrets/config.json…"
-          occ config:import /provision/secrets/config.json
-          echo "→ Importing /host-tls-ca-bundle.pem"
-          occ security:certificates:import /host-tls-ca-bundle.pem
+          echo "→ Importing /run/provision/config.json…"
+          occ config:import /run/provision/config.json
+          echo "→ Importing /run/provision/custom.json…"
+          occ config:import /run/provision/custom.json
+          echo "→ Importing /run/provision/secrets/config.json…"
+          occ config:import /run/provision/secrets/config.json
+          echo "→ Importing /run/host-tls-ca-bundle.pem"
+          occ security:certificates:import /run/host-tls-ca-bundle.pem
 
           echo "→ Addming missing"
           echo "→ Adding missing optional columns to the database tables"
@@ -268,7 +268,7 @@ storage:
           Network=collabora.network
 
           Volume=/var/containers/nextcloud/data:/data:Z,U
-          Volume=/var/containers/secrets/tls/this/root_ca.pem:/host-tls-ca-bundle.pem:z,idmap,ro
+          Volume=/var/containers/secrets/tls/this/root_ca.pem:/run/host-tls-ca-bundle.pem:z,idmap,ro
           Volume=/etc/nextcloud/script-entrypoint.sh:/usr/local/bin/script-entrypoint.sh:Z,U,ro
 
           # redirect logs to stdout/stderr by mounting symlinks
@@ -373,7 +373,7 @@ storage:
           LogDriver=journald
 
           Entrypoint=script-entrypoint.sh
-          Exec=/provision/provision.sh
+          Exec=/run/provision/provision.sh
           WorkingDir=/nextcloud
 
           EnvironmentFile=/etc/nextcloud/nextcloud.env
@@ -383,8 +383,8 @@ storage:
           Volume=/var/containers/nextcloud/themes:/nextcloud/themes:Z,U
           Volume=/etc/nextcloud/rw.config.php:/nextcloud/config/mounted.config.php:Z,U,ro
 
-          Volume=/etc/nextcloud/provision/:/provision:Z,U,ro
-          Volume=/var/containers/secrets/nextcloud/provision/:/provision/secrets:Z,U,ro
+          Volume=/etc/nextcloud/provision/:/run/provision:Z,U,ro
+          Volume=/var/containers/secrets/nextcloud/provision/:/run/provision/secrets:Z,U,ro
 
           Pod=nextcloud.pod
 
