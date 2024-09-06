@@ -3,6 +3,7 @@ variant: fcos
 version: "1.5.0"
 storage:
   directories:
+    - path: /etc/caddy
     - path: /var/containers/caddy/data
     - path: /var/containers/caddy/config
   files:
@@ -26,7 +27,7 @@ storage:
 
           Volume=/var/containers/caddy/config:/config:Z,U
           Volume=/var/containers/caddy/data:/data:Z,U
-          Volume=/var/containers/caddy/Caddyfile:/etc/caddy/Caddyfile:Z,ro
+          Volume=/etc/caddy/Caddyfile:/etc/caddy/Caddyfile:Z,ro
 
           Network=container.network
           Network=collabora.network
@@ -52,7 +53,7 @@ storage:
               },
             ]
           }
-    - path: /var/containers/caddy/Caddyfile
+    - path: /etc/caddy/Caddyfile
       mode: 0644
       overwrite: true
       contents:
