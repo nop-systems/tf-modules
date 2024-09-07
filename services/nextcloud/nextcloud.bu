@@ -114,7 +114,7 @@ storage:
           echo "→ Running occ upgrade…"
           occ upgrade
 
-          echo "→ Check available app updates"
+          echo "→ Check available app updates…"
           occ app:update --showonly
 
           echo "→ Updating all apps…"
@@ -126,7 +126,7 @@ storage:
             if ! occ app:getpath "$app" >/dev/null; then
               occ app:install "$app"
             else
-              echo "  app already installed."
+              echo "app $app already installed."
             fi
           done
 
@@ -139,7 +139,6 @@ storage:
           echo "→ Importing /run/host-tls-ca-bundle.pem"
           occ security:certificates:import /run/host-tls-ca-bundle.pem
 
-          echo "→ Addming missing"
           echo "→ Adding missing optional columns to the database tables"
           occ db:add-missing-columns
           echo "→ Adding missing indices to the database tables"
@@ -166,7 +165,7 @@ storage:
           echo "→ Testing antivirus"
           occ files_antivirus:test || true
 
-          echo "→ Finished provisioning!"
+          echo "→ Finished (re)provisioning!"
     - path: /etc/containers/systemd/nextcloud.image
       mode: 0644
       contents:
