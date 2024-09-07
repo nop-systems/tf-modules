@@ -313,7 +313,7 @@ storage:
           Volume=/etc/nextcloud/rw.config.php:/nextcloud/config/mounted.config.php:Z,U,ro
 
           Volume=/etc/nextcloud/provision/:/run/provision:Z,U,ro
-          Volume=/var/containers/secrets/nextcloud/provision/:/run/provision/secrets:Z,U,ro
+          Volume=/var/containers/secrets/nextcloud/provision/:/run/provision/secrets:z,idmap=uids=@0-1000-1,ro
 
           Pod=nextcloud.pod
 
