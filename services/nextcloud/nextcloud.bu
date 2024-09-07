@@ -199,7 +199,7 @@ storage:
 
           Volume=/var/containers/nextcloud/data:/data:Z,U
           Volume=/var/containers/secrets/tls/this/root_ca.pem:/run/host-tls-ca-bundle.pem:z,idmap,ro
-          Volume=/etc/nextcloud/script-entrypoint.sh:/usr/local/bin/script-entrypoint.sh:Z,U,ro
+          Volume=/etc/nextcloud/script-entrypoint.sh:/run/script-entrypoint.sh:Z,U,ro
 
           # redirect logs to stdout/stderr by mounting symlinks
           Volume=/etc/nextcloud/logs_stub:/nginx/logs:Z,ro
@@ -261,7 +261,7 @@ storage:
           Image=nextcloud.image
           LogDriver=journald
 
-          Entrypoint=script-entrypoint.sh
+          Entrypoint=/run/script-entrypoint.sh
           Exec=php index.php
           WorkingDir=/nextcloud
 
@@ -302,7 +302,7 @@ storage:
           Image=nextcloud.image
           LogDriver=journald
 
-          Entrypoint=script-entrypoint.sh
+          Entrypoint=/run/script-entrypoint.sh
           Exec=/run/provision/provision.sh
           WorkingDir=/nextcloud
 
@@ -344,7 +344,7 @@ storage:
           Image=nextcloud.image
           LogDriver=journald
 
-          Entrypoint=script-entrypoint.sh
+          Entrypoint=/run/script-entrypoint.sh
           Exec=php -d memory_limit=1G -f cron.php
           WorkingDir=/nextcloud
 
@@ -381,12 +381,12 @@ storage:
           UserNS=auto
           Notify=healthy
 
-          Environment=POSTGRES_PASSWORD_FILE=/secrets/password
+          Environment=POSTGRES_PASSWORD_FILE=/run/secrets/password
           Environment=POSTGRES_USER=nextcloud
           Environment=POSTGRES_DB=nextcloud
 
           Volume=/var/containers/postgres/data:/var/lib/postgresql/data:Z,U
-          Volume=/var/containers/secrets/postgres:/secrets:z,idmap,ro
+          Volume=/var/containers/secrets/postgres:/run/secrets:z,idmap,ro
 
           HealthCmd=pg_isready -d nextcloud -U nextcloud
           HealthInterval=30s
@@ -542,9 +542,9 @@ storage:
           UserNS=auto
 
           Environment=NEXTCLOUD_SERVER=http://systemd-nextcloud:8888
-          Environment=NEXTCLOUD_INFO_APPS=anyvalue
-          Environment=NEXTCLOUD_INFO_UPDATE=anyvalue
-          EnvironmentFile=/var/secrets/nextcloud/exporter.env
+          Environment=NEXTCLOUD_INFO_APPS=true
+          Environment=NEXTCLOUD_INFO_UPDATE=true
+          EnvironmentFile=/var/containers/secrets/nextcloud/exporter.env
 
           Network=container.network
 
@@ -573,10 +573,10 @@ storage:
           UserNS=auto
 
           Environment=DATA_SOURCE_USER=nextcloud
-          Environment=DATA_SOURCE_PASS_FILE=/secrets/_password
+          Environment=DATA_SOURCE_PASS_FILE=/run/secrets/password
           Environment=DATA_SOURCE_URI=systemd-postgres:5432/nextcloud?sslmode=disable
 
-          Volume=/var/containers/secrets/postgres:/secrets:z,idmap,ro
+          Volume=/var/containers/secrets/postgres/password:/run/secrets/password:z,idmap=uids=@0-65534-1,ro
 
           Network=container.network
           Network=nextcloud.network
@@ -600,7 +600,7 @@ storage:
           podman run --name "nextcloud-occ-$$" --rm -it \
             --pod systemd-nextcloud \
             --env-file /etc/nextcloud/nextcloud.env \
-            --entrypoint script-entrypoint.sh \
+            --entrypoint /run/script-entrypoint.sh \
             --workdir /nextcloud \
             -v /var/containers/nextcloud/config:/nextcloud/config:Z,U \
             -v /var/containers/nextcloud/apps2:/nextcloud/apps2:Z,U \
