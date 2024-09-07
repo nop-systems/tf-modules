@@ -65,10 +65,10 @@ locals {
         enabled = "no"
       }
       admin_audit = {
-        enabled = "no"
+        enabled = "yes"
       }
       user_ldap = {
-        enabled = "no"
+        enabled = "yes"
       }
       firstrunwizard = {
         enabled = "no"
