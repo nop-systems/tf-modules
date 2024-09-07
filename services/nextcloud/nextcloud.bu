@@ -595,9 +595,15 @@ storage:
           #!/usr/bin/env bash
           set -euo pipefail
 
+          POD=systemd-nextcloud
+          if ! podman pod exists $POD; then
+            echo "Pod $POD not found! (Not running as root?)"
+            exit 1
+          fi
+
           IMAGE=$(systemctl cat nextcloud-image.service | awk -F= '$1=="Image"{print $2}')
           podman run --name "nextcloud-occ-$$" --rm -it \
-            --pod systemd-nextcloud \
+            --pod $POD \
             --env-file /etc/nextcloud/nextcloud.env \
             --entrypoint /run/script-entrypoint.sh \
             --workdir /nextcloud \
