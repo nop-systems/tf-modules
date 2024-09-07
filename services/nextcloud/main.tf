@@ -48,6 +48,7 @@ locals {
         types           = "prevent_group_restriction"
         wopi_url        = "http://systemd-collabora:9980"
         public_wopi_url = "https://${var.collabora_public_fqdn}"
+        wopi_allowlist  = "10.89.0.0/16,fd00::/8"
       }
       files_antivirus = {
         enabled              = "yes"
@@ -61,6 +62,15 @@ locals {
         types                = "filesystem,dav"
       }
       logreader = {
+        enabled = "no"
+      }
+      admin_audit = {
+        enabled = "no"
+      }
+      user_ldap = {
+        enabled = "no"
+      }
+      firstrunwizard = {
         enabled = "no"
       }
     }
@@ -96,8 +106,10 @@ module "fcos" {
 
       # https://github.com/hoellen/docker-nextcloud/pkgs/container/nextcloud
       nextcloud_version = "29.0.5"
-      postgres_version  = "16-alpine"
-      valkey_version    = "7.2.6"
+      # https://hub.docker.com/_/postgres/tags
+      postgres_version = "16-alpine"
+      # https://hub.docker.com/r/valkey/valkey/tags
+      valkey_version = "7.2.6"
     }),
     templatefile("${path.module}/caddy.bu", {
       fqdn                   = var.fqdn
@@ -105,7 +117,8 @@ module "fcos" {
       trusted_proxies        = join(" ", var.trusted_proxies)
       nextcloud_service_fqdn = var.nextcloud_service_fqdn
       collabora_service_fqdn = var.collabora_service_fqdn
-      caddy_version          = "2.8"
+      # https://hub.docker.com/_/caddy/tags
+      caddy_version = "2.8"
     }),
     templatefile("${path.module}/collabora.bu", {
       fqdn                   = var.fqdn
@@ -113,11 +126,17 @@ module "fcos" {
       collabora_service_fqdn = var.collabora_service_fqdn
       nextcloud_public_fqdn  = var.nextcloud_public_fqdn
       nextcloud_service_fqdn = var.nextcloud_service_fqdn
-      collabora_code_version = "24.04.7.1.1"
-      languagetool_version   = "v6.4"
+      # https://hub.docker.com/r/collabora/code/tags
+      collabora_code_version = "24.04.7.1.2"
+      # https://hub.docker.com/r/elestio/languagetool/tags
+      languagetool_version = "v6.4"
     }),
     templatefile("${path.module}/helper-services.bu", {
-      upload_limit_bytes = local.upload_limit_bytes
+      upload_limit_bytes     = local.upload_limit_bytes
+      nextcloud_service_fqdn = var.nextcloud_service_fqdn
+      authentik_host         = var.authentik_host
+      # https://github.com/goauthentik/authentik/pkgs/container/ldap
+      authentik_version = "2024.8"
     }),
   ]
 

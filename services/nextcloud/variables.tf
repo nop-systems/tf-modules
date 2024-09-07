@@ -137,3 +137,8 @@ variable "config" {
     error_message = "Config snippet can only contain keys 'system' and 'apps'."
   }
 }
+
+variable "authentik_host" {
+  type        = string
+  description = "(Internal) URL to authentik for Outposts"
+}
