@@ -44,14 +44,29 @@ variable "cloudflare_zone_id" {
   type        = string
 }
 
-variable "service_fqdn" {
+variable "nextcloud_service_fqdn" {
   type        = string
-  description = "A FQDN defining the service, independent of the host"
+  description = "A FQDN defining the nextcloud service, independent of the host"
 }
 
-variable "public_fqdn" {
+variable "collabora_service_fqdn" {
+  type        = string
+  description = "A FQDN defining the collabora service, independent of the host"
+}
+
+variable "nextcloud_public_fqdn" {
   type        = string
   description = "Public FQDN where Nextcloud is reachable externally"
+}
+
+variable "collabora_public_fqdn" {
+  type        = string
+  description = "Public FQDN where Collabora CODE is reachable externally"
+}
+
+variable "admin_pki_mount" {
+  type        = string
+  description = "vault mount whose default issuer should be used for validating admin client certificates"
 }
 
 variable "trusted_proxies" {
@@ -64,12 +79,66 @@ variable "acme_ca" {
   description = "URL to ACME directory for internal CA"
 }
 
-variable "php_memory_limit" {
+variable "monitoring_ingress_url" {
   type        = string
-  description = "PHP memory limit (1024M is a good default)"
+  description = "Base URL of Loki/Prometheus where logs and metrics will be pushed to (e.g. https://monitoring-ingress.example.com)"
 }
 
-variable "php_upload_limit" {
+variable "upload_limit_GB" {
+  type        = number
+  description = "PHP (file) upload limit in GB (20GB is a good default)"
+}
+
+variable "php_apc_shm_size" {
   type        = string
-  description = "PHP (file) upload limit (20G is a good default)"
+  description = "PHP APCu shared memory size (128M is a good default)"
+}
+
+variable "php_opcache_memory_size" {
+  type        = string
+  description = "PHP OpCache Memory Size (128M is a good default)"
+}
+
+variable "php_memory_limit" {
+  type        = string
+  description = "PHP memory limit for occ commands (1024M is a good default)"
+}
+
+variable "default_language" {
+  type        = string
+  description = "default language (eg. 'de' or 'en')"
+}
+
+variable "default_locale" {
+  type        = string
+  description = "default locale (eg. 'de_DE' or 'en_GB')"
+}
+
+variable "default_phone_region" {
+  type        = string
+  description = "default region for phone numbers (ISO 3166-1 country codes)"
+}
+
+variable "default_timezone" {
+  type        = string
+  description = "default IANA timezone"
+}
+
+variable "apps" {
+  type        = list(string)
+  description = "List of additional App names to be installed"
+}
+
+variable "config" {
+  type        = map(any)
+  description = "A nextcloud config snippet (will be converted to json, format see \"occ config:list\"). Must not contain secrets."
+  validation {
+    condition     = alltrue([for k, v in var.config : contains(["system", "apps"], k)])
+    error_message = "Config snippet can only contain keys 'system' and 'apps'."
+  }
+}
+
+variable "authentik_host" {
+  type        = string
+  description = "(Internal) URL to authentik for Outposts"
 }

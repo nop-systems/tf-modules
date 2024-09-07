@@ -3,50 +3,169 @@ variant: fcos
 version: "1.5.0"
 storage:
   directories:
+    - path: /etc/nextcloud
+    - path: /etc/nextcloud/logs_stub
+    - path: /etc/nextcloud/provision
     - path: /var/containers/nextcloud/data
-    - path: /var/containers/nextcloud/html
+    - path: /var/containers/nextcloud/config
+    - path: /var/containers/nextcloud/apps2
+    - path: /var/containers/nextcloud/themes
+    - path: /var/containers/nextcloud/session
     - path: /var/containers/postgres/data
-    - path: /var/containers/redis/data
+    - path: /var/containers/valkey/data
     - path: /var/containers/secrets/nextcloud
-    - path: /var/containers/caddy/data
-    - path: /var/containers/caddy/config
+    - path: /var/containers/secrets/nextcloud/provision
+    - path: /var/containers/secrets/postgres
+    - path: /var/containers/backup/postgres
   files:
-    - path: /etc/containers/systemd/nextcloud.pod
+    - path: /etc/nextcloud/nextcloud.env
       mode: 0644
       contents:
         inline: |
-          [Unit]
-          Wants=postgres.service
-          Wants=redis.service
-
-          [Pod]
-          Network=container.network
-          PodmanArgs=--userns=auto --exit-policy=continue
-
-          Volume=/var/containers/nextcloud/html:/var/www/html:z,idmap
-          Volume=/var/containers/nextcloud/data:/data:Z,U
-          Volume=/vault/secrets/nextcloud/:/secrets:z,idmap,ro
-    - path: /var/containers/nextcloud/nextcloud.env
+          UPLOAD_MAX_SIZE=${upload_limit_bytes}
+          APC_SHM_SIZE=${php_apc_shm_size}
+          OPCACHE_MEM_SIZE=${php_opcache_memory_size}
+          MEMORY_LIMIT=${php_memory_limit}
+          PHP_HARDENING=true
+          SSL_CERT_FILE=/run/host-tls-ca-bundle.pem
+    - path: /etc/nextcloud/down
       mode: 0644
-      overwrite: true
+      contents:
+        inline: ""
+    - path: /etc/nextcloud/provision/config.json
+      mode: 0644
       contents:
         inline: |
-          NEXTCLOUD_TRUSTED_DOMAINS=${public_fqdn} ${service_fqdn} ${fqdn}
-          TRUSTED_PROXIES=${trusted_proxies}
-          REDIS_HOST=systemd-redis
-          POSTGRES_HOST=systemd-postgres
-          POSTGRES_USER=nextcloud
-          POSTGRES_DB=nextcloud
-          POSTGRES_PASSWORD_FILE=/secrets/postgres_password
-          NEXTCLOUD_ADMIN_USER=admin
-          NEXTCLOUD_ADMIN_PASSWORD_FILE=/secrets/nextcloud_admin_password
-          PHP_MEMORY_LIMIT=${php_memory_limit}
-          PHP_UPLOAD_LIMIT=${php_upload_limit}
-          TZ='Europe/Berlin'
-          NC_default_phone_region=DE
-          NC_trashbin_retention_obligation='auto, 90'
-          NC_maintenance_window_start=2
-          NEXTCLOUD_DATA_DIR=/data
+          ${nextcloud_config}
+    - path: /etc/nextcloud/provision/custom.json
+      mode: 0600
+      contents:
+        inline: |
+          ${nextcloud_custom_config}
+    - path: /etc/nextcloud/rw.config.php
+      contents:
+        inline: |
+          <?php
+          $CONFIG = array (
+            'config_is_read_only' => false,
+            'apps_paths' => array (
+              0 => array (
+                    'path'     => '/nextcloud/apps',
+                    'url'      => '/apps',
+                    'writable' => false,
+              ),
+              1 => array (
+                    'path'     => '/nextcloud/apps2',
+                    'url'      => '/apps2',
+                    'writable' => true,
+              ),
+            ),
+            'appstoreenabled' => true
+          );
+    - path: /etc/nextcloud/ro.config.php
+      contents:
+        inline: |
+          <?php
+          $CONFIG = array (
+            'config_is_read_only' => 'true',
+            'apps_paths' => array (
+              0 => array (
+                    'path'     => '/nextcloud/apps',
+                    'url'      => '/apps',
+                    'writable' => false,
+              ),
+              1 => array (
+                    'path'     => '/nextcloud/apps2',
+                    'url'      => '/apps2',
+                    'writable' => false,
+              ),
+            ),
+            'appstoreenabled' => false
+          );
+    - path: /etc/nextcloud/script-entrypoint.sh
+      mode: 0755
+      contents:
+        inline: |
+          #!/bin/sh
+          set -eu
+
+          # Apply environment variables settings
+          # Adopted from container image to remove placeholders before running scripts
+          # https://github.com/hoellen/docker-nextcloud/blob/master/rootfs/usr/local/bin/run.sh
+          sed -i -e "s/<APC_SHM_SIZE>/$APC_SHM_SIZE/g" /usr/local/etc/php/conf.d/apcu.ini \
+                 -e "s/<OPCACHE_MEM_SIZE>/$OPCACHE_MEM_SIZE/g" /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini \
+                 -e "s/<MEMORY_LIMIT>/$MEMORY_LIMIT/g" /usr/local/bin/occ \
+                 -e "s/<MEMORY_LIMIT>/$MEMORY_LIMIT/g" /usr/local/etc/php-fpm.conf
+
+          exec "$@"
+    - path: /etc/nextcloud/provision/provision.sh
+      mode: 0755
+      contents:
+        inline: |
+          #!/bin/sh
+          set -eu
+
+          INSTALL_APPS="${apps}"
+
+          occ() {
+            php -d "memory_limit=$MEMORY_LIMIT" -f /nextcloud/occ -- "$@"
+          }
+
+          echo "→ Running occ upgrade…"
+          occ upgrade
+
+          echo "→ Check available app updates…"
+          occ app:update --showonly
+
+          echo "→ Updating all apps…"
+          occ app:update --all
+
+          for app in $INSTALL_APPS; do
+            # check if app already installed
+            echo "→ Install app $app…"
+            if ! occ app:getpath "$app" >/dev/null; then
+              occ app:install "$app"
+            else
+              echo "app $app already installed."
+            fi
+          done
+
+          echo "→ Importing /run/provision/config.json…"
+          occ config:import /run/provision/config.json
+          echo "→ Importing /run/provision/custom.json…"
+          occ config:import /run/provision/custom.json
+          echo "→ Importing /run/provision/secrets/config.json…"
+          occ config:import /run/provision/secrets/config.json
+          echo "→ Importing /run/host-tls-ca-bundle.pem"
+          occ security:certificates:import /run/host-tls-ca-bundle.pem
+
+          echo "→ Adding missing optional columns to the database tables"
+          occ db:add-missing-columns
+          echo "→ Adding missing indices to the database tables"
+          occ db:add-missing-indices
+          echo "→ Adding missing primary keys to the database tables"
+          occ db:add-missing-primary-keys
+
+          echo "→ Runnning maintenance:repair --include-expensive"
+          occ maintenance:repair --include-expensive
+          echo "→ Updating Mimetype DB"
+          occ maintenance:mimetype:update-db
+          echo "→ Updating Mimetype JS"
+          occ maintenance:mimetype:update-js
+
+          echo "→ Updating Theme"
+          occ maintenance:theme:update
+          echo "→ Installing Office Fonts"
+          occ richdocuments:install-fonts
+
+          echo "→ Running status"
+          occ status
+          echo "→ Running Setup Checks"
+          occ setupchecks || true
+          echo "→ Testing antivirus"
+          occ files_antivirus:test || true
+
+          echo "→ Finished (re)provisioning!"
     - path: /etc/containers/systemd/nextcloud.image
       mode: 0644
       contents:
@@ -56,23 +175,64 @@ storage:
           After=network-online.target
 
           [Image]
-          Image=docker.io/library/nextcloud:${nextcloud_fpm_version}
-    - path: /etc/containers/systemd/nextcloud-app.container
+          Image=ghcr.io/hoellen/nextcloud:${nextcloud_version}
+    - path: /etc/containers/systemd/nextcloud.network
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=Podman network nextcloud to talk to valkey and postgres
+          [Network]
+          IPv6=true
+          #Subnet=
+    - path: /etc/containers/systemd/nextcloud.pod
+      mode: 0644
+      contents:
+        inline: |
+          [Pod]
+          PodmanArgs=--userns=auto --exit-policy=continue
+
+          Network=container.network
+          Network=nextcloud.network
+          Network=collabora.network
+
+          Volume=/var/containers/nextcloud/data:/data:Z,U
+          Volume=/var/containers/secrets/tls/this/root_ca.pem:/run/host-tls-ca-bundle.pem:z,idmap,ro
+          Volume=/etc/nextcloud/script-entrypoint.sh:/run/script-entrypoint.sh:Z,U,ro
+
+          # redirect logs to stdout/stderr by mounting symlinks
+          Volume=/etc/nextcloud/logs_stub:/nginx/logs:Z,ro
+          Volume=/etc/nextcloud/logs_stub:/php/logs:Z,ro
+
+          # expose journald's syslog socket to containter for nextcloud logs
+          Volume=/dev/log:/dev/log
+
+          # disable cron service
+          Volume=/etc/nextcloud/down:/etc/s6.d/cron/down:Z,U,ro
+    - path: /etc/containers/systemd/nextcloud.container
       mode: 0644
       contents:
         inline: |
           [Unit]
           Description=nextcloud app
-          After=network-online.target local-fs.target vault-agent.service
-          Wants=postgres.service
-          Wants=redis.service
+          After=network-online.target local-fs.target vault-agent.service nextcloud-install.service nextcloud-provision.service
+          Wants=postgres.service valkey.service imaginary.service clamav.service
+          Requires=nextcloud-install.service nextcloud-provision.service
 
           [Container]
           Image=nextcloud.image
           Pull=newer
           LogDriver=journald
 
-          EnvironmentFile=/var/containers/nextcloud/nextcloud.env
+          # mount volumes readonly
+          Volume=/var/containers/nextcloud/config:/nextcloud/config:Z,U,ro
+          Volume=/var/containers/nextcloud/apps2:/nextcloud/apps2:Z,U,ro
+          Volume=/var/containers/nextcloud/themes:/nextcloud/themes:Z,U,ro
+          Volume=/etc/nextcloud/ro.config.php:/nextcloud/config/mounted.config.php:Z,U,ro
+
+          Volume=/var/containers/nextcloud/session:/php/session:Z,U
+
+          EnvironmentFile=/etc/nextcloud/nextcloud.env
 
           Pod=nextcloud.pod
 
@@ -83,225 +243,127 @@ storage:
           RestartMaxDelaySec=5m
 
           [Install]
-          WantedBy=multi-user.target default.target
+          WantedBy=default.target
+
+    - path: /etc/containers/systemd/nextcloud-install.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=nextcloud installation
+          After=network-online.target local-fs.target vault-agent.service postgres.service valkey.service
+          Before=nextcloud.service
+          Wants=postgres.service valkey.service
+          ConditionFileNotEmpty=!/var/containers/nextcloud/config/config.php
+
+          [Container]
+          Image=nextcloud.image
+          LogDriver=journald
+
+          Entrypoint=/run/script-entrypoint.sh
+          Exec=php index.php
+          WorkingDir=/nextcloud
+
+          Volume=/var/containers/nextcloud/config:/nextcloud/config:Z,U
+          Volume=/var/containers/nextcloud/apps2:/nextcloud/apps2:Z,U
+          Volume=/var/containers/nextcloud/themes:/nextcloud/themes:Z,U
+          Volume=/etc/nextcloud/rw.config.php:/nextcloud/config/mounted.config.php:Z,U,ro
+
+          EnvironmentFile=/etc/nextcloud/nextcloud.env
+
+          Pod=nextcloud.pod
+
+          [Service]
+          Type=oneshot
+          ExecStartPre=test -s /var/containers/secrets/nextcloud/autoconfig.php
+          ExecStartPre=cp /var/containers/secrets/nextcloud/autoconfig.php /var/containers/nextcloud/config/
+          ExecStartPre=touch /var/containers/nextcloud/config/CAN_INSTALL
+          RemainAfterExit=true
+
+          Restart=on-failure
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
+
+          [Install]
+          WantedBy=default.target
+    - path: /etc/containers/systemd/nextcloud-provision.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=nextcloud provisioning and update apps and config
+          After=network-online.target local-fs.target vault-agent.service postgres.service valkey.service nextcloud-install.service
+          Before=nextcloud.service
+          Wants=postgres.service valkey.service
+
+          [Container]
+          Image=nextcloud.image
+          LogDriver=journald
+
+          Entrypoint=/run/script-entrypoint.sh
+          Exec=/run/provision/provision.sh
+          WorkingDir=/nextcloud
+
+          EnvironmentFile=/etc/nextcloud/nextcloud.env
+
+          Volume=/var/containers/nextcloud/config:/nextcloud/config:Z,U
+          Volume=/var/containers/nextcloud/apps2:/nextcloud/apps2:Z,U
+          Volume=/var/containers/nextcloud/themes:/nextcloud/themes:Z,U
+          Volume=/etc/nextcloud/rw.config.php:/nextcloud/config/mounted.config.php:Z,U,ro
+
+          Volume=/etc/nextcloud/provision/:/run/provision:Z,U,ro
+          Volume=/var/containers/secrets/nextcloud/provision/:/run/provision/secrets:z,idmap=uids=@0-1000-1,ro
+
+          Pod=nextcloud.pod
+
+          [Service]
+          Type=oneshot
+          RemainAfterExit=true
+
+          ExecStartPre=sh -c 'podman exec systemd-postgres pg_dumpall -c -U nextcloud | zstd > /var/containers/backup/postgres/dump_`date +%%Y-%%m-%%d_%%H-%%M-%%S`.sql.zstd'
+          ExecStartPre=find /var/containers/backup/postgres -maxdepth 1 -mtime +7 -type f -delete
+          ExecStartPre=test -s /var/containers/secrets/nextcloud/provision/config.json
+
+          Restart=on-failure
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
+
+          [Install]
+          WantedBy=default.target
     - path: /etc/containers/systemd/nextcloud-cron.container
       mode: 0644
       contents:
         inline: |
           [Unit]
           Description=nextcloud cron
-          After=network-online.target local-fs.target vault-agent.service
-          Wants=postgres.service
-          Wants=redis.service
 
           [Container]
           Image=nextcloud.image
-          Exec=php -f /var/www/html/cron.php
           LogDriver=journald
 
-          EnvironmentFile=/var/containers/nextcloud/nextcloud.env
+          Entrypoint=/run/script-entrypoint.sh
+          Exec=php -d memory_limit=1G -f cron.php
+          WorkingDir=/nextcloud
+
+          # mount volumes readonly
+          Volume=/var/containers/nextcloud/config:/nextcloud/config:Z,U,ro
+          Volume=/var/containers/nextcloud/apps2:/nextcloud/apps2:Z,U,ro
+          Volume=/var/containers/nextcloud/themes:/nextcloud/themes:Z,U,ro
+          Volume=/etc/nextcloud/ro.config.php:/nextcloud/config/mounted.config.php:Z,U,ro
+
+          EnvironmentFile=/etc/nextcloud/nextcloud.env
 
           Pod=nextcloud.pod
 
           [Service]
           Type=oneshot
 
-          [Install]
-          WantedBy=multi-user.target default.target
-    - path: /etc/containers/systemd/caddy.container
-      mode: 0644
-      contents:
-        inline: |
-          [Unit]
-          Description=Reverse Proxy
-          After=network-online.target local-fs.target
-
-          [Container]
-          Image=docker.io/library/caddy:${caddy_version}
-          Pull=newer
-          AutoUpdate=registry
-          LogDriver=journald
-          UserNS=auto
-          Notify=healthy
-
-          PublishPort=443:443
-          PublishPort=443:443/udp
-
-          Volume=/var/containers/caddy/config:/config:Z,U
-          Volume=/var/containers/caddy/data:/data:Z,U
-          Volume=/var/containers/caddy/Caddyfile:/etc/caddy/Caddyfile:Z,ro
-          Volume=/var/containers/nextcloud/html:/var/www/html:z,idmap,ro
-
-          Network=container.network
-
-          HealthCmd=php -f /var/www/html/occ status -e
-          HealthInterval=30s
-          HealthRetries=5
-          HealthStartPeriod=20s
-          HealthTimeout=5s
-
-          [Service]
-          Restart=always
+          Restart=on-failure
           RestartSec=1s
-          RestartSteps=10
-          RestartMaxDelaySec=5m
-
-          [Install]
-          WantedBy=multi-user.target default.target
-    - path: /var/containers/caddy/Caddyfile
-      mode: 0644
-      overwrite: true
-      contents:
-        inline: |
-          {
-            acme_ca ${acme_ca}
-            auto_https disable_redirects
-            servers {
-              trusted_proxies static ${trusted_proxies}
-            }
-            fallback_sni ${service_fqdn}
-          }
-
-          https://${fqdn}, https://${service_fqdn}, https:// {
-            tls {
-              issuer acme {
-                # disable http challenge because only https port is published
-                disable_http_challenge
-              }
-            }
-
-            handle_errors {
-              respond "Error {err.status_code} {err.status_text} on ${fqdn}: {err.message} ({err.trace}, {err.id})"
-            }
-
-            log
-
-            # Static content
-            root * /var/www/html
-
-            # PHP fast cgi
-            php_fastcgi systemd-nextcloud:9000 {
-              env front_controller_active true
-            }
-
-            file_server
-
-            # Redirects for DAV apps
-            redir /.well-known/carddav /remote.php/dav/ 301
-            redir /.well-known/caldav /remote.php/dav/ 301
-
-            respond /.well-known/acme-challenge 404
-            respond /.well-known/pki-validation 404
-
-            # redir /.well-known/* /index.php/.well-known/webfinger 301
-            # redir /.well-known/nodeinfo /index.php/.well-known/nodeinfo 301
-            redir /.well-known/* /index.php{uri} 301
-
-            # Headers
-            header {
-              # If staging acme_ca is enabled, this needs to be commented out!
-              # Otherwise, it is not possible to add browser exception
-              Strict-Transport-Security "max-age=31536000; includeSubDomains"
-
-              # More security hardening headers
-              Referrer-Policy "no-referrer"
-              X-Content-Type-Options "nosniff"
-              X-Download-Options "noopen"
-              X-Frame-Options "SAMEORIGIN"
-              X-Permitted-Cross-Domain-Policies "none"
-              X-Robots-Tag "noindex, nofollow"
-              X-XSS-Protection "1; mode=block"
-              # Permissions-Policy "interest-cohort=()"
-
-              # Remove X-Powered-By header, which is an information leak
-              -X-Powered-By
-
-              # Replace http with https in any Location header
-              Location http:// https://
-            }
-
-            # Cache control
-            @static {
-              file
-              path *.css *.js *.svg *.gif
-            }
-
-            header @static {
-              Cache-Control "max-age=360"
-            }
-
-            @fonts {
-              path /core/fonts
-            }
-
-            header @fonts {
-              Cache-Control "max-age=604800"
-            }
-
-            # gzip encoding
-            encode {
-              gzip 4
-              minimum_length 256
-
-              match {
-                header Content-Type application/atom+xml*
-                header Content-Type application/javascript*
-                header Content-Type application/json*
-                header Content-Type application/ld+json*
-                header Content-Type application/manifest+json*
-                header Content-Type application/rss+xml*
-                header Content-Type application/vnd.geo+json*
-                header Content-Type application/vnd.ms-fontobject*
-                header Content-Type application/x-font-ttf*
-                header Content-Type application/x-web-app-manifest+json*
-                header Content-Type application/xhtml+xml*
-                header Content-Type application/xml*
-                header Content-Type font/opentype*
-                header Content-Type image/bmp*
-                header Content-Type image/svg+xml*
-                header Content-Type image/x-icon*
-                header Content-Type application/atom+xmlapplication/javascript*
-                # Would this be a good idea?
-                header Content-Type text/*
-                # header Content-Type text/cache-manifest*
-                # header Content-Type text/css*
-                # header Content-Type text/plain*
-                # header Content-Type text/vcard*
-                # header Content-Type text/vnd.rim.location.xloc*
-                # header Content-Type text/vtt*
-                # header Content-Type text/x-component*
-                # header Content-Type text/x-cross-domain-policy*
-              }
-            }
-
-            # .htaccess / data / config / ... shouldn't be accessible from outside
-            @forbidden {
-              path /.htaccess
-              path /.user.ini
-              path /.xml
-              path /3rdparty/*
-              path /autotest
-              path /build/*
-              path /config/*
-              path /console
-              path /console.php
-              path /data/*
-              path /db_
-              path /db_structure
-              path /indie
-              path /issue
-              path /lib/*
-              path /occ
-              path /README
-              path /templates/*
-              path /tests/*
-            }
-
-            respond @forbidden 404
-            # not sure if this is 100% safe, but it looks nicer when you hit a 404
-            # rewrite @forbidden '/index.php/error/404'
-          }
-
+          RestartSteps=3
+          RestartMaxDelaySec=30sec
     - path: /etc/containers/systemd/postgres.container
       mode: 0644
       contents:
@@ -318,9 +380,12 @@ storage:
           UserNS=auto
           Notify=healthy
 
-          EnvironmentFile=/var/containers/secrets/nextcloud/postgres.env
+          Environment=POSTGRES_PASSWORD_FILE=/run/secrets/password
+          Environment=POSTGRES_USER=nextcloud
+          Environment=POSTGRES_DB=nextcloud
 
           Volume=/var/containers/postgres/data:/var/lib/postgresql/data:Z,U
+          Volume=/var/containers/secrets/postgres:/run/secrets:z,idmap,ro
 
           HealthCmd=pg_isready -d nextcloud -U nextcloud
           HealthInterval=30s
@@ -328,7 +393,7 @@ storage:
           HealthStartPeriod=20s
           HealthTimeout=5s
 
-          Network=container.network
+          Network=nextcloud.network
 
           [Service]
           Restart=always
@@ -337,31 +402,148 @@ storage:
           RestartMaxDelaySec=5m
 
           [Install]
-          WantedBy=multi-user.target default.target
-
-    - path: /etc/containers/systemd/redis.container
+          WantedBy=default.target
+    - path: /etc/containers/systemd/valkey.container
       mode: 0644
       contents:
         inline: |
           [Unit]
-          Description=Redis Cache
+          Description=Valkey Cache
           After=network-online.target local-fs.target
 
           [Container]
-          Image=docker.io/library/redis:${redis_version}
+          Image=docker.io/valkey/valkey:${valkey_version}
 
           Pull=newer
           LogDriver=journald
           UserNS=auto
           Notify=healthy
 
-          Volume=/var/containers/redis/data:/data:Z,U
+          Volume=/var/containers/valkey/data:/data:Z,U
 
-          HealthCmd=redis-cli ping | grep PONG
+          HealthCmd=valkey-cli ping | grep PONG
           HealthInterval=30s
           HealthRetries=5
           HealthStartPeriod=20s
           HealthTimeout=3s
+
+          Network=nextcloud.network
+
+          [Service]
+          Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
+
+          [Install]
+          WantedBy=default.target
+    - path: /etc/vault-agent/config.d/nextcloud.hcl
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          template {
+            contents = <<-EOT
+              {{- with secret "kv/data/service/${ nextcloud_service_fqdn }/postgres" -}}
+              {{ .Data.data.password }}
+              {{- end }}
+              EOT
+            perms = "0600"
+            destination = "/vault/secrets/postgres/password"
+          }
+
+          template {
+            contents = <<-EOT
+              <?php
+                $AUTOCONFIG = array (
+                  'directory' => '/data',
+                  'dbtype' => 'pgsql',
+                  'dbhost' => 'systemd-postgres',
+                  'dbname' => 'nextcloud',
+                  'dbuser' => 'nextcloud',
+                  'dbtableprefix' => '',
+                  {{ with secret "kv/data/service/${ nextcloud_service_fqdn }/postgres" -}}
+                  'dbpass' => '{{ .Data.data.password }}',
+                  {{- end }}
+                  {{ with secret "kv/data/service/${ nextcloud_service_fqdn }/admin" -}}
+                  'adminlogin' => '{{ .Data.data.username }}',
+                  'adminpass' => '{{ .Data.data.password }}',
+                  {{- end }}
+                );
+              EOT
+            perms = "0600"
+            destination = "/vault/secrets/nextcloud/autoconfig.php"
+          }
+
+          template {
+            contents = <<-EOT
+              {{ with secret "kv/data/service/${ nextcloud_service_fqdn }/settings" -}}
+              {
+                "apps": {
+                  "serverinfo": {
+                    "token": "{{ .Data.data.serverinfo_token }}"
+                  }
+                }
+              }
+              {{- end }}
+              EOT
+            perms = "0600"
+            destination = "/vault/secrets/nextcloud/provision/config.json"
+          }
+
+          template {
+            contents = <<-EOT
+              {{ with secret "kv/data/service/${ nextcloud_service_fqdn }/settings" -}}
+              NEXTCLOUD_AUTH_TOKEN={{ .Data.data.serverinfo_token }}
+              {{- end }}
+              EOT
+            perms = "0600"
+            destination = "/vault/secrets/nextcloud/exporter.env"
+          }
+    - path: /etc/monitoring/alloy.d/nextcloud.alloy
+      contents:
+        inline: |
+          prometheus.scrape "nextcloud" {
+            forward_to = [
+              prometheus.relabel.replace_instance.receiver,
+            ]
+            targets = [
+              {
+                "__address__" = "systemd-nextcloud-exporter:9205",
+              },
+            ]
+          }
+
+          prometheus.scrape "postgres" {
+            forward_to = [
+              prometheus.relabel.replace_instance.receiver,
+            ]
+            targets = [
+              {
+                "__address__" = "systemd-postgres-exporter:9187",
+              },
+            ]
+          }
+    - path: /etc/containers/systemd/nextcloud-exporter.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=nextcloud prometheus exporter
+          After=network-online.target local-fs.target vault-agent.service nextcloud-install.service
+          Wants=postgres.service valkey.service imaginary.service clamav.service nextcloud-install.service
+
+          [Container]
+          Image=ghcr.io/xperimental/nextcloud-exporter:latest
+          Pull=newer
+          AutoUpdate=registry
+          LogDriver=journald
+          UserNS=auto
+
+          Environment=NEXTCLOUD_SERVER=http://systemd-nextcloud:8888
+          Environment=NEXTCLOUD_INFO_APPS=true
+          Environment=NEXTCLOUD_INFO_UPDATE=true
+          EnvironmentFile=/var/containers/secrets/nextcloud/exporter.env
 
           Network=container.network
 
@@ -372,36 +554,70 @@ storage:
           RestartMaxDelaySec=5m
 
           [Install]
-          WantedBy=multi-user.target default.target
-    - path: /var/containers/vault-agent/config.d/nextcloud.hcl
+          WantedBy=default.target
+    - path: /etc/containers/systemd/postgres-exporter.container
       mode: 0644
-      overwrite: true
       contents:
         inline: |
-          template {
-            contents = <<-EOT
-              {{- with secret "kv/data/service/${ service_fqdn }/nextcloud" -}}
-              {{ .Data.data.admin_password }}
-              {{- end }}
-              EOT
-            destination = "/vault/secrets/nextcloud/nextcloud_admin_password"
-          }
+          [Unit]
+          Description=postgres prometheus exporter
+          After=network-online.target local-fs.target vault-agent.service postgres.service
+          Wants=vault-agent.service postgres.service
 
-          template {
-            contents = <<-EOT
-              {{- with secret "kv/data/service/${ service_fqdn }/postgres" -}}
-              {{ .Data.data.password }}
-              {{- end }}
-              EOT
-            destination = "/vault/secrets/nextcloud/postgres_password"
-          }
-    - path: /usr/local/sbin/occ
+          [Container]
+          Image=quay.io/prometheuscommunity/postgres-exporter:latest
+          Pull=newer
+          AutoUpdate=registry
+          LogDriver=journald
+          UserNS=auto
+
+          Environment=DATA_SOURCE_USER=nextcloud
+          Environment=DATA_SOURCE_PASS_FILE=/run/secrets/password
+          Environment=DATA_SOURCE_URI=systemd-postgres:5432/nextcloud?sslmode=disable
+
+          Volume=/var/containers/secrets/postgres/password:/run/secrets/password:z,idmap=uids=@0-65534-1,ro
+
+          Network=container.network
+          Network=nextcloud.network
+
+          [Service]
+          Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
+
+          [Install]
+          WantedBy=default.target
+    - path: /usr/local/bin/occ
       mode: 0755
-      overwrite: true
       contents:
         inline: |
-          #!/usr/bin/env sh
-          podman exec -it --user 33 systemd-nextcloud-app /var/www/html/occ "$@"
+          #!/usr/bin/env bash
+          set -euo pipefail
+
+          POD=systemd-nextcloud
+          if ! podman pod exists $POD; then
+            echo "Pod $POD not found! (Not running as root?)"
+            exit 1
+          fi
+
+          IMAGE=$(systemctl cat nextcloud-image.service | awk -F= '$1=="Image"{print $2}')
+          podman run --name "nextcloud-occ-$$" --rm -it \
+            --pod $POD \
+            --env-file /etc/nextcloud/nextcloud.env \
+            --entrypoint /run/script-entrypoint.sh \
+            --workdir /nextcloud \
+            -v /var/containers/nextcloud/config:/nextcloud/config:Z,U \
+            -v /var/containers/nextcloud/apps2:/nextcloud/apps2:Z,U \
+            -v /var/containers/nextcloud/themes:/nextcloud/themes:Z,U \
+            -v /etc/nextcloud/rw.config.php:/nextcloud/config/mounted.config.php:Z,U,ro \
+            "$IMAGE" occ -- "$@"
+  links:
+    - path: /etc/nextcloud/logs_stub/access.log
+      target: /dev/stdout
+    - path: /etc/nextcloud/logs_stub/error.log
+      target: /dev/stderr
+      overwrite: true
 systemd:
   units:
     - name: nextcloud-cron.timer
@@ -409,11 +625,26 @@ systemd:
       contents: |
         [Unit]
         Description=Run nextcloud cron
-        After=nextcloud-app.service
+        Wants=postgres.service valkey.service
+        After=postgres.service valkey.service nextcloud-install.service nextcloud-provision.service
 
         [Timer]
-        OnBootSec=5min
         OnUnitActiveSec=5min
+        Persistent=true
+
+        [Install]
+        WantedBy=timers.target
+    - name: nextcloud-provision.timer
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Rerun provision script to update all apps every night
+        Wants=postgres.service valkey.service
+        After=postgres.service valkey.service nextcloud-install.service
+        Description=Run nextcloud cron
+        [Timer]
+        OnCalendar=*-*-* 04:00:00 UTC
+        Persistent=true
 
         [Install]
         WantedBy=timers.target
