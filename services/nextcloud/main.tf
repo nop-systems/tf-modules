@@ -70,6 +70,9 @@ locals {
       firstrunwizard = {
         enabled = "no"
       }
+      survey_client = {
+        enabled = "no"
+      }
     }
   }
 }
