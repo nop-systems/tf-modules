@@ -103,68 +103,68 @@ storage:
               },
             ]
           }
-    - path: /etc/containers/systemd/authentik-ldap.container
-      mode: 0644
-      contents:
-        inline: |
-          [Unit]
-          Description=authentik LDAP outpost
-          After=network-online.target local-fs.target vault-agent.service
+    # - path: /etc/containers/systemd/authentik-ldap.container
+    #   mode: 0644
+    #   contents:
+    #     inline: |
+    #       [Unit]
+    #       Description=authentik LDAP outpost
+    #       After=network-online.target local-fs.target vault-agent.service
 
-          [Container]
-          Image=ghcr.io/goauthentik/ldap:${authentik_version}
-          Pull=newer
-          LogDriver=journald
-          UserNS=auto
-          Notify=healthy
+    #       [Container]
+    #       Image=ghcr.io/goauthentik/ldap:${authentik_version}
+    #       Pull=newer
+    #       LogDriver=journald
+    #       UserNS=auto
+    #       Notify=healthy
 
-          Environment=AUTHENTIK_HOST=${authentik_host}
-          Environment=AUTHENTIK_INSECURE=false
-          Environment=AUTHENTIK_TOKEN=file:///run/secrets/token
+    #       Environment=AUTHENTIK_HOST=${authentik_host}
+    #       Environment=AUTHENTIK_INSECURE=false
+    #       Environment=AUTHENTIK_TOKEN=file:///run/secrets/token
 
-          Volume=/var/containers/secrets/authentik_ldap:/run/secrets:z,idmap=uids=@0-1000-1,ro
-          Volume=/var/containers/secrets/tls/this/root_ca.pem:/etc/ssl/certs/root_ca.pem:ro
+    #       Volume=/var/containers/secrets/authentik_ldap:/run/secrets:z,idmap=uids=@0-1000-1,ro
+    #       Volume=/var/containers/secrets/tls/this/root_ca.pem:/etc/ssl/certs/root_ca.pem:ro
 
-          Network=container.network
+    #       Network=container.network
 
-          HealthCmd=/ldap healthcheck
-          HealthInterval=5s
-          HealthRetries=20
-          HealthStartPeriod=3s
-          HealthTimeout=5s
+    #       HealthCmd=/ldap healthcheck
+    #       HealthInterval=5s
+    #       HealthRetries=20
+    #       HealthStartPeriod=3s
+    #       HealthTimeout=5s
 
-          [Service]
-          Restart=always
-          RestartSec=1s
-          RestartSteps=10
-          RestartMaxDelaySec=5m
+    #       [Service]
+    #       Restart=always
+    #       RestartSec=1s
+    #       RestartSteps=10
+    #       RestartMaxDelaySec=5m
 
-          [Install]
-          WantedBy=default.target
-    - path: /etc/vault-agent/config.d/authentik-ldap.hcl
-      mode: 0644
-      overwrite: true
-      contents:
-        inline: |
-          template {
-            contents = <<-EOT
-              {{- with secret "kv/data/service/${ nextcloud_service_fqdn }/authentik_ldap" -}}
-              {{ .Data.data.token }}
-              {{- end -}}
-              EOT
-            perms = "0600"
-            destination = "/vault/secrets/authentik_ldap/token"
-          }
-    - path: /etc/monitoring/alloy.d/authentik_ldap.alloy
-      contents:
-        inline: |
-          prometheus.scrape "authentik_ldap" {
-            forward_to = [
-              prometheus.relabel.replace_instance.receiver,
-            ]
-            targets = [
-              {
-                "__address__" = "systemd-authentik-ldap:9300",
-              },
-            ]
-          }
+    #       [Install]
+    #       WantedBy=default.target
+    # - path: /etc/vault-agent/config.d/authentik-ldap.hcl
+    #   mode: 0644
+    #   overwrite: true
+    #   contents:
+    #     inline: |
+    #       template {
+    #         contents = <<-EOT
+    #           {{- with secret "kv/data/service/${ nextcloud_service_fqdn }/authentik_ldap" -}}
+    #           {{ .Data.data.token }}
+    #           {{- end -}}
+    #           EOT
+    #         perms = "0600"
+    #         destination = "/vault/secrets/authentik_ldap/token"
+    #       }
+    # - path: /etc/monitoring/alloy.d/authentik_ldap.alloy
+    #   contents:
+    #     inline: |
+    #       prometheus.scrape "authentik_ldap" {
+    #         forward_to = [
+    #           prometheus.relabel.replace_instance.receiver,
+    #         ]
+    #         targets = [
+    #           {
+    #             "__address__" = "systemd-authentik-ldap:9300",
+    #           },
+    #         ]
+    #       }
