@@ -8,7 +8,7 @@ locals {
 }
 
 module "fcos" {
-  source = "git@github.com:nop-systems/tf-modules.git//base/fcos/stack?ref=fcos/v0.5.3"
+  source = "git@github.com:nop-systems/tf-modules.git//base/fcos/stack?ref=fcos/v0.6.0"
 
   fqdn      = var.fqdn
   desc      = "Monitoring Stack"
@@ -19,38 +19,50 @@ module "fcos" {
 
   butane_snippets = [
     templatefile("${path.module}/prometheus.bu", {
-      alertmanager_version      = "v0.27.0"
-      blackbox_exporter_version = "v0.25.0"
-      prometheus_version        = "v2.53.1"
-      service_fqdn              = var.service_fqdn
-      snmp_exporter_version     = "v0.26.0"
-      xo_sd_proxy_version       = "v0.1.0"
+      service_fqdn = var.service_fqdn
+      # https://quay.io/repository/prometheus/prometheus?tab=tags
+      prometheus_image = "quay.io/repository/prometheus/prometheus:2.54.1"
+      # https://quay.io/repository/prometheus/alertmanager?tab=tags
+      alertmanager_image = "quay.io/prometheus/alertmanager:v0.27.0"
+      # https://quay.io/repository/prometheus/blackbox-exporter?tab=tags
+      blackbox_exporter_image = "quay.io/prometheus/blackbox-exporter:v0.25.0"
+      # https://quay.io/repository/prometheus/snmp-exporter?tab=tags
+      snmp_exporter_image = "quay.io/prometheus/snmp-exporter:v0.26.0"
+      # https://github.com/nop-systems/xo-sd-proxy/pkgs/container/xo-sd-proxy
+      xo_sd_proxy_image = "ghcr.io/nop-systems/xo-sd-proxy:v0.1.0"
     }),
     templatefile("${path.module}/grafana.bu", {
-      grafana_fqdn                   = var.grafana_fqdn
-      grafana_image_renderer_version = "latest"
-      grafana_version                = "11.1.0"
-      service_fqdn                   = var.service_fqdn
+      grafana_fqdn = var.grafana_fqdn
+      # https://hub.docker.com/r/grafana/grafana-image-renderer/tags
+      grafana_image_renderer_image = "docker.io/grafana/grafana-image-renderer:latest"
+      # https://hub.docker.com/r/grafana/grafana-oss/tags
+      grafana_image = "docker.io/grafana/grafana-oss:11.2.0"
+      service_fqdn  = var.service_fqdn
     }),
     templatefile("${path.module}/loki.bu", {
-      loki_version  = "3.1.0"
-      minio_version = "RELEASE.2024-07-10T18-41-49Z"
-      service_fqdn  = var.service_fqdn
+      # https://github.com/grafana/loki/releases
+      loki_image = "docker.io/grafana/loki:3.1.1"
+      # https://hub.docker.com/r/minio/minio/tags
+      minio_image  = "docker.io/minio/minio:RELEASE.2024-08-29T01-40-52Z"
+      service_fqdn = var.service_fqdn
     }),
     templatefile("${path.module}/caddy.bu", {
       acme_ca           = var.acme_ca
       admin_pki_mount   = var.admin_pki_mount
       alertmanager_fqdn = var.alertmanager_fqdn
-      caddy_version     = "2.8"
-      fqdn              = var.fqdn
-      grafana_fqdn      = var.grafana_fqdn
-      ingress_fqdn      = var.ingress_fqdn
-      loki_fqdn         = var.loki_fqdn
-      prometheus_fqdn   = var.prometheus_fqdn
-      service_fqdn      = var.service_fqdn
-      trusted_proxies   = join(" ", var.trusted_proxies)
+      # https://hub.docker.com/_/caddy
+      caddy_version   = "docker.io/library/caddy:2.8"
+      fqdn            = var.fqdn
+      grafana_fqdn    = var.grafana_fqdn
+      ingress_fqdn    = var.ingress_fqdn
+      loki_fqdn       = var.loki_fqdn
+      prometheus_fqdn = var.prometheus_fqdn
+      service_fqdn    = var.service_fqdn
+      trusted_proxies = join(" ", var.trusted_proxies)
     })
   ]
+
+  monitorung_ingress_url = var.ingress_fqdn
 
   cloudflare_zone_id     = var.cloudflare_zone_id
   xo_sr_id               = var.xo_sr_id
@@ -67,7 +79,7 @@ module "fcos" {
 module "cname_records" {
   for_each = toset(local.cnames)
 
-  source  = "git@github.com:nop-systems/tf-modules.git//base/dns-record?ref=dns-record/v0.1.0"
+  source  = "git@github.com:nop-systems/tf-modules.git//base/dns-record?ref=dns-record/v0.2.0"
   name    = each.key
   type    = "CNAME"
   value   = var.fqdn
@@ -77,7 +89,7 @@ module "cname_records" {
 module "internal_records" {
   for_each = toset(local.internal_fqdns)
 
-  source  = "git@github.com:nop-systems/tf-modules.git//base/dns-record?ref=dns-record/v0.1.0"
+  source  = "git@github.com:nop-systems/tf-modules.git//base/dns-record?ref=dns-record/v0.2.0"
   name    = each.key
   type    = "CNAME"
   value   = var.fqdn
@@ -85,7 +97,7 @@ module "internal_records" {
 }
 
 module "service_record" {
-  source  = "git@github.com:nop-systems/tf-modules.git//base/dns-record?ref=dns-record/v0.1.0"
+  source  = "git@github.com:nop-systems/tf-modules.git//base/dns-record?ref=dns-record/v0.2.0"
   name    = var.service_fqdn
   type    = "CNAME"
   value   = var.fqdn

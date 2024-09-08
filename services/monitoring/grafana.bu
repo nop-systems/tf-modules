@@ -95,7 +95,7 @@ storage:
           After=network-online.target local-fs.target vault-agent.service
 
           [Container]
-          Image=docker.io/grafana/grafana-oss:${grafana_version}
+          Image=${grafana_image}
           Pull=newer
           LogDriver=journald
           UserNS=auto
@@ -138,7 +138,7 @@ storage:
           After=network-online.target local-fs.target vault-agent.service
 
           [Container]
-          Image=docker.io/grafana/grafana-image-renderer:${grafana_image_renderer_version}
+          Image=${grafana_image_renderer_image}
           Pull=newer
           AutoUpdate=registry
           LogDriver=journald
