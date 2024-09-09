@@ -99,7 +99,7 @@ storage:
           After=network-online.target local-fs.target
 
           [Container]
-          Image=:{prometheus_image}
+          Image={prometheus_image}
           Pull=newer
           LogDriver=journald
           UserNS=auto
@@ -223,7 +223,7 @@ storage:
           After=network-online.target local-fs.target
 
           [Container]
-          Image=${alertmanager_version}
+          Image=${alertmanager_image}
           Pull=newer
           LogDriver=journald
           UserNS=auto

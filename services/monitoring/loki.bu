@@ -140,6 +140,16 @@ storage:
 
           compactor:
             working_directory: /tmp/compactor
+    - path: /etc/containers/systemd/loki.image
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Wants=network-online.target
+          After=network-online.target
+
+          [Image]
+          Image=${loki_image}
     - path: /etc/containers/systemd/loki-read.container
       mode: 0644
       contents:
@@ -149,7 +159,7 @@ storage:
           After=network-online.target local-fs.target minio.service vault-agent.service
 
           [Container]
-          Image=docker.io/grafana/loki:${loki_version}
+          Image=loki.image
           Exec=-config.file=/etc/loki/loki.yaml -config.expand-env=true -target=read -legacy-read-mode=false
           Pull=newer
           LogDriver=journald
@@ -174,16 +184,6 @@ storage:
 
           [Install]
           WantedBy=multi-user.target default.target
-    - path: /etc/containers/systemd/loki.image
-      mode: 0644
-      contents:
-        inline: |
-          [Unit]
-          Wants=network-online.target
-          After=network-online.target
-
-          [Image]
-          Image=${loki_image}
     - path: /etc/containers/systemd/loki-write.container
       mode: 0644
       contents:
