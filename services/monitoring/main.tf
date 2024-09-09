@@ -21,7 +21,7 @@ module "fcos" {
     templatefile("${path.module}/prometheus.bu", {
       service_fqdn = var.service_fqdn
       # https://quay.io/repository/prometheus/prometheus?tab=tags
-      prometheus_image = "quay.io/repository/prometheus/prometheus:2.54.1"
+      prometheus_image = "quay.io/prometheus/prometheus:v2.54.1"
       # https://quay.io/repository/prometheus/alertmanager?tab=tags
       alertmanager_image = "quay.io/prometheus/alertmanager:v0.27.0"
       # https://quay.io/repository/prometheus/blackbox-exporter?tab=tags
