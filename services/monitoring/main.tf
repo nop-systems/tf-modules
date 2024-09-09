@@ -51,7 +51,7 @@ module "fcos" {
       admin_pki_mount   = var.admin_pki_mount
       alertmanager_fqdn = var.alertmanager_fqdn
       # https://hub.docker.com/_/caddy
-      caddy_version   = "docker.io/library/caddy:2.8"
+      caddy_image     = "docker.io/library/caddy:2.8"
       fqdn            = var.fqdn
       grafana_fqdn    = var.grafana_fqdn
       ingress_fqdn    = var.ingress_fqdn
@@ -62,7 +62,7 @@ module "fcos" {
     })
   ]
 
-  monitorung_ingress_url = var.ingress_fqdn
+  monitoring_ingress_url = var.ingress_fqdn
 
   cloudflare_zone_id     = var.cloudflare_zone_id
   xo_sr_id               = var.xo_sr_id
