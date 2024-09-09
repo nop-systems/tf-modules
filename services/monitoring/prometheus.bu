@@ -99,7 +99,7 @@ storage:
           After=network-online.target local-fs.target
 
           [Container]
-          Image=docker.io/prom/prometheus:${prometheus_version}
+          Image=:{prometheus_image}
           Pull=newer
           LogDriver=journald
           UserNS=auto
@@ -155,7 +155,7 @@ storage:
           After=network-online.target local-fs.target vault-agent.service
 
           [Container]
-          Image=ghcr.io/nop-systems/xo-sd-proxy:${xo_sd_proxy_version}
+          Image=${xo_sd_proxy_image}
           Pull=newer
           LogDriver=journald
           UserNS=auto
@@ -223,7 +223,7 @@ storage:
           After=network-online.target local-fs.target
 
           [Container]
-          Image=docker.io/prom/alertmanager:${alertmanager_version}
+          Image=${alertmanager_version}
           Pull=newer
           LogDriver=journald
           UserNS=auto
@@ -253,7 +253,7 @@ storage:
           After=network-online.target local-fs.target
 
           [Container]
-          Image=docker.io/prom/blackbox-exporter:${blackbox_exporter_version}
+          Image=${blackbox_exporter_image}
           Pull=newer
           LogDriver=journald
           UserNS=auto
@@ -278,7 +278,7 @@ storage:
           After=network-online.target local-fs.target
 
           [Container]
-          Image=docker.io/prom/snmp-exporter:${snmp_exporter_version}
+          Image=${snmp_exporter_image}
           Pull=newer
           LogDriver=journald
           UserNS=auto
