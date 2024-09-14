@@ -126,7 +126,7 @@ storage:
             metrics_path = "/cool/getMetrics"
             targets = [
               {
-                "__address__" = "systemd-collabora:9205",
+                "__address__" = "systemd-collabora:9980",
               },
             ]
             basic_auth {
