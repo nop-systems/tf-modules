@@ -40,7 +40,7 @@ storage:
 
           [Install]
           WantedBy=default.target
-    - path: /etc/monitoring/alloy.d/nextcloud.alloy
+    - path: /etc/monitoring/alloy.d/caddy.alloy
       contents:
         inline: |
           prometheus.scrape "caddy" {

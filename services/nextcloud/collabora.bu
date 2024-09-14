@@ -120,19 +120,22 @@ storage:
       contents:
         inline: |
           prometheus.scrape "collabora" {
-            forward_to = [
-              prometheus.relabel.replace_instance.receiver,
-            ]
+            forward_to = [prometheus.relabel.replace_instance.receiver]
             metrics_path = "/cool/getMetrics"
             targets = [
               {
-                "__address__" = "systemd-collabora:9205",
+                "__address__" = "systemd-collabora:9980",
               },
             ]
             basic_auth {
               username = "admin"
               password_file = "/secrets/collabora_password"
             }
+          }
+
+          prometheus.scrape "languagetool_blackbox" {
+            targets = prometheus.exporter.blackbox.languagetool.targets
+            forward_to = [prometheus.relabel.replace_instance.receiver]
           }
 
           prometheus.exporter.blackbox "languagetool" {
