@@ -57,7 +57,7 @@ storage:
           After=network-online.target local-fs.target vault-agent.service
 
           [Container]
-          Image=docker.io/collabora/code:${collabora_code_version}
+          Image=${collabora_code_image}
           Pull=newer
           LogDriver=journald
           # collabora uses nobody (65534) and therefore needs more than 1024 ids
@@ -97,7 +97,7 @@ storage:
           After=languagetool-download-ngrams.target
 
           [Container]
-          Image=docker.io/elestio/languagetool:${languagetool_version}
+          Image=${languagetool_image}
           Pull=newer
           LogDriver=journald
           UserNS=auto
