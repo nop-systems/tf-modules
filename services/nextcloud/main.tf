@@ -8,7 +8,7 @@ locals {
         var.nextcloud_public_fqdn,
         var.nextcloud_service_fqdn
       ]
-      trusted_proxies               = ["0.0.0.0/0", "::/0"]
+      trusted_proxies               = ["10.89.0.0/16", "fd00::/8"]
       log_type                      = "syslog"
       syslog_tag                    = "nextcloud"
       logfile                       = ""
@@ -48,7 +48,7 @@ locals {
         types           = "prevent_group_restriction"
         wopi_url        = "http://systemd-collabora:9980"
         public_wopi_url = "https://${var.collabora_public_fqdn}"
-        wopi_allowlist  = "10.89.0.0/16,fd00::/8"
+        # wopi_allowlist  = "10.89.0.0/16,fd00::/8"
       }
       files_antivirus = {
         enabled              = "yes"
