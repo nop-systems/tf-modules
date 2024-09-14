@@ -12,7 +12,7 @@
 
 | Name | Version |
 |------|---------|
-| <a name="provider_vault"></a> [vault](#provider\_vault) | >=4.3.0 |
+| <a name="provider_vault"></a> [vault](#provider\_vault) | 4.4.0 |
 
 ## Modules
 
@@ -37,7 +37,11 @@
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_acme_allowed_domains"></a> [acme\_allowed\_domains](#input\_acme\_allowed\_domains) | Allowed domains for ACME role (only subdomains) | `list(string)` | n/a | yes |
+| <a name="input_acme_noeab_max_ttl"></a> [acme\_noeab\_max\_ttl](#input\_acme\_noeab\_max\_ttl) | Maximum TTL for certificates created with acme\_noeab role | `number` | n/a | yes |
+| <a name="input_acme_noeab_ttl"></a> [acme\_noeab\_ttl](#input\_acme\_noeab\_ttl) | Default TTL for certificates created with acme\_noeab role | `number` | n/a | yes |
 | <a name="input_allow_root_issuing_ttl"></a> [allow\_root\_issuing\_ttl](#input\_allow\_root\_issuing\_ttl) | temporarily increase max TTL of root issuer to 12 years to allow issuing of a new long term root CA | `bool` | n/a | yes |
+| <a name="input_entity_metadata_max_ttl"></a> [entity\_metadata\_max\_ttl](#input\_entity\_metadata\_max\_ttl) | Maximum TTL for certificates created with entity-metadata role | `number` | n/a | yes |
+| <a name="input_entity_metadata_ttl"></a> [entity\_metadata\_ttl](#input\_entity\_metadata\_ttl) | Default TTL for certificates created with entity-metadata role | `number` | n/a | yes |
 | <a name="input_organization"></a> [organization](#input\_organization) | Organization to include in leaf certificates | `string` | n/a | yes |
 | <a name="input_servers_issuer_ref"></a> [servers\_issuer\_ref](#input\_servers\_issuer\_ref) | Issuer ref of current PKI servers Issuer | `string` | n/a | yes |
 | <a name="input_vault_url"></a> [vault\_url](#input\_vault\_url) | Main HA URL to vault cluster | `string` | n/a | yes |
@@ -57,8 +61,16 @@ module "" {
   
   /* Allowed domains for ACME role (only subdomains) (required) */
   acme_allowed_domains =
+  /* Maximum TTL for certificates created with acme_noeab role (required) */
+  acme_noeab_max_ttl =
+  /* Default TTL for certificates created with acme_noeab role (required) */
+  acme_noeab_ttl =
   /* temporarily increase max TTL of root issuer to 12 years to allow issuing of a new long term root CA (required) */
   allow_root_issuing_ttl =
+  /* Maximum TTL for certificates created with entity-metadata role (required) */
+  entity_metadata_max_ttl =
+  /* Default TTL for certificates created with entity-metadata role (required) */
+  entity_metadata_ttl =
   /* Organization to include in leaf certificates (required) */
   organization =
   /* Issuer ref of current PKI servers Issuer (required) */
@@ -73,7 +85,11 @@ module "" {
   source = "git@github.com:nop-systems/tf-modules.git//?ref="
   
   acme_allowed_domains =
+  acme_noeab_max_ttl =
+  acme_noeab_ttl =
   allow_root_issuing_ttl =
+  entity_metadata_max_ttl =
+  entity_metadata_ttl =
   organization =
   servers_issuer_ref =
   vault_url =

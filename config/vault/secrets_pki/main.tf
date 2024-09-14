@@ -17,9 +17,8 @@ module "pki_servers" {
   source    = "./mount"
   vault_url = var.vault_url
   path      = "pki-servers"
-  # max 3 day ttl for leaf certificates
-  ttl     = 86400
-  max_ttl = 86400 * 3
+  ttl       = var.entity_metadata_ttl
+  max_ttl   = max(var.entity_metadata_max_ttl, var.acme_noeab_max_ttl)
 }
 
 #####
@@ -68,8 +67,8 @@ resource "vault_pki_secret_backend_role" "entity_metadata" {
   key_type = "ec"
   key_bits = 256
 
-  ttl     = 86400 / 2
-  max_ttl = 86400 * 3
+  ttl     = var.entity_metadata_ttl
+  max_ttl = var.entity_metadata_max_ttl
 
   organization = [var.organization]
   ou           = ["Servers (Approle)"]
@@ -133,8 +132,8 @@ resource "vault_pki_secret_backend_role" "acme_noeab" {
   key_type = "ec"
   key_bits = 256
 
-  ttl     = 86400 / 2
-  max_ttl = 86400
+  ttl     = var.acme_noeab_ttl
+  max_ttl = var.acme_noeab_max_ttl
 
   organization = [var.organization]
   ou           = ["Servers (ACME)"]
