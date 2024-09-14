@@ -105,7 +105,7 @@ module "fcos" {
       nextcloud_custom_config = jsonencode(merge({ system = {} }, var.config))
 
       # https://github.com/hoellen/docker-nextcloud/pkgs/container/nextcloud
-      nextcloud_image = "ghcr.io/hoellen/nextcloud:29.0.5"
+      nextcloud_image = "ghcr.io/hoellen/nextcloud:29.0.7"
       # https://hub.docker.com/_/postgres/tags
       postgres_image = "docker.io/library/postgres:16-alpine"
       # https://hub.docker.com/r/valkey/valkey/tags
