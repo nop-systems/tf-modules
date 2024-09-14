@@ -134,9 +134,6 @@ module "fcos" {
     templatefile("${path.module}/helper-services.bu", {
       upload_limit_bytes     = local.upload_limit_bytes
       nextcloud_service_fqdn = var.nextcloud_service_fqdn
-      authentik_host         = var.authentik_host
-      # https://github.com/goauthentik/authentik/pkgs/container/ldap
-      authentik_version = "2024.8"
     }),
   ]
 
