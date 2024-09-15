@@ -6,7 +6,8 @@ locals {
       trusted_domains = [
         var.fqdn,
         var.nextcloud_public_fqdn,
-        var.nextcloud_service_fqdn
+        var.nextcloud_service_fqdn,
+        "systemd-nextcloud"
       ]
       trusted_proxies               = ["10.89.0.0/16", "fd00::/8"]
       log_type                      = "syslog"
