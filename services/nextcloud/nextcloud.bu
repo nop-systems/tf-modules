@@ -175,7 +175,7 @@ storage:
           After=network-online.target
 
           [Image]
-          Image=ghcr.io/hoellen/nextcloud:${nextcloud_version}
+          Image=${nextcloud_image}
     - path: /etc/containers/systemd/nextcloud.network
       mode: 0644
       contents:
@@ -373,7 +373,7 @@ storage:
           After=network-online.target local-fs.target vault-agent.service
 
           [Container]
-          Image=docker.io/library/postgres:${postgres_version}
+          Image=${postgres_image}
           Pull=newer
           AutoUpdate=registry
           LogDriver=journald
@@ -412,7 +412,7 @@ storage:
           After=network-online.target local-fs.target
 
           [Container]
-          Image=docker.io/valkey/valkey:${valkey_version}
+          Image=${valkey_image}
 
           Pull=newer
           LogDriver=journald
