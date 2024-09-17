@@ -584,6 +584,7 @@ storage:
           Network=nextcloud.network
     - path: /usr/local/bin/occ
       mode: 0755
+      overwrite: true
       contents:
         inline: |
           #!/usr/bin/env bash
