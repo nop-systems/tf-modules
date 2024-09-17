@@ -502,12 +502,12 @@ storage:
           }
 
           template {
-            destination = "/vault/secrets/monitoring/extcloud-postgres-datasource"
+            destination = "/vault/secrets/monitoring/nextcloud-postgres-datasource"
             perms = "0600"
             contents = <<-EOT
               {{- with secret "kv/data/service/${ nextcloud_service_fqdn }/postgres" -}}
               postgresql://nextcloud:{{ .Data.data.password }}@systemd-postgres:5432/nextcloud?sslmode=disable
-              {{- end }}
+              {{- end -}}
               EOT
           }
     - path: /etc/monitoring/alloy.d/nextcloud.alloy
