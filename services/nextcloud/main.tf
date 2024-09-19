@@ -1,5 +1,6 @@
 locals {
   upload_limit_bytes = var.upload_limit_GB * pow(10, 9)
+  install_apps       = ["files_antivirus", "richdocuments", "whiteboard"]
   nextcloud_config = {
     system = {
       "upgrade.disable-web" = true
@@ -9,7 +10,7 @@ locals {
         var.nextcloud_service_fqdn,
         "systemd-nextcloud"
       ]
-      trusted_proxies               = ["10.89.0.0/16", "fd00::/8"]
+      trusted_proxies               = concat(["10.89.0.0/16", "fd00::/8"], var.trusted_proxies)
       log_type                      = "syslog"
       syslog_tag                    = "nextcloud"
       logfile                       = ""
@@ -62,6 +63,9 @@ locals {
         av_scan_first_bytes  = "-1"
         types                = "filesystem,dav"
       }
+      whiteboard = {
+        collabBackendUrl = "http://systemd-whiteboard:3002"
+      }
       logreader = {
         enabled = "no"
       }
@@ -100,7 +104,7 @@ module "fcos" {
       php_opcache_memory_size = var.php_opcache_memory_size
       php_memory_limit        = var.php_memory_limit
 
-      apps             = join(" ", toset(concat(["files_antivirus", "richdocuments"], var.apps)))
+      apps             = join(" ", toset(concat(local.install_apps, var.apps)))
       nextcloud_config = jsonencode(local.nextcloud_config)
       # merge into default object because occ complains about empty object
       nextcloud_custom_config = jsonencode(merge({ system = {} }, var.config))
@@ -130,7 +134,7 @@ module "fcos" {
       # https://hub.docker.com/r/collabora/code/tags
       collabora_code_image = "docker.io/collabora/code:24.04.7.2.1"
       # https://hub.docker.com/r/elestio/languagetool/tags
-      languagetool_image = "docker.io/elestio/languagetool:v6.4"
+      languagetool_image = "docker.io/elestio/languagetool:latest"
     }),
     templatefile("${path.module}/helper-services.bu", {
       upload_limit_bytes     = local.upload_limit_bytes

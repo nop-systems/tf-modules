@@ -128,6 +128,7 @@ storage:
             else
               echo "app $app already installed."
             fi
+            occ app:enable "$app"
           done
 
           echo "→ Importing /run/provision/config.json…"
@@ -484,9 +485,22 @@ storage:
                 "apps": {
                   "serverinfo": {
                     "token": "{{ .Data.data.serverinfo_token }}"
+                  },
+                  "whiteboard": {
+                    "jwt_secret_key": "{{ .Data.data.whiteboard_jwt_secret_key }}"
                   }
                 }
               }
+              {{- end }}
+              EOT
+          }
+
+          template {
+            destination = "/vault/secrets/nextcloud/whiteboard.env"
+            perms = "0600"
+            contents = <<-EOT
+              {{ with secret "kv/data/service/${ nextcloud_service_fqdn }/settings" -}}
+              JWT_SECRET_KEY={{ .Data.data.whiteboard_jwt_secret_key }}
               {{- end }}
               EOT
           }

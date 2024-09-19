@@ -93,9 +93,27 @@ storage:
             reverse_proxy systemd-collabora:9980
           }
 
+          # prevent systemd-nextcloud from bein proxied to nextcloud as it is configured as trusted domain
+          systemd-nextcloud {
+            tls internal
+            responde "Forbidden" 403
+          }
+
           https://${fqdn}, https://${nextcloud_service_fqdn}, https:// {
             import common
-            reverse_proxy systemd-nextcloud:8888
+
+            reverse_proxy /whiteboard/* systemd-whiteboard:3002
+
+            reverse_proxy systemd-nextcloud:8888 {
+              header_down -X-XSS-Protection
+              header_down -Referrer-Policy
+              header_down -X-Content-Type-Options
+              header_down -X-Frame-Options
+              header_down -X-Permitted-Cross-Domain-Policies
+              header_down -X-Robots-Tag
+              header_down -X-XSS-Protection
+            }
+
             encode zstd gzip
 
             # Headers
@@ -105,7 +123,6 @@ storage:
               # More security hardening headers
               Referrer-Policy "no-referrer"
               X-Content-Type-Options "nosniff"
-              X-Download-Options "noopen"
               X-Frame-Options "SAMEORIGIN"
               X-Permitted-Cross-Domain-Policies "none"
               X-Robots-Tag "noindex, nofollow"
@@ -114,49 +131,4 @@ storage:
               # Replace http with https in any Location header
               Location http:// https://
             }
-
-            # # Cache control
-            # @static {
-            #   file
-            #   path *.css *.js *.svg *.gif
-            # }
-
-            # header @static {
-            #   Cache-Control "max-age=360"
-            # }
-
-            # @fonts {
-            #   path /core/fonts
-            # }
-
-            # header @fonts {
-            #   Cache-Control "max-age=604800"
-            # }
-
-            # .htaccess / data / config / ... shouldn't be accessible from outside
-            @forbidden {
-              path /.htaccess
-              path /.user.ini
-              path /.xml
-              path /3rdparty/*
-              path /autotest
-              path /build/*
-              path /config/*
-              path /console
-              path /console.php
-              path /data/*
-              path /db_
-              path /db_structure
-              path /indie
-              path /issue
-              path /lib/*
-              path /occ
-              path /README
-              path /templates/*
-              path /tests/*
-            }
-
-            respond @forbidden 404
-            # not sure if this is 100% safe, but it looks nicer when you hit a 404
-            # rewrite @forbidden '/index.php/error/404'
           }
