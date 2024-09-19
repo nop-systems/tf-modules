@@ -1,5 +1,6 @@
 locals {
   upload_limit_bytes = var.upload_limit_GB * pow(10, 9)
+  install_apps       = ["files_antivirus", "richdocuments", "whiteboard"]
   nextcloud_config = {
     system = {
       "upgrade.disable-web" = true
@@ -62,6 +63,9 @@ locals {
         av_scan_first_bytes  = "-1"
         types                = "filesystem,dav"
       }
+      whiteboard = {
+        collabBackendUrl = "http://systemd-whiteboard:3002"
+      }
       logreader = {
         enabled = "no"
       }
@@ -100,7 +104,7 @@ module "fcos" {
       php_opcache_memory_size = var.php_opcache_memory_size
       php_memory_limit        = var.php_memory_limit
 
-      apps             = join(" ", toset(concat(["files_antivirus", "richdocuments"], var.apps)))
+      apps             = join(" ", toset(concat(local.install_apps, var.apps)))
       nextcloud_config = jsonencode(local.nextcloud_config)
       # merge into default object because occ complains about empty object
       nextcloud_custom_config = jsonencode(merge({ system = {} }, var.config))

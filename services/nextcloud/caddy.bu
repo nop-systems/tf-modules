@@ -101,6 +101,9 @@ storage:
 
           https://${fqdn}, https://${nextcloud_service_fqdn}, https:// {
             import common
+
+            reverse_proxy /whiteboard/* systemd-whiteboard:3002
+
             reverse_proxy systemd-nextcloud:8888 {
               header_down -X-XSS-Protection
               header_down -Referrer-Policy
