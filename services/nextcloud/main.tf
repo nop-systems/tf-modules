@@ -10,7 +10,7 @@ locals {
         var.nextcloud_service_fqdn,
         "systemd-nextcloud"
       ]
-      trusted_proxies               = ["10.89.0.0/16", "fd00::/8"]
+      trusted_proxies               = concat(["10.89.0.0/16", "fd00::/8"], var.trusted_proxies)
       log_type                      = "syslog"
       syslog_tag                    = "nextcloud"
       logfile                       = ""
@@ -134,7 +134,7 @@ module "fcos" {
       # https://hub.docker.com/r/collabora/code/tags
       collabora_code_image = "docker.io/collabora/code:24.04.7.2.1"
       # https://hub.docker.com/r/elestio/languagetool/tags
-      languagetool_image = "docker.io/elestio/languagetool:v6.4"
+      languagetool_image = "docker.io/elestio/languagetool:latest"
     }),
     templatefile("${path.module}/helper-services.bu", {
       upload_limit_bytes     = local.upload_limit_bytes
