@@ -99,6 +99,7 @@ storage:
           [Container]
           Image=${languagetool_image}
           Pull=newer
+          AutoUpdate=registry
           LogDriver=journald
           UserNS=auto
 
