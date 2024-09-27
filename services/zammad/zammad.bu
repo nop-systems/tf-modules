@@ -420,7 +420,7 @@ storage:
           After=network-online.target local-fs.target vault-agent.service
 
           [Container]
-          Image=ghcr.io/goauthentik/ldap:2024.4.2
+          Image=ghcr.io/goauthentik/ldap:2024.8.3
           Pull=newer
           LogDriver=journald
 
