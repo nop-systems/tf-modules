@@ -21,7 +21,7 @@ module "fcos" {
     caddy_version       = "2.8"
     postgres_version    = "16-alpine"
     memcached_version   = "1.6.28-alpine"
-    authentik_version   = "2024.6.0"
+    authentik_version   = "2024.8.3"
   })]
 
   cloudflare_zone_id     = var.cloudflare_zone_id

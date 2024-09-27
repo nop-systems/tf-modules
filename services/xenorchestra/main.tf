@@ -12,7 +12,7 @@ module "fcos" {
   butane_snippets = [templatefile("${path.module}/xenorchestra.bu", {
     fqdn              = var.fqdn
     service_fqdn      = var.service_fqdn
-    authentik_version = "2024.6.0"
+    authentik_version = "2024.8.3"
     authentik_host    = var.authentik_host
   })]
 
