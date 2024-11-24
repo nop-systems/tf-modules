@@ -95,10 +95,6 @@ storage:
               respond 403
             }
 
-            handle /metrics {
-              respond 403
-            }
-
             handle {
               reverse_proxy systemd-pretix:80
             }

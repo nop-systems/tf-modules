@@ -5,7 +5,7 @@ module "pretix" {
   fqdn      = var.fqdn
   desc      = "Pretix"
   xo_tags   = var.xo_tags
-  memory    = 4096
+  memory    = 8192
   cpu_cores = 4
   disk_size = 40
 
@@ -21,7 +21,7 @@ module "pretix" {
       timezone            = var.timezone
       currency            = var.currency
       # https://hub.docker.com/r/pretix/standalone
-      pretix_image = "docker.io/pretix/standalone:2024.9"
+      pretix_image = "docker.io/pretix/standalone:2024.10"
       # https://hub.docker.com/_/postgres
       postgres_image = "docker.io/library/postgres:16-alpine"
       # https://hub.docker.com/r/valkey/valkey
