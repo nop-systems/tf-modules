@@ -15,7 +15,6 @@ module "engelsystem" {
       fqdn                = var.fqdn
       public_fqdn         = var.public_fqdn
       service_fqdn        = var.service_fqdn
-      instance_name       = var.instance_name
       contact_mail        = var.contact_mail
       es_release          = "https://github.com/engelsystem/engelsystem.git#v3.5.0"
       # https://hub.docker.com/_/postgres

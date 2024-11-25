@@ -100,6 +100,8 @@ storage:
             }
 
             handle {
-              reverse_proxy systemd-es-server:5080
+              reverse_proxy systemd-es-server:5080 {
+                header_down Content-Security-Policy "frame-src https://www.openstreetmap.org/; default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;"
+              }
             }
           }

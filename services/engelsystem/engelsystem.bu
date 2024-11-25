@@ -31,6 +31,12 @@ storage:
           ImageTag=localhost/es_server
           SetWorkingDirectory=${es_release}
           File=docker/Dockerfile
+
+    - path: /etc/containers/registries.d/engelsystem.conf
+      mode: 0644
+      contents:
+        inline: |
+          short-name-mode = "permissive"
           
     - path: /etc/containers/systemd/es-server.container
       mode: 0644
@@ -60,10 +66,10 @@ storage:
           Environment=MYSQL_USER=engelsystem
           Environment=MYSQL_DATABASE=engelsystem
           
-          EnvironmentFile=/etc/containers/secrets/engelsystem/es_server.env
-          Environment=CONTACT_EMAIL=${contact_email}
+          EnvironmentFile=/var/containers/secrets/engelsystem/es_server.env
+          Environment=CONTACT_EMAIL=mailto:${contact_mail}
           Environment=MAIL_DRIVER=smtp
-          Environment=MAIL_FROM_ADDRESS=${contact_email}
+          Environment=MAIL_FROM_ADDRESS=${contact_mail}
           Environment=FIRSTNAME_REQUIRED=true
           Environment=LASTNAME_REQUIRED=true
           Environment=TSHIRT_SIZE_REQUIRED=false
@@ -71,6 +77,7 @@ storage:
           Environment=ENABLE_USER_NAME=true
           Environment=DISPLAY_FULL_NAME=true
           Environment=ENABLE_PLANNED_ARRIVAL=false
+          Environment=NIGHT_SHIFTS=false
 
           Network=engelsystem.network
 
@@ -98,8 +105,8 @@ storage:
           UserNS=auto
           Notify=healthy
 
-          Environment=MARIADB_RANDOM_ROOT_PASSWORD
           Environment=MARIADB_PASSWORD_FILE=/run/secrets/password
+          Environment=MARIADB_ROOT_PASSWORD_FILE=/run/secrets/password
           Environment=MARIADB_USER=engelsystem
           Environment=MARIADB_DATABASE=engelsystem
 
@@ -156,6 +163,10 @@ storage:
               MAIL_PASSWORD={{ .Data.data.password }}
               MAIL_PORT={{ .Data.data.port }}
               MAIL_TLS=true
+              {{- end }}
+              {{- with secret "kv/data/service/${ service_fqdn }/mariadb" -}}
+              MYSQL_PASSWORD={{ .Data.data.password }}
+              {{- end }}
               EOT
               
           }
