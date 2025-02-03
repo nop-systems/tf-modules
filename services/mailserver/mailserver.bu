@@ -1,270 +1,244 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/Relativ-IT/Butane-Schemas/Release/Butane-Schema.json
 variant: fcos
 version: "1.5.0"
+passwd:
+  users:
+    - name: core
+      ssh_authorized_keys: ${ssh_authorized_keys}
 storage:
   directories:
-    - path: /var/containers/dms
-    - path: /var/containers/dms/mail-data
-    - path: /var/containers/dms/mail-state
-    - path: /var/containers/dms/mail-logs
-    - path: /var/containers/dms/config
-    - path: /var/containers/dms/config/rspamd/override.d/
-    - path: /var/containers/dnsrobocert/cert
+    - path: /var/containers/stalwart
+    - path: /var/containers/stalwart/etc
+    - path: /var/containers/secrets/stalwart
+    - path: /var/containers/secrets/authentik_ldap
+
+
   files:
-    - path: /etc/vault-agent/config.d/dms.hcl
-      mode: 0644
-      contents:
-        inline: |
-          template {
-            contents = <<EOT
-          {{ with secret "kv/data/service/${ service_fqdn }/ldap" }}
-          LDAP_BIND_DN={{ .Data.data.bind_dn }}
-          LDAP_BIND_PW={{ .Data.data.bind_pw }}
-          {{ end }}
-          EOT
-            destination = "/vault/secrets/dms/ldapauth.env"
-          }
-    - path: /etc/vault-agent/config.d/dnsrobocert.hcl
-      mode: 0644
-      contents:
-        inline: |
-          template {
-            contents = <<EOT
-          {{ with secret "kv/data/service/${ service_fqdn }/cloudflare" }}
-          draft: false
-          acme:
-            email_account: it@studis-bht.de
-            staging: false
-          profiles:
-          - name: cloudflare_profile
-            provider: cloudflare
-            provider_options:
-              auth_token: {{ .Data.data.api_token }}
-              zone_id: ${ cloudflare_zone_id }
-            ttl: 300 
-            max_checks: 5
-            sleep_time: 300
-          certificates:
-          - domains:
-            - ${ mail_fqdn}
-            profile: cloudflare_profile
-          {{ end }}
-          EOT
-            destination = "/vault/secrets/dnsrobocert/config.yml"
-          }
-    - path: /etc/vault-agent/config.d/authentik-ldap.hcl
-      mode: 0644
-      overwrite: true
-      contents:
-        inline: |
-          template {
-            contents = "{{ with secret \"kv/data/service/${ service_fqdn }/authentik_ldap\" }}{{ .Data.data.token }}{{ end }}"
-            destination = "/vault/secrets/authentik_ldap/token"
-          }
-    - path: /var/containers/dms/base.env
-      mode: 0644
-      contents:
-        inline: |
-          OVERRIDE_HOSTNAME=${ mail_fqdn }
-          TZ=Europe/Berlin
-          ENABLE_CLAMAV=1
-          ENABLE_FAIL2BAN=1
-          ENABLE_RSPAMD=1
-          ENABLE_OPENDKIM=0
-          ENABLE_OPENDMARC=0
-          ENABLE_POLICYD_SPF=0
-          ENABLE_AMAVIS=0
-          ENABLE_SPAMASSASSIN=0
-          ENABLE_OAUTH2=1
-          SSL_TYPE=letsencrypt
-    - path: /var/containers/dms/postfix.env
-      mode: 0644
-      contents:
-        inline: |
-          ACCOUNT_PROVISIONER=LDAP
-          LDAP_SERVER_HOST=systemd-authentik-ldap
-          LDAP_SEARCH_BASE=${ ldap_search_base }
-          LDAP_QUERY_FILTER_DOMAIN=(|(inbox=*@%s)(inboxAlias=*@%s)(inboxGroupMember=*@%s))
-          LDAP_QUERY_FILTER_USER=(&(objectClass=inetOrgPerson)(inbox=%s))
-          LDAP_QUERY_FILTER_ALIAS=(&(objectClass=inetOrgPerson)(inboxAlias=%s))
-          LDAP_QUERY_FILTER_GROUP=(&(objectClass=inetOrgPerson)(inboxGroupMember=%s))
-          LDAP_QUERY_FILTER_SENDERS=(&(objectClass=inetOrgPerson)(|(mail=%s)(inboxAlias=%s)(inboxGroupMember=%s)))
-          SPOOF_PROTECTION=1
-    - path: /var/containers/dms/dovecot.env
-      mode: 0644
-      contents:
-        inline: |
-          DOVECOT_USER_FILTER=(&(objectClass=inetOrgPerson)(inbox=%u))
-          DOVECOT_USER_ATTRS==home=/var/mail/%d/%%{ldap:cn},=mail=maildir:~/Maildir,uidNumber=uid,gidNumber=gid
-          DOVECOT_AUTH_BIND=yes
-    - path: /var/containers/dms/SASLAUTHD.env
-      mode: 0644
-      contents:
-        inline: |
-          ENABLE_SASLAUTHD=1
-          SASLAUTHD_MECHANISMS=rimap
-          SASLAUTHD_MECH_OPTIONS=127.0.0.1
-    - path: /var/containers/dms/config/rspamd/override.d/dkim_signing.conf
-      mode: 0644
-      contents:
-        inline: |
-          # documentation: https://rspamd.com/doc/modules/dkim_signing.html
-
-          enabled = true;
-
-          sign_authenticated = true;
-          sign_local = true;
-
-          use_domain = "header";
-          use_redis = false; # don't change unless Redis also provides the DKIM keys
-          use_esld = true;
-          use_vault = true;
-
-          vault
-
-    - path: /etc/containers/systemd/vault-agent.container
+    - path: /etc/containers/systemd/stalwart-mail.container
       mode: 0644
       contents:
         inline: |
           [Unit]
-          Description=vault
-          After=network-online.target local-fs.target
+          Description=Stalwart Mail Server
+          After=network-online.target local-fs.target vault-agent.service
+          Wants=authentik-ldap.service
+
           [Container]
-          Image=docker.io/hashicorp/vault:1.13
-          Exec=agent -config=/vault/config/agent.hcl
-          # should be replaced by LogDriver= when this is shipped
-          PodmanArgs=--log-driver journald
+          Image=${stalwart_image}
+          Pull=newer
+          AutoUpdate=registry
+          LogDriver=journald
+          # Notify=healthy
+          UserNS=auto
 
-          Volume=/var/containers/vault/secrets:/vault/secrets:z
-          Volume=/var/containers/vault/config:/vault/config:Z
+          Volume=/var/containers/stalwart/data:/opt/stalwart-mail:Z,U
 
-          AddCapability=IPC_LOCK
+          [Service]
+          Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
 
-          Network=vault.network
+          [Install]
+          WantedBy=default.target
+    - path: /var/containers/stalwart/etc/config.toml
+      mode: 0644
+      contents:
+        inline: |
+          #############################################
+          # Stalwart Mail Server Configuration File   
+          #############################################
+
+          [server]
+          hostname = "${mail_domain}"
+
+          [server.listener."smtp"]
+          bind = ["[::]:25"]
+          protocol = "smtp"
+
+          [server.listener."submissions"]
+          bind = ["[::]:465"]
+          protocol = "smtp"
+          tls.implicit = true
+
+          [server.listener."imaptls"]
+          bind = ["[::]:993"]
+          protocol = "imap"
+          tls.implicit = true
+
+          [server.listener."sieve"]
+          bind = ["[::]:4190"]
+          protocol = "managesieve"
+
+          [server.listener."https"]
+          protocol = "http"
+          bind = ["[::]:443"]
+          use-x-forwarded = false
+          hsts = false
+          tls.implicit = true
+
+          [server.listener."https".proxy]
+          trusted-networks = ["127.0.0.0/8", "::1", "${trusted_proxies}"]
+
+          [storage]
+          data = "rocksdb"
+          fts = "rocksdb"
+          blob = "rocksdb"
+          lookup = "rocksdb"
+          directory = "authentik"
+
+          [store."rocksdb"]
+          type = "rocksdb"
+          path = "/opt/stalwart-mail/data"
+          compression = "lz4"
+
+          [storage.full-text]
+          default-language = "de"
+
+          [directory."ldap"]
+          type = "ldap"
+          url = "ldap://localhost:3893"
+          base-dn = "dc=example,dc=org"
+          timeout = "30s"
+
+          [directory."ldap".tls]
+          enable = false
+          allow-invalid-certs = false
+
+          [directory."ldap".bind]
+          dn = "cn=admin,dc=example,dc=org"
+          secret = "password"
+
+          [directory."ldap".filter]
+          name = "(&(|(objectClass=posixAccount)(objectClass=posixGroup))(uid=?))"
+          email = "(&(|(objectClass=posixAccount)(objectClass=posixGroup))(|(mail=?)(mailAlias=?)))"
+
+          [directory."ldap".attributes]
+          name = "uid"
+          class = "objectClass"
+          description = ["principalName", "description"]
+          secret = "userPassword"
+          groups = ["memberOf", "otherGroups"]
+          email = "mail"
+          email-alias = "mailAlias"
+          quota = "diskQuota"
+
+          [directory."authentik"]
+          type = "oidc"
+          timeout = "1s"
+          endpoint.url = "https://accounts.example.org/userinfo"
+          endpoint.method = "userinfo"
+          fields.email = "email"
+          fields.username = "preferred_username"
+          fields.full-name = "name"
+
+          [tracer."stdout"]
+          type = "stdout"
+          level = "info"
+          ansi = false
+          enable = true
+
+          [authentication.fallback-admin]
+          user = "admin"
+          secret = "%{env:ADMIN_SECRET}%"
+
+          [acme."letsencrypt"]
+          directory = "https://acme-v02.api.letsencrypt.org/directory"
+          challenge = "dns-01"
+          provider = "cloudflare"
+          secret = "%{env:CLOUDFLARE_SECRET}%"
+          contact = ["postmaster@%{DEFAULT_DOMAIN}%"]
+          domains = ["${mail_domain}"]
+          cache = "%{BASE_PATH}%/etc/acme"
+          renew-before = "30d"
+
+          [session.extensions]
+          pipelining = true
+          chunking = true
+          requiretls = true
+          no-soliciting = ""
+          dsn = [ { if = "!is_empty(authenticated_as)", then = true},
+                  { else = false } ]
+          future-release = [ { if = "!is_empty(authenticated_as)", then = "7d"},
+                            { else = false } ]
+          deliver-by = [ { if = "!is_empty(authenticated_as)", then = "15d"},
+                        { else = false } ]
+          mt-priority = [ { if = "!is_empty(authenticated_as)", then = "mixer"},
+                          { else = false } ]
+          vrfy = [ { if = "!is_empty(authenticated_as)", then = true},
+                          { else = false } ]
+          expn = [ { if = "!is_empty(authenticated_as)", then = true},
+                          { else = false } ]            
+
+          [session.rcpt]
+          directory = "ldap"   
+          subaddressing = true
+
+          [queue.outbound]
+          ip-strategy = "ipv6_then_ipv4"
+
+    - path: /etc/containers/systemd/authentik-ldap-outpost.image
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Wants=network-online.target
+          After=network-online.target
+
+          [Image]
+          Image=ghcr.io/goauthentik/ldap:${authentik_version}
+    - path: /etc/containers/systemd/authentik-ldap.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=authentik LDAP outpost
+          After=network-online.target local-fs.target vault-agent.service
+
+          [Container]
+          Image=authentik-ldap-outpost.image
+          Pull=newer
+          LogDriver=journald
+
+          # metrics
+          PublishPort=9300:9300
+
+          Environment=AUTHENTIK_HOST=${authentik_host}
+          Environment=AUTHENTIK_INSECURE=false
+          Environment=AUTHENTIK_TOKEN=file:///secrets/token
+
+          Volume=/var/containers/secrets/authentik_ldap:/secrets:z,idmap
+          Volume=/var/containers/secrets/tls/this/root_ca.pem:/etc/ssl/certs/root_ca.pem:z,idmap,ro
+
+          Network=container.network
+
+          [Service]
+          Restart=always
+          RestartSec=1s
+          RestartSteps=10
+          RestartMaxDelaySec=5m
 
           [Service]
           Restart=always
 
           [Install]
           WantedBy=multi-user.target default.target
-    - path: /etc/containers/systemd/vault.network
-      mode: 0644
+    - path: /etc/monitoring/alloy.d/engelsystem.alloy
       contents:
         inline: |
-          [Network]
-          IPv6=true
-    - path: /etc/containers/systemd/docker-mailserver.container
-      mode: 0644
-      contents:
-        inline: |
-          [Unit]
-          Description=dockerized mailserver
-          After=network-online.target local-fs.target
-
-          [Container]
-          Image=ghcr.io/docker-mailserver/docker-mailserver:latest
-          # should be replaced by LogDriver= when this is shipped
-          PodmanArgs=--log-driver journald
-
-
-          PublishPort=25:25
-          PublishPort=143:143
-          PublishPort=587:587
-          PublishPort=993:993
-          PublishPort=465:465
-          PublishPort=11334:11334
-
-          AddCapability=NET_ADMIN
-
-          EnvironmentFile=/var/containers/vault/secrets/rendered/ldapauth.env
-          EnvironmentFile=/var/containers/dms/base.env
-          EnvironmentFile=/var/containers/dms/postfix.env
-          EnvironmentFile=/var/containers/dms/dovecot.env
-          EnvironmentFile=/var/containers/dms/SASLAUTHD.env
-
-          Volume=/var/containers/dms/mail-data:/var/mail:Z
-          Volume=/var/containers/dms/mail-state:/var/mail-state:Z
-          Volume=/var/containers/dms/mail-logs:/var/log/mail:Z
-          Volume=/var/containers/dms/config:/tmp/docker-mailserver:Z
-          Volume=/var/containers/dnsrobocert/cert:/etc/letsencrypt:z
-
-          Network=dms.network
-
-          [Service]
-          Restart=always
-
-          [Install]
-          WantedBy=multi-user.target default.target
-    - path: /etc/containers/systemd/dnsrobocert.container
-      mode: 0644
-      contents: 
-        inline: |
-          [Unit]
-          Description=DNS Robocert
-          After=network-online.target local-fs.target
-
-          [Container]
-          Image=docker.io/adferrand/dnsrobocert:latest
-          # should be replaced by LogDriver= when this is shipped
-          PodmanArgs=--log-driver journald
-
-          Volume=//var/containers/vault/secrets/rendered/dnsrobocert:/etc/dnsrobocert:z
-          Volume=/var/containers/dnsrobocert/cert:/etc/letsencrypt:z
-
-          Network=dms.network
-
-          [Service]
-          Restart=always
-
-          [Install]
-          WantedBy=multi-user.target default.target
-    - path: /etc/containers/systemd/dms.network
-      mode: 0644
-      contents:
-        inline: |
-          [Network]
-          IPv6=true
-systemd:
-  units:
-    # Installing layered packages with rpm-ostree
-    - name: rpm-ostree-install.service
-      enabled: true
-      contents: |
-        [Unit]
-        Description=Layer packages with rpm-ostree
-        Wants=network-online.target
-        After=network-online.target
-        # We run before `zincati.service` to avoid conflicting rpm-ostree
-        # transactions.
-        Before=zincati.service
-        ConditionPathExists=!/var/lib/%N.stamp
-
-        [Service]
-        Type=oneshot
-        RemainAfterExit=yes
-        # `--allow-inactive` ensures that rpm-ostree does not return an error
-        # if the package is already installed. This is useful if the package is
-        # added to the root image in a future Fedora CoreOS release as it will
-        # prevent the service from failing.
-        ExecStart=/usr/bin/rpm-ostree install --apply-live --allow-inactive xe-guest-utilities-latest
-        ExecStart=/bin/touch /var/lib/%N.stamp
-        ExecStart=/bin/systemctl enable --now xe-linux-distribution.service
-
-        [Install]
-        WantedBy=multi-user.target
-    - name: vault-unwrap-token.service
-      enabled: true
-      contents: |
-        [Unit]
-        Description=Unwrap token before startin vault agent
-        Wants=network-online.target
-        After=network-online.target
-        Before=vault-agent.service
-        ConditionPathExists=/var/containers/vault/secrets/wrapped_secretid
-
-        [Service]
-        Type=oneshot
-        RemainAfterExit=true
-
-        [Install]
-        RequiredBy=vault-agent.service
+          prometheus.scrape "engelsystem" {
+            forward_to = [
+              prometheus.relabel.replace_instance.receiver,
+            ]
+            scheme = "http"
+            targets = [
+              {
+                "__address__" = "systemd-es-server:5080",
+              },
+            ]
+            # metrics_path = "/metrics"
+            # basic_auth {
+            #   username = "pretix"
+            #   password_file = "/secrets/pretix_password"
+            # }
+          }
