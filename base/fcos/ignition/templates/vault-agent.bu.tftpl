@@ -105,8 +105,8 @@ storage:
           Image=docker.io/hashicorp/vault:${vault_version}
           Pull=newer
           AutoUpdate=registry
-          Entrypoint=
-          Exec=vault agent -config=/config/config.d/
+          Entrypoint=vault
+          Exec=agent -config=/config/config.d/
           PodmanArgs=--image-volume=ignore
           Notify=true
           LogDriver=journald
