@@ -36,6 +36,14 @@ No resources.
 | <a name="input_mail_from"></a> [mail\_from](#input\_mail\_from) | Address to send mail from | `string` | n/a | yes |
 | <a name="input_matchbox_http_endpoint"></a> [matchbox\_http\_endpoint](#input\_matchbox\_http\_endpoint) | matchbox http endpoint | `string` | n/a | yes |
 | <a name="input_monitoring_ingress_url"></a> [monitoring\_ingress\_url](#input\_monitoring\_ingress\_url) | Base URL of Loki/Prometheus where logs and metrics will be pushed to (e.g. https://monitoring-ingress.example.com) | `string` | n/a | yes |
+| <a name="input_oidc_authorization_endpoint"></a> [oidc\_authorization\_endpoint](#input\_oidc\_authorization\_endpoint) | OIDC Authorization Endpoint URL | `string` | n/a | yes |
+| <a name="input_oidc_end_session_endpoint"></a> [oidc\_end\_session\_endpoint](#input\_oidc\_end\_session\_endpoint) | OIDC End Session Endpoint | `string` | n/a | yes |
+| <a name="input_oidc_issuer"></a> [oidc\_issuer](#input\_oidc\_issuer) | OIDC Issuer URL | `string` | n/a | yes |
+| <a name="input_oidc_jwks_uri"></a> [oidc\_jwks\_uri](#input\_oidc\_jwks\_uri) | OIDC JWKS URL | `string` | n/a | yes |
+| <a name="input_oidc_scopes"></a> [oidc\_scopes](#input\_oidc\_scopes) | OIDC Scopes | `list(string)` | n/a | yes |
+| <a name="input_oidc_title"></a> [oidc\_title](#input\_oidc\_title) | label on the login button | `string` | n/a | yes |
+| <a name="input_oidc_token_endpoint"></a> [oidc\_token\_endpoint](#input\_oidc\_token\_endpoint) | OIDC Token Endpont URL | `string` | n/a | yes |
+| <a name="input_oidc_userinfo_endpoint"></a> [oidc\_userinfo\_endpoint](#input\_oidc\_userinfo\_endpoint) | OIDC Userinfo Endpoint URL | `string` | n/a | yes |
 | <a name="input_public_fqdn"></a> [public\_fqdn](#input\_public\_fqdn) | Public FQDN | `string` | n/a | yes |
 | <a name="input_root_ca_pem"></a> [root\_ca\_pem](#input\_root\_ca\_pem) | Private Root Certificate (PEM) | `string` | n/a | yes |
 | <a name="input_service_fqdn"></a> [service\_fqdn](#input\_service\_fqdn) | A FQDN defining the pretix service | `string` | n/a | yes |
@@ -78,6 +86,22 @@ module "" {
   matchbox_http_endpoint =
   /* Base URL of Loki/Prometheus where logs and metrics will be pushed to (e.g. https://monitoring-ingress.example.com) (required) */
   monitoring_ingress_url =
+  /* OIDC Authorization Endpoint URL (required) */
+  oidc_authorization_endpoint =
+  /* OIDC End Session Endpoint (required) */
+  oidc_end_session_endpoint =
+  /* OIDC Issuer URL (required) */
+  oidc_issuer =
+  /* OIDC JWKS URL (required) */
+  oidc_jwks_uri =
+  /* OIDC Scopes (required) */
+  oidc_scopes =
+  /* label on the login button (required) */
+  oidc_title =
+  /* OIDC Token Endpont URL (required) */
+  oidc_token_endpoint =
+  /* OIDC Userinfo Endpoint URL (required) */
+  oidc_userinfo_endpoint =
   /* Public FQDN (required) */
   public_fqdn =
   /* Private Root Certificate (PEM) (required) */
@@ -117,6 +141,14 @@ module "" {
   mail_from =
   matchbox_http_endpoint =
   monitoring_ingress_url =
+  oidc_authorization_endpoint =
+  oidc_end_session_endpoint =
+  oidc_issuer =
+  oidc_jwks_uri =
+  oidc_scopes =
+  oidc_title =
+  oidc_token_endpoint =
+  oidc_userinfo_endpoint =
   public_fqdn =
   root_ca_pem =
   service_fqdn =

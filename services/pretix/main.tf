@@ -25,7 +25,15 @@ module "pretix" {
       # https://hub.docker.com/_/postgres
       postgres_image = "docker.io/library/postgres:16-alpine"
       # https://hub.docker.com/r/valkey/valkey
-      valkey_image = "docker.io/valkey/valkey:7.2.6"
+      valkey_image                = "docker.io/valkey/valkey:7.2.6"
+      oidc_title                  = var.oidc_title
+      oidc_issuer                 = var.oidc_issuer
+      oidc_authorization_endpoint = var.oidc_authorization_endpoint
+      oidc_token_endpoint         = var.oidc_token_endpoint
+      oidc_userinfo_endpoint      = var.oidc_userinfo_endpoint
+      oidc_end_session_endpoint   = var.oidc_end_session_endpoint
+      oidc_jwks_uri               = var.oidc_jwks_uri
+      oidc_scopes                 = join(",", var.oidc_scopes)
     }),
     templatefile("${path.module}/caddy.bu", {
       fqdn            = var.fqdn

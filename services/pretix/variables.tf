@@ -104,3 +104,42 @@ variable "currency" {
   description = "currency (eg. EUR, USD etc.)"
 }
 
+variable "oidc_title" {
+  type        = string
+  description = "label on the login button"
+}
+
+variable "oidc_issuer" {
+  type        = string
+  description = "OIDC Issuer URL"
+}
+
+variable "oidc_authorization_endpoint" {
+  type        = string
+  description = "OIDC Authorization Endpoint URL"
+}
+
+variable "oidc_token_endpoint" {
+  type        = string
+  description = "OIDC Token Endpont URL"
+}
+
+variable "oidc_userinfo_endpoint" {
+  type        = string
+  description = "OIDC Userinfo Endpoint URL"
+}
+
+variable "oidc_end_session_endpoint" {
+  type        = string
+  description = "OIDC End Session Endpoint"
+}
+
+variable "oidc_jwks_uri" {
+  type        = string
+  description = "OIDC JWKS URL"
+}
+
+variable "oidc_scopes" {
+  type        = list(string)
+  description = "OIDC Scopes"
+}
