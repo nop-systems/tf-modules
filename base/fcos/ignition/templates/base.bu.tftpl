@@ -46,7 +46,7 @@ storage:
           # 0=eui64
           ipv6.addr-gen-mode=0
     # use mirror.gcr.io to avoid docker.io rate limiting
-    - path: /etc/containers/registries.conf.d/dockerio-gcr-mirror.toml
+    - path: /etc/containers/registries.conf.d/800-dockerio-gcr-mirror.conf
       mode: 0644
       contents:
         inline: |
