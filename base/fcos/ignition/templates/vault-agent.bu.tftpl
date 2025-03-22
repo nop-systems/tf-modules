@@ -5,6 +5,7 @@ storage:
   directories:
     - path: /var/containers/secrets
     - path: /etc/vault-agent/config.d
+    - path: /etc/containers/systemd/vault-agent.container.d
     - path: /var/containers/vault-agent/token
       mode: 0700
     - path: /etc/vault-agent/unwrapper
@@ -138,8 +139,8 @@ storage:
           [Container]
           Image=docker.io/hashicorp/vault:${vault_version}
           Pull=newer
-          Entrypoint=
-          Exec=sh -c 'if secret_id=$(vault unwrap --field secret_id); then echo "$secret_id" > /vault/approle/secretid; fi'
+          Entrypoint=sh
+          Exec=-c 'if secret_id=$(vault unwrap --field secret_id); then builtin echo "$secret_id" > /vault/approle/secretid; fi'
           PodmanArgs=--image-volume=ignore
           LogDriver=journald
 
