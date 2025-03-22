@@ -33,7 +33,6 @@ storage:
             destination = "/vault/secrets/tls/${fqdn}/root_ca.pem"
             error_on_missing_key = true
           }
-
     - path: /etc/vault-agent/config.d/pki-admin.hcl
       mode: 0644
       overwrite: true
