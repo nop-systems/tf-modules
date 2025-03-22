@@ -51,15 +51,16 @@ resource "vault_generic_endpoint" "ssh_host_ca" {
 #####
 
 resource "vault_ssh_secret_backend_role" "host-entity-metadata" {
-  name                    = "entity-metadata"
-  backend                 = vault_mount.ssh_host_signer.path
-  key_type                = "ca"
-  allow_host_certificates = true
-  allowed_domains         = "{{identity.entity.metadata.fqdn}},{{identity.entity.metdata.cnames}}"
-  allow_bare_domains      = true
-  allow_subdomains        = true
-  max_ttl                 = "21600" # 6h
-  ttl                     = "21600" # 6h
+  name                     = "entity-metadata"
+  backend                  = vault_mount.ssh_host_signer.path
+  key_type                 = "ca"
+  allow_host_certificates  = true
+  allowed_domains          = "{{identity.entity.metadata.fqdn}}"
+  allowed_domains_template = true
+  allow_bare_domains       = true
+  allow_subdomains         = true
+  max_ttl                  = "21600" # 6h
+  ttl                      = "21600" # 6h
 }
 
 resource "vault_ssh_secret_backend_role" "client" {
