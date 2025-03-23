@@ -1,5 +1,5 @@
 module "pretix" {
-  source = "git@github.com:nop-systems/tf-modules.git//base/fcos/stack?ref=fcos/v0.6.0"
+  source = "git@github.com:nop-systems/tf-modules.git//base/fcos/stack?ref=fcos/v0.6.4"
   # source = "../../base/fcos/stack"
 
   fqdn      = var.fqdn
@@ -21,11 +21,19 @@ module "pretix" {
       timezone            = var.timezone
       currency            = var.currency
       # https://hub.docker.com/r/pretix/standalone
-      pretix_image = "docker.io/pretix/standalone:2024.10"
+      pretix_image = "docker.io/pretix/standalone:2025.2"
       # https://hub.docker.com/_/postgres
       postgres_image = "docker.io/library/postgres:16-alpine"
       # https://hub.docker.com/r/valkey/valkey
-      valkey_image = "docker.io/valkey/valkey:7.2.6"
+      valkey_image                = "docker.io/valkey/valkey:8.0"
+      oidc_title                  = var.oidc_title
+      oidc_issuer                 = var.oidc_issuer
+      oidc_authorization_endpoint = var.oidc_authorization_endpoint
+      oidc_token_endpoint         = var.oidc_token_endpoint
+      oidc_userinfo_endpoint      = var.oidc_userinfo_endpoint
+      oidc_end_session_endpoint   = var.oidc_end_session_endpoint
+      oidc_jwks_uri               = var.oidc_jwks_uri
+      oidc_scopes                 = join(",", var.oidc_scopes)
     }),
     templatefile("${path.module}/caddy.bu", {
       fqdn            = var.fqdn
@@ -33,7 +41,7 @@ module "pretix" {
       trusted_proxies = join(" ", var.trusted_proxies)
       service_fqdn    = var.service_fqdn
       # https://hub.docker.com/_/caddy
-      caddy_image = "docker.io/library/caddy:2.8"
+      caddy_image = "docker.io/library/caddy:2.9"
     })
   ]
 

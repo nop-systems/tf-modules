@@ -30,12 +30,9 @@ storage:
         inline: |
           [Pod]
           PodmanArgs=--userns=auto:size=65536 --exit-policy=continue
-
           Volume=/var/containers/pretix/data:/data:Z,U
-
           Network=container.network
           Network=pretix.network
-
     - path: /var/containers/build/pretix/Containerfile
       mode: 0644
       overwrite: true
@@ -44,6 +41,7 @@ storage:
           FROM ${pretix_image}
           USER root
           RUN pip3 install pretix-passbook
+          RUN pip3 install pretix-oidc
           USER pretixuser
           RUN cd /pretix/src && make production
     - path: /etc/containers/systemd/pretix.build
@@ -53,8 +51,8 @@ storage:
           [Build]
           # Tag the image to be built
           ImageTag=localhost/pretix
+          Pull=newer
           File=/var/containers/build/pretix/Containerfile
-
     - path: /etc/containers/systemd/pretix.container
       mode: 0644
       contents:
@@ -67,11 +65,9 @@ storage:
           [Container]
           Image=pretix.build
           Pull=newer
-          AutoUpdate=registry
           LogDriver=journald
           Notify=healthy
           # UserNS=auto:size=65536
-
 
           Volume=/var/containers/secrets/pretix:/etc/pretix:z,idmap,ro
 
@@ -103,7 +99,6 @@ storage:
           [Container]
           Image=pretix.build
           Pull=newer
-          AutoUpdate=registry
           LogDriver=journald
 
           Volume=/var/containers/secrets/pretix:/etc/pretix:z,idmap,ro
@@ -172,6 +167,7 @@ storage:
           Image=${valkey_image}
 
           Pull=newer
+          AutoUpdate=registry
           LogDriver=journald
           UserNS=auto
           Notify=healthy
@@ -255,10 +251,25 @@ storage:
               passphrase={{ .Data.data.password }}
               {{- end }}
 
-
               [celery]
               backend=redis://systemd-valkey/1
               broker=redis://systemd-valkey/2
+
+              [oidc]
+              title=${oidc_title}
+              issuer=${oidc_issuer}
+              authorization_endpoint=${oidc_authorization_endpoint}
+              token_endpoint=${oidc_token_endpoint}
+              userinfo_endpoint=${oidc_userinfo_endpoint}
+              end_session_endpoint=${oidc_end_session_endpoint}
+              jwks_uri=${oidc_jwks_uri}
+              {{- with secret "kv/data/service/${ service_fqdn }/oidc" }}
+              client_id={{ .Data.data.client_id }}
+              client_secret={{ .Data.data.client_secret }}
+              {{- end }}
+              scopes=${oidc_scopes}
+              unique_attribute=sub
+
               EOT
           }
 
