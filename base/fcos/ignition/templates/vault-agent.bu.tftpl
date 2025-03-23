@@ -25,7 +25,25 @@ storage:
     - path: /etc/vault-agent/unwrapper/unwrap-secretid.sh
       mode: 0755
       contents:
-        source: data:${filebase64("${path.module()}/templates/files/unwrap-secretid.sh")}
+        inline: |
+          #!/bin/sh
+
+          set -eux
+
+          OUTPUT_FILE=$1
+
+          if test -z "$OUTPUT_FILE"; then
+            echo "No output file given"
+            exit 1
+          fi
+
+          if secret_id=$(vault unwrap --field secret_id); then
+            cat >"$OUTPUT_FILE" <<EOT
+          ${secret_id}
+          EOT
+          else
+            echo "=> No secret_id obtained"
+          fi
     - path: /etc/vault-agent/config.d/agent.hcl
       mode: 0644
       overwrite: true
