@@ -1,6 +1,6 @@
 module "hello-world" {
-  source = "git@github.com:nop-systems/tf-modules.git//base/fcos/stack?ref=fcos/v0.6.3"
-  # source = "../../base/fcos/stack"
+  #source = "git@github.com:nop-systems/tf-modules.git//base/fcos/stack?ref=fcos/v0.6.3"
+  source = "../../base/fcos/stack"
 
   fqdn      = var.fqdn
   desc      = "hello world"
