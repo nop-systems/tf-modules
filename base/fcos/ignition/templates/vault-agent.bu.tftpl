@@ -25,7 +25,7 @@ storage:
     - path: /etc/vault-agent/unwrapper/unwrap-secretid.sh
       mode: 0755
       contents:
-        source: data:{filebase64('${path.module()}/templates/files/unwrap-secretid.sh')}
+        source: data:${filebase64('${path.module()}/templates/files/unwrap-secretid.sh')}
     - path: /etc/vault-agent/config.d/agent.hcl
       mode: 0644
       overwrite: true
