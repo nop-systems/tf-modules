@@ -27,7 +27,7 @@ storage:
           template {
             contents = <<-EOT
               {{- with $pubKey := file "/run/ssh_host_ed25519_key.pub" | printf "public_key=%s" -}}
-              {{- with secret "ssh-host/sign/entity-metadata" $pubKey "valid_principals=hello-world.base.panke.studis-bht.de" "cert_type=host" -}}
+              {{- with secret "ssh-host/sign/entity-metadata" $pubKey "valid_principals=${fqdn}" "cert_type=host" -}}
               {{- .Data.signed_key -}}
               {{- end }}{{ end }}
             EOT
