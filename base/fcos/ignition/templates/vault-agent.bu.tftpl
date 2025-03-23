@@ -22,6 +22,10 @@ storage:
         inline: |
           VAULT_TOKEN=${vault_wrapped_secretid}
           VAULT_ADDR=${vault_url}
+    - path: /etc/vault-agent/unwrapper/unwrap-secretid.sh
+      mode: 0755
+      contents:
+        source: data:{filebase64('${path.module}/templates/files/unwrap-secretid.sh')}
     - path: /etc/vault-agent/config.d/agent.hcl
       mode: 0644
       overwrite: true
@@ -139,12 +143,13 @@ storage:
           [Container]
           Image=docker.io/hashicorp/vault:${vault_version}
           Pull=newer
-          Entrypoint=sh
-          Exec=-c 'if secret_id=$(vault unwrap --field secret_id); then builtin echo "$secret_id" > /vault/approle/secretid; fi'
+          Entrypoint=/usr/local/bin/unwrap-secretid.sh
+          Exec=/vault/approle/secretid
           PodmanArgs=--image-volume=ignore
           LogDriver=journald
 
           EnvironmentFile=/etc/vault-agent/unwrapper/vault-unwrap-secretid.env
+          Volume=/etc/vault-agent/unwrapper/unwrap-secretid.sh:/usr/local/bin/unwrap-secretid.sh:Z,U,ro
 
           AddCapability=IPC_LOCK
 
