@@ -11,7 +11,7 @@ fi
 
 if secret_id=$(vault unwrap --field secret_id); then
   cat >"$OUTPUT_FILE" <<EOT
-${secret_id}
+$secret_id
 EOT
 else
   echo "=> No secret_id obtained"
