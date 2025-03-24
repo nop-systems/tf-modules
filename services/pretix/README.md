@@ -47,7 +47,7 @@ No resources.
 | <a name="input_public_fqdn"></a> [public\_fqdn](#input\_public\_fqdn) | Public FQDN | `string` | n/a | yes |
 | <a name="input_root_ca_pem"></a> [root\_ca\_pem](#input\_root\_ca\_pem) | Private Root Certificate (PEM) | `string` | n/a | yes |
 | <a name="input_service_fqdn"></a> [service\_fqdn](#input\_service\_fqdn) | A FQDN defining the pretix service | `string` | n/a | yes |
-| <a name="input_ssh_authorized_keys"></a> [ssh\_authorized\_keys](#input\_ssh\_authorized\_keys) | SSH authorized keys for VM | `list(string)` | n/a | yes |
+| <a name="input_ssh_authorized_keys"></a> [ssh\_authorized\_keys](#input\_ssh\_authorized\_keys) | SSH authorized keys for VM | `list(string)` | `[]` | no |
 | <a name="input_timezone"></a> [timezone](#input\_timezone) | IANA timezone | `string` | n/a | yes |
 | <a name="input_trusted_proxies"></a> [trusted\_proxies](#input\_trusted\_proxies) | List of CIDRs that proxy headers should be accepted from | `list(string)` | n/a | yes |
 | <a name="input_vault_url"></a> [vault\_url](#input\_vault\_url) | Vault URL | `string` | n/a | yes |
@@ -108,8 +108,6 @@ module "" {
   root_ca_pem =
   /* A FQDN defining the pretix service (required) */
   service_fqdn =
-  /* SSH authorized keys for VM (required) */
-  ssh_authorized_keys =
   /* IANA timezone (required) */
   timezone =
   /* List of CIDRs that proxy headers should be accepted from (required) */
@@ -124,6 +122,8 @@ module "" {
   xo_template_id =
 
   
+  /* SSH authorized keys for VM (optional) */
+  # ssh_authorized_keys = []
   /* List of additional tags that should be attached to the VM (optional) */
   # xo_tags = []
 }
@@ -152,7 +152,6 @@ module "" {
   public_fqdn =
   root_ca_pem =
   service_fqdn =
-  ssh_authorized_keys =
   timezone =
   trusted_proxies =
   vault_url =

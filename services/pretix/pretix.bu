@@ -215,6 +215,7 @@ storage:
               currency=${ currency }
               datadir=/data
               registration=off
+              auth_backends=pretix.base.auth.NativeAuthBackend,pretix_oidc.auth.OIDCAuthBackend
 
               [locale]
               default=${ language }

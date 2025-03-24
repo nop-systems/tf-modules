@@ -77,6 +77,7 @@ variable "monitoring_ingress_url" {
 variable "ssh_authorized_keys" {
   type        = list(string)
   description = "SSH authorized keys for VM"
+  default     = []
 }
 
 variable "mail_from" {
