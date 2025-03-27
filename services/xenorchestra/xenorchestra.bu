@@ -4,7 +4,7 @@ version: "1.5.0"
 storage:
   directories:
     - path: /var/containers/xenorchestra/data
-    - path: /var/containers/redis/data
+    - path: /var/containers/valkey/data
   files:
     - path: /etc/containers/systemd/xenorchestra.container
       mode: 0644
@@ -15,7 +15,7 @@ storage:
           After=network-online.target local-fs.target
 
           [Container]
-          Image=docker.io/ezka77/xen-orchestra-ce:latest
+          Image=${xenorchestra_image}
 
           Pull=newer
           AutoUpdate=registry
@@ -27,7 +27,7 @@ storage:
           Environment=XO_HTTPS_LISTEN_PORT=8443
           Environment=XO_HTTPS_LISTEN_CERT=/tls/fullchain.pem
           Environment=XO_HTTPS_LISTEN_KEY=/tls/privkey.pem
-          Environment=XO_REDIS_URI=redis://systemd-redis:6379/0
+          Environment=XO_REDIS_URI=redis://systemd-valkey:6379/0
           Environment=XOA_PLAN=5
           Environment=NODE_ENV=production
           Environment=DEBUG=xo:main
@@ -46,17 +46,17 @@ storage:
           Restart=always
 
           [Install]
-          WantedBy=multi-user.target default.target
-    - path: /etc/containers/systemd/redis.container
+          WantedBy=default.target
+    - path: /etc/containers/systemd/valkey.container
       mode: 0644
       contents:
         inline: |
           [Unit]
-          Description=Redis
+          Description=Valkey Cache
           After=network-online.target local-fs.target vault-agent.service
 
           [Container]
-          Image=docker.io/library/redis:alpine
+          Image=${valkey_image}
           Exec=--appendonly yes
 
           Pull=newer
@@ -65,9 +65,9 @@ storage:
           UserNS=auto
           Notify=healthy
 
-          Volume=/var/containers/redis/data:/data:Z,U
+          Volume=/var/containers/valkey/data:/data:Z,U
 
-          HealthCmd=redis-cli ping | grep PONG
+          HealthCmd=valkey-cli ping | grep PONG
           HealthInterval=30s
           HealthRetries=5
           HealthStartPeriod=20s
@@ -79,7 +79,7 @@ storage:
           Restart=always
 
           [Install]
-          WantedBy=multi-user.target default.target
+          WantedBy=default.target
     - path: /etc/containers/systemd/authentik-ldap.container
       mode: 0644
       contents:
@@ -89,7 +89,7 @@ storage:
           After=network-online.target local-fs.target vault-agent.service
 
           [Container]
-          Image=ghcr.io/goauthentik/ldap:${authentik_version}
+          Image=${authentik_ldap_image}
 
           Pull=newer
           AutoUpdate=registry
@@ -118,8 +118,8 @@ storage:
           Restart=always
 
           [Install]
-          WantedBy=multi-user.target default.target
-    - path: /var/containers/vault-agent/config.d/authentik-ldap.hcl
+          WantedBy=default.target
+    - path: /etc/vault-agent/config.d/authentik-ldap.hcl
       mode: 0644
       overwrite: true
       contents:
@@ -127,6 +127,34 @@ storage:
           template {
             contents = "{{ with secret \"kv/data/service/${ service_fqdn }/authentik_ldap\" }}{{ .Data.data.token }}{{ end }}"
             destination = "/vault/secrets/authentik_ldap/token"
+          }
+    - path: /etc/monitoring/alloy.d/xenorchestra.alloy
+      contents:
+        inline: |
+          prometheus.scrape "postgres" {
+            forward_to = [prometheus.relabel.replace_instance.receiver]
+            targets = prometheus.exporter.postgres.pretix.targets
+          }
+
+          prometheus.exporter.redis "pretix" {
+              redis_addr = "systemd-valkey:6379"
+          }
+
+          prometheus.scrape "valkey" {
+            forward_to = [prometheus.relabel.replace_instance.receiver]
+            targets = prometheus.exporter.redis.pretix.targets
+          }
+
+          prometheus.scrape "authentik" {
+            forward_to = [
+              prometheus.relabel.replace_instance.receiver,
+            ]
+            targets = [
+              {
+                "__address__" = "systemd-authentik-ldap:9300",
+              },
+            ]
+            metrics_path = "/metrics"
           }
 systemd:
   units:
