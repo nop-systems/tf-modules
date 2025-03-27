@@ -15,7 +15,7 @@ No providers.
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_fcos"></a> [fcos](#module\_fcos) | git@github.com:nop-systems/tf-modules.git//base/fcos/stack | fcos/v0.5.3 |
+| <a name="module_fcos"></a> [fcos](#module\_fcos) | git@github.com:nop-systems/tf-modules.git//base/fcos/stack | fcos/v0.6.4 |
 | <a name="module_service_cname_record"></a> [service\_cname\_record](#module\_service\_cname\_record) | git@github.com:nop-systems/tf-modules.git//base/dns-record | dns-record/v0.2.0 |
 
 ## Resources
@@ -30,6 +30,7 @@ No resources.
 | <a name="input_cloudflare_zone_id"></a> [cloudflare\_zone\_id](#input\_cloudflare\_zone\_id) | Cloudflare Zone ID | `string` | n/a | yes |
 | <a name="input_fqdn"></a> [fqdn](#input\_fqdn) | Fully Qualified Domain Name of VM | `string` | n/a | yes |
 | <a name="input_matchbox_http_endpoint"></a> [matchbox\_http\_endpoint](#input\_matchbox\_http\_endpoint) | matchbox http endpoint | `string` | n/a | yes |
+| <a name="input_monitoring_ingress_url"></a> [monitoring\_ingress\_url](#input\_monitoring\_ingress\_url) | Base URL of Loki/Prometheus where logs and metrics will be pushed to (e.g. https://monitoring-ingress.example.com) | `string` | n/a | yes |
 | <a name="input_root_ca_pem"></a> [root\_ca\_pem](#input\_root\_ca\_pem) | Private Root Certificate (PEM) | `string` | n/a | yes |
 | <a name="input_service_fqdn"></a> [service\_fqdn](#input\_service\_fqdn) | A FQDN defining the service, independent of the host | `string` | n/a | yes |
 | <a name="input_trusted_proxy_cidrs"></a> [trusted\_proxy\_cidrs](#input\_trusted\_proxy\_cidrs) | List of CIDRs that proxy headers should be accepted from | `list(string)` | n/a | yes |
@@ -57,6 +58,8 @@ module "" {
   fqdn =
   /* matchbox http endpoint (required) */
   matchbox_http_endpoint =
+  /* Base URL of Loki/Prometheus where logs and metrics will be pushed to (e.g. https://monitoring-ingress.example.com) (required) */
+  monitoring_ingress_url =
   /* Private Root Certificate (PEM) (required) */
   root_ca_pem =
   /* A FQDN defining the service, independent of the host (required) */
@@ -84,6 +87,7 @@ module "" {
   cloudflare_zone_id =
   fqdn =
   matchbox_http_endpoint =
+  monitoring_ingress_url =
   root_ca_pem =
   service_fqdn =
   trusted_proxy_cidrs =
