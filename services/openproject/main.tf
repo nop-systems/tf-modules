@@ -1,5 +1,5 @@
 module "fcos" {
-  source = "git@github.com:nop-systems/tf-modules.git//base/fcos/stack?ref=fcos/v0.2.6"
+  source = "git@github.com:nop-systems/tf-modules.git//base/fcos/stack?ref=fcos/v0.6.4"
   # source = "../../base/fcos/stack"
 
   fqdn      = var.fqdn
@@ -10,18 +10,23 @@ module "fcos" {
   disk_size = 40
 
   butane_snippets = [templatefile("${path.module}/openproject.bu", {
-    acme_ca             = var.acme_ca
-    fqdn                = var.fqdn
-    service_fqdn        = var.service_fqdn
-    public_fqdn         = var.public_fqdn
-    default_language    = var.default_language
-    trusted_proxies     = join(" ", var.trusted_proxies)
-    authentik_host      = var.authentik_host
-    openproject_version = "14.2-slim"
-    caddy_version       = "2.8"
-    postgres_version    = "16-alpine"
-    memcached_version   = "1.6.28-alpine"
-    authentik_version   = "2024.8.3"
+    acme_ca          = var.acme_ca
+    fqdn             = var.fqdn
+    service_fqdn     = var.service_fqdn
+    public_fqdn      = var.public_fqdn
+    default_language = var.default_language
+    trusted_proxies  = join(" ", var.trusted_proxies)
+    authentik_host   = var.authentik_host
+    # https://hub.docker.com/r/openproject/openproject
+    openproject_version = "15.4-slim"
+    # https://hub.docker.com/_/caddy
+    caddy_version = "2.9"
+    # https://hub.docker.com/_/postgres
+    postgres_version = "16-alpine"
+    # https://hub.docker.com/_/memcached
+    memcached_version = "1.6-alpine"
+    # https://github.com/goauthentik/authentik/pkgs/container/ldap
+    authentik_version = "2025.2"
   })]
 
   cloudflare_zone_id     = var.cloudflare_zone_id
@@ -32,13 +37,14 @@ module "fcos" {
   root_ca_pem            = var.root_ca_pem
   matchbox_http_endpoint = var.matchbox_http_endpoint
   services               = [var.service_fqdn]
+  admin_pki_mount        = var.admin_pki_mount
+  monitoring_ingress_url = var.monitoring_ingress_url
 }
 
 module "service_cname_record" {
-  source  = "git@github.com:nop-systems/tf-modules.git//base/dns-record?ref=dns-record/v0.1.0"
+  source  = "git@github.com:nop-systems/tf-modules.git//base/dns-record?ref=dns-record/v0.2.0"
   name    = var.service_fqdn       # DNS record name
   type    = "CNAME"                # record type (e.g. A, AAAA)
   value   = var.fqdn               # record value (e.g. IP address)
   zone_id = var.cloudflare_zone_id # Cloudflare Zone ID
 }
-
