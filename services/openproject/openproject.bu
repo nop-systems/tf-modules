@@ -34,7 +34,7 @@ storage:
 
           # data and assets are not swapped, this is copied from the docker-compose.yml
           Volume=/var/containers/openproject/data:/var/openproject/assets:Z,U
-          Volume=/var/containers/secrets/openproject/openproject-token.pub:/app/.openproject-token.pub:Z,U,ro
+          Volume=/var/containers/secrets/openproject/openproject-token.pub:/app/.openproject-token.pub:Z,idmap,ro
     - path: /var/containers/openproject/openproject.env
       mode: 0644
       overwrite: true
@@ -90,7 +90,7 @@ storage:
           RestartMaxDelaySec=5m
 
           [Install]
-          WantedBy=multi-user.target default.target
+          WantedBy=default.target
     - path: /etc/containers/systemd/openproject-seeder.container
       mode: 0644
       contents:
@@ -120,8 +120,7 @@ storage:
           RestartMaxDelaySec=5m
 
           [Install]
-          WantedBy=multi-user.target default.target
-
+          WantedBy=default.target
     - path: /etc/containers/systemd/openproject-worker.container
       mode: 0644
       contents:
@@ -152,8 +151,7 @@ storage:
           RestartMaxDelaySec=5m
 
           [Install]
-          WantedBy=multi-user.target default.target
-
+          WantedBy=default.target
     - path: /etc/containers/systemd/openproject-cron.container
       mode: 0644
       contents:
@@ -185,7 +183,7 @@ storage:
           RestartMaxDelaySec=5m
 
           [Install]
-          WantedBy=multi-user.target default.target
+          WantedBy=default.target
     # - path: /etc/containers/systemd/openproject-public.volume
     #   mode: 0644
     #   contents:
@@ -225,7 +223,7 @@ storage:
           RestartMaxDelaySec=5m
 
           [Install]
-          WantedBy=multi-user.target default.target
+          WantedBy=default.target
     - path: /var/containers/caddy/Caddyfile
       mode: 0644
       overwrite: true
@@ -261,7 +259,6 @@ storage:
             reverse_proxy http://systemd-openproject:8080
             log
           }
-
     - path: /etc/containers/systemd/postgres.container
       mode: 0644
       contents:
@@ -297,7 +294,7 @@ storage:
           RestartMaxDelaySec=5m
 
           [Install]
-          WantedBy=multi-user.target default.target
+          WantedBy=default.target
     - path: /etc/containers/systemd/memcached.container
       mode: 0644
       contents:
@@ -323,7 +320,7 @@ storage:
           RestartMaxDelaySec=5m
 
           [Install]
-          WantedBy=multi-user.target default.target
+          WantedBy=default.target
     - path: /etc/containers/systemd/authentik-ldap.container
       mode: 0644
       contents:
@@ -335,6 +332,7 @@ storage:
           [Container]
           Image=ghcr.io/goauthentik/ldap:${authentik_version}
           Pull=newer
+          AutoUpdate=registry
           LogDriver=journald
 
           # metrics
@@ -355,11 +353,8 @@ storage:
           RestartSteps=10
           RestartMaxDelaySec=5m
 
-          [Service]
-          Restart=always
-
           [Install]
-          WantedBy=multi-user.target default.target
+          WantedBy=default.target
     - path: /var/containers/vault-agent/config.d/openproject.hcl
       mode: 0644
       overwrite: true
