@@ -1,5 +1,5 @@
 module "fcos" {
-  source = "git@github.com:nop-systems/tf-modules.git//base/fcos/stack?ref=fcos/v0.3.0"
+  source = "git@github.com:nop-systems/tf-modules.git//base/fcos/stack?ref=fcos/v0.6.4"
   # source = "../../base/fcos/stack"
 
   fqdn      = var.fqdn
@@ -10,10 +10,15 @@ module "fcos" {
   disk_size = 30
 
   butane_snippets = [templatefile("${path.module}/xenorchestra.bu", {
-    fqdn              = var.fqdn
-    service_fqdn      = var.service_fqdn
-    authentik_version = "2024.8.3"
-    authentik_host    = var.authentik_host
+    fqdn         = var.fqdn
+    service_fqdn = var.service_fqdn
+    # https://hub.docker.com/r/ezka77/xen-orchestra-ce
+    xenorchestra_image = "docker.io/ezka77/xen-orchestra-ce:latest"
+    # https://hub.docker.com/r/valkey/valkey
+    valkey_image = "docker.io/valkey/valkey:8.0"
+    # https://ghcr.io/goauthentik/ldap
+    authentik_ldap_image = "ghcr.io/goauthentik/ldap:2025.2"
+    authentik_host       = var.authentik_host
   })]
 
   cloudflare_zone_id     = var.cloudflare_zone_id
@@ -24,5 +29,14 @@ module "fcos" {
   root_ca_pem            = var.root_ca_pem
   matchbox_http_endpoint = var.matchbox_http_endpoint
   services               = [var.service_fqdn]
+  admin_pki_mount        = var.admin_pki_mount
+  monitoring_ingress_url = var.monitoring_ingress_url
 }
 
+module "service_cname_record" {
+  source  = "git@github.com:nop-systems/tf-modules.git//base/dns-record?ref=dns-record/v0.2.0"
+  name    = var.service_fqdn
+  type    = "CNAME"
+  value   = var.fqdn
+  zone_id = var.cloudflare_zone_id
+}
