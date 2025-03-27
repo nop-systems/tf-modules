@@ -63,3 +63,13 @@ variable "acme_ca" {
   type        = string
   description = "URL to ACME directory for internal CA"
 }
+
+variable "admin_pki_mount" {
+  type        = string
+  description = "vault mount whose default issuer should be used for validating admin client certificates"
+}
+
+variable "monitoring_ingress_url" {
+  type        = string
+  description = "Base URL of Loki/Prometheus where logs and metrics will be pushed to (e.g. https://monitoring-ingress.example.com)"
+}
