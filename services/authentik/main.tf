@@ -27,7 +27,7 @@ module "fcos" {
 }
 
 module "service_cname_record" {
-  source  = "git@github.com:nop-systems/tf-modules.git//base/dns-record?ref=dns-record/v0.1.0"
+  source  = "git@github.com:nop-systems/tf-modules.git//base/dns-record?ref=dns-record/v0.2.0"
   name    = var.service_fqdn       # DNS record name
   type    = "CNAME"                # record type (e.g. A, AAAA)
   value   = var.fqdn               # record value (e.g. IP address)
