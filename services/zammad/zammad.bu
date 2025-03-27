@@ -5,13 +5,14 @@ storage:
   directories:
     - path: /var/containers/zammad/storage
     - path: /var/containers/zammad/backup
+    - path: /etc/zammad
     - path: /var/containers/postgres/data
     - path: /var/containers/valkey/data
     - path: /var/containers/elasticsearch/data
     - path: /var/containers/secrets/zammad
     - path: /var/containers/secrets/authentik_ldap
     - path: /var/containers/caddy/data
-    - path: /var/containers/caddy/config
+    - path: /etc/caddy/config
   files:
     - path: /etc/containers/systemd/zammad.image
       mode: 0644
@@ -41,7 +42,7 @@ storage:
           PublishPort=443:443/udp
 
           Volume=/var/containers/zammad/storage:/opt/zammad/storage:Z,U
-    - path: /var/containers/zammad/zammad.env
+    - path: /etc/zammad/zammad.env
       mode: 0644
       overwrite: true
       contents:
@@ -73,7 +74,7 @@ storage:
           Pull=newer
           LogDriver=journald
 
-          EnvironmentFile=/var/containers/zammad/zammad.env
+          EnvironmentFile=/etc/zammad/zammad.env
           EnvironmentFile=/var/containers/secrets/zammad/postgresql_pass.env
 
           Pod=zammad.pod
@@ -103,7 +104,7 @@ storage:
           User=0
           Group=0
 
-          EnvironmentFile=/var/containers/zammad/zammad.env
+          EnvironmentFile=/etc/zammad/zammad.env
           EnvironmentFile=/var/containers/secrets/zammad/postgresql_pass.env
 
           Pod=zammad.pod
@@ -133,7 +134,7 @@ storage:
           User=0
           Group=0
 
-          EnvironmentFile=/var/containers/zammad/zammad.env
+          EnvironmentFile=/etc/zammad/zammad.env
           EnvironmentFile=/var/containers/secrets/zammad/postgresql_pass.env
           Volume=/var/containers/zammad/backup:/var/tmp/zammad:Z,U
 
@@ -164,7 +165,7 @@ storage:
           User=0
           Group=0
 
-          EnvironmentFile=/var/containers/zammad/zammad.env
+          EnvironmentFile=/etc/zammad/zammad.env
           EnvironmentFile=/var/containers/secrets/zammad/postgresql_pass.env
 
           Pod=zammad.pod
@@ -193,7 +194,7 @@ storage:
           User=0
           Group=0
 
-          EnvironmentFile=/var/containers/zammad/zammad.env
+          EnvironmentFile=/etc/zammad/zammad.env
           EnvironmentFile=/var/containers/secrets/zammad/postgresql_pass.env
 
           Pod=zammad.pod
@@ -230,7 +231,7 @@ storage:
 
           Volume=/var/containers/caddy/config:/config:Z,U
           Volume=/var/containers/caddy/data:/data:Z,U
-          Volume=/var/containers/caddy/Caddyfile:/etc/caddy/Caddyfile:Z,ro
+          Volume=/etc/caddy/Caddyfile:/etc/caddy/Caddyfile:Z,ro
           Volume=zammad-image.volume:/zammad:ro
 
           Pod=zammad.pod
@@ -243,7 +244,7 @@ storage:
 
           [Install]
           WantedBy=multi-user.target default.target
-    - path: /var/containers/caddy/Caddyfile
+    - path: /etc/caddy/Caddyfile
       mode: 0644
       overwrite: true
       contents:
@@ -450,7 +451,7 @@ storage:
 
           [Install]
           WantedBy=multi-user.target default.target
-    - path: /var/containers/vault-agent/config.d/zammad.hcl
+    - path: /etc/vault-agent/config.d/zammad.hcl
       mode: 0644
       overwrite: true
       contents:
