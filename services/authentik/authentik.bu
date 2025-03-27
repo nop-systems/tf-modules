@@ -241,7 +241,7 @@ storage:
 
           [Install]
           WantedBy=multi-user.target default.target
-    - path: /var/containers/vault-agent/config.d/authentik.hcl
+    - path: /etc/vault-agent/config.d/authentik.hcl
       mode: 0644
       overwrite: true
       contents:

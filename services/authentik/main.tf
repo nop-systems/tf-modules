@@ -1,5 +1,5 @@
 module "fcos" {
-  source = "git@github.com:nop-systems/tf-modules.git//base/fcos/stack?ref=fcos/v0.5.3"
+  source = "git@github.com:nop-systems/tf-modules.git//base/fcos/stack?ref=fcos/v0.6.4"
   # source = "../../base/fcos/stack"
 
   fqdn      = var.fqdn
@@ -12,7 +12,7 @@ module "fcos" {
   butane_snippets = [templatefile("${path.module}/authentik.bu", {
     service_fqdn        = var.service_fqdn
     trusted_proxy_cidrs = var.trusted_proxy_cidrs
-    authentik_version   = "2024.8.3"
+    authentik_version   = "2025.2.2"
   })]
 
   cloudflare_zone_id     = var.cloudflare_zone_id
@@ -24,10 +24,11 @@ module "fcos" {
   admin_pki_mount        = var.admin_pki_mount
   matchbox_http_endpoint = var.matchbox_http_endpoint
   services               = [var.service_fqdn]
+  monitoring_ingress_url = var.monitoring_ingress_url
 }
 
 module "service_cname_record" {
-  source  = "git@github.com:nop-systems/tf-modules.git//base/dns-record?ref=dns-record/v0.1.0"
+  source  = "git@github.com:nop-systems/tf-modules.git//base/dns-record?ref=dns-record/v0.2.0"
   name    = var.service_fqdn       # DNS record name
   type    = "CNAME"                # record type (e.g. A, AAAA)
   value   = var.fqdn               # record value (e.g. IP address)
