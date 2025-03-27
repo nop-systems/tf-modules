@@ -8,7 +8,6 @@ storage:
     - path: /var/containers/postgres/data
     - path: /var/containers/secrets/openproject
     - path: /var/containers/caddy/data
-    - path: /var/containers/caddy/config
   files:
     - path: /etc/containers/systemd/openproject.image
       mode: 0644
@@ -211,7 +210,7 @@ storage:
 
           Volume=/var/containers/caddy/config:/config:Z,U
           Volume=/var/containers/caddy/data:/data:Z,U
-          Volume=/var/containers/caddy/Caddyfile:/etc/caddy/Caddyfile:Z,ro
+          Volume=/etc/caddy/Caddyfile:/etc/caddy/Caddyfile:Z,ro
           # Volume=openproject-public.volume:/openproject:z,idmap,ro
 
           Network=container.network
@@ -224,7 +223,7 @@ storage:
 
           [Install]
           WantedBy=default.target
-    - path: /var/containers/caddy/Caddyfile
+    - path: /etc/caddy/Caddyfile
       mode: 0644
       overwrite: true
       contents:
@@ -355,7 +354,7 @@ storage:
 
           [Install]
           WantedBy=default.target
-    - path: /var/containers/vault-agent/config.d/openproject.hcl
+    - path: /etc/vault-agent/config.d/openproject.hcl
       mode: 0644
       overwrite: true
       contents:
@@ -409,7 +408,7 @@ storage:
               EOT
             destination = "/vault/secrets/openproject/imap.env"
           }
-    - path: /var/containers/vault-agent/config.d/authentik-ldap.hcl
+    - path: /etc/vault-agent/config.d/authentik-ldap.hcl
       mode: 0644
       overwrite: true
       contents:
