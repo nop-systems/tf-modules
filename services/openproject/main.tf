@@ -1,10 +1,10 @@
 module "fcos" {
-  source = "git@github.com:nop-systems/tf-modules.git//base/fcos/stack?ref=fcos/v0.6.4"
+  source = "git@github.com:nop-systems/tf-modules.git//base/fcos/stack?ref=fcos/v0.6.5"
   # source = "../../base/fcos/stack"
 
   fqdn      = var.fqdn
   desc      = "OpenProject project managing software"
-  xo_tags   = concat(var.xo_tags, ["service:openproject"])
+  xo_tags   = concat(var.xo_tags, ["service=openproject"])
   memory    = 1024 * 4
   cpu_cores = 4
   disk_size = 40
@@ -18,15 +18,15 @@ module "fcos" {
     trusted_proxies  = join(" ", var.trusted_proxies)
     authentik_host   = var.authentik_host
     # https://hub.docker.com/r/openproject/openproject
-    openproject_version = "15.4-slim"
+    openproject_image = "docker.io/openproject/openproject:15.4-slim"
     # https://hub.docker.com/_/caddy
-    caddy_version = "2.9"
+    caddy_image = "docker.io/library/caddy:2.9"
     # https://hub.docker.com/_/postgres
-    postgres_version = "16-alpine"
+    postgres_image = "docker.io/library/postgres:16-alpine"
     # https://hub.docker.com/_/memcached
-    memcached_version = "1.6-alpine"
+    memcached_image = "docker.io/library/memcached:1.6-alpine"
     # https://github.com/goauthentik/authentik/pkgs/container/ldap
-    authentik_version = "2025.2"
+    authentik_ldap_image = "ghcr.io/goauthentik/ldap:2025.2"
   })]
 
   cloudflare_zone_id     = var.cloudflare_zone_id
