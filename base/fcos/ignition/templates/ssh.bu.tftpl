@@ -8,11 +8,10 @@ storage:
         inline: |
           [Container]
           Volume=/etc/ssh/ssh_host_ed25519_key.pub:/run/ssh_host_ed25519_key.pub:z,ro,idmap
-    - path: /etc/ssh/sshd_config.d/41-certificates.conf
+    - path: /etc/ssh/sshd_config.d/10-certificates.conf
       contents:
         inline: |
           TrustedUserCAKeys /var/containers/secrets/ssh/trusted-user-ca-keys.pem
-          HostKey /etc/ssh/ssh_host_ed25519_key
           HostCertificate /var/containers/secrets/ssh/ssh_host_ed25519_key-cert.pub
     - path: /etc/vault-agent/config.d/ssh-ca.hcl
       mode: 0644
@@ -27,10 +26,35 @@ storage:
           template {
             contents = <<-EOT
               {{- with $pubKey := file "/run/ssh_host_ed25519_key.pub" | printf "public_key=%s" -}}
-              {{- with secret "ssh-host/sign/entity-metadata" $pubKey "valid_principals=${fqdn}" "cert_type=host" -}}
+              {{- with secret "ssh-host/sign/entity-metadata" $pubKey "valid_principals=${fqdn}" "cert_type=host" "ttl=6h" -}}
               {{- .Data.signed_key -}}
               {{- end }}{{ end }}
             EOT
             destination = "/vault/secrets/ssh/ssh_host_ed25519_key-cert.pub"
             error_on_missing_key = true
+            wait {
+              min = "1h"
+              max = "3h"
+            }
           }
+systemd:
+  units:
+    - name: sshd-reload-on-cert-renewal.path
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Watch ssh host cert for changes
+        After=vault-agent.service
+        [Path]
+        PathChanged=/var/containers/secrets/ssh/ssh_host_ed25519_key-cert.pub
+        [Install]
+        WantedBy=paths.target
+    - name: sshd-reload-on-cert-renewal.service
+      contents: |
+        [Unit]
+        Description=Reload sshd on certificate change
+        [Service]
+        Type=oneshot
+        ExecStart=-systemctl reload sshd.service
+        [Install]
+        WantedBy=default.target
