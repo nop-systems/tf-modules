@@ -1,10 +1,10 @@
 module "fcos" {
-  source = "git@github.com:nop-systems/tf-modules.git//base/fcos/stack?ref=fcos/v0.6.4"
+  source = "git@github.com:nop-systems/tf-modules.git//base/fcos/stack?ref=fcos/v0.6.5"
   # source = "../../base/fcos/stack"
 
   fqdn      = var.fqdn
   desc      = "authentik"
-  xo_tags   = concat(var.xo_tags, ["authentik"])
+  xo_tags   = concat(var.xo_tags, ["service=authentik"])
   memory    = 4096
   cpu_cores = 4
   disk_size = 100
@@ -12,7 +12,7 @@ module "fcos" {
   butane_snippets = [templatefile("${path.module}/authentik.bu", {
     service_fqdn        = var.service_fqdn
     trusted_proxy_cidrs = var.trusted_proxy_cidrs
-    authentik_version   = "2025.2.2"
+    authentik_version   = "2025.2.3"
   })]
 
   cloudflare_zone_id     = var.cloudflare_zone_id

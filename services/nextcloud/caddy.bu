@@ -96,7 +96,7 @@ storage:
           # prevent systemd-nextcloud from bein proxied to nextcloud as it is configured as trusted domain
           systemd-nextcloud {
             tls internal
-            responde "Forbidden" 403
+            respond "Forbidden" 403
           }
 
           https://${fqdn}, https://${nextcloud_service_fqdn}, https:// {

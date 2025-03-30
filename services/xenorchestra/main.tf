@@ -1,10 +1,10 @@
 module "fcos" {
-  source = "git@github.com:nop-systems/tf-modules.git//base/fcos/stack?ref=fcos/v0.6.4"
+  source = "git@github.com:nop-systems/tf-modules.git//base/fcos/stack?ref=fcos/v0.6.5"
   # source = "../../base/fcos/stack"
 
   fqdn      = var.fqdn
   desc      = "Xen Orchestra (Community Edition)"
-  xo_tags   = concat(var.xo_tags, ["xenorchestra"])
+  xo_tags   = concat(var.xo_tags, ["service=xenorchestra"])
   memory    = 3072
   cpu_cores = 2
   disk_size = 30
