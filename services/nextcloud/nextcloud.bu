@@ -131,6 +131,9 @@ storage:
             occ app:enable "$app"
           done
 
+          echo "→ Running fixes which will otherwise fail the config import"
+          occ config:app:set whiteboard collabBackendUrl --type=mixed
+
           echo "→ Importing /run/provision/config.json…"
           occ config:import /run/provision/config.json
           echo "→ Importing /run/provision/custom.json…"
