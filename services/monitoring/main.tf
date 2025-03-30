@@ -8,7 +8,7 @@ locals {
 }
 
 module "fcos" {
-  source = "git@github.com:nop-systems/tf-modules.git//base/fcos/stack?ref=fcos/v0.6.0"
+  source = "git@github.com:nop-systems/tf-modules.git//base/fcos/stack?ref=fcos/v0.6.5"
 
   fqdn      = var.fqdn
   desc      = "Monitoring Stack"
@@ -21,13 +21,13 @@ module "fcos" {
     templatefile("${path.module}/prometheus.bu", {
       service_fqdn = var.service_fqdn
       # https://quay.io/repository/prometheus/prometheus?tab=tags
-      prometheus_image = "quay.io/prometheus/prometheus:v2.54.1"
+      prometheus_image = "quay.io/prometheus/prometheus:v3.2.1"
       # https://quay.io/repository/prometheus/alertmanager?tab=tags
-      alertmanager_image = "quay.io/prometheus/alertmanager:v0.27.0"
+      alertmanager_image = "quay.io/prometheus/alertmanager:v0.28.1"
       # https://quay.io/repository/prometheus/blackbox-exporter?tab=tags
-      blackbox_exporter_image = "quay.io/prometheus/blackbox-exporter:v0.25.0"
+      blackbox_exporter_image = "quay.io/prometheus/blackbox-exporter:v0.26.0"
       # https://quay.io/repository/prometheus/snmp-exporter?tab=tags
-      snmp_exporter_image = "quay.io/prometheus/snmp-exporter:v0.26.0"
+      snmp_exporter_image = "quay.io/prometheus/snmp-exporter:v0.28.0"
       # https://github.com/nop-systems/xo-sd-proxy/pkgs/container/xo-sd-proxy
       xo_sd_proxy_image = "ghcr.io/nop-systems/xo-sd-proxy:v0.1.0"
     }),
@@ -36,14 +36,14 @@ module "fcos" {
       # https://hub.docker.com/r/grafana/grafana-image-renderer/tags
       grafana_image_renderer_image = "docker.io/grafana/grafana-image-renderer:latest"
       # https://hub.docker.com/r/grafana/grafana-oss/tags
-      grafana_image = "docker.io/grafana/grafana-oss:11.2.0"
+      grafana_image = "docker.io/grafana/grafana-oss:11.6.0"
       service_fqdn  = var.service_fqdn
     }),
     templatefile("${path.module}/loki.bu", {
       # https://github.com/grafana/loki/releases
-      loki_image = "docker.io/grafana/loki:3.1.1"
+      loki_image = "docker.io/grafana/loki:3.4.2"
       # https://hub.docker.com/r/minio/minio/tags
-      minio_image  = "docker.io/minio/minio:RELEASE.2024-08-29T01-40-52Z"
+      minio_image  = "docker.io/minio/minio:RELEASE.2025-03-12T18-04-18Z"
       service_fqdn = var.service_fqdn
     }),
     templatefile("${path.module}/caddy.bu", {
@@ -51,7 +51,7 @@ module "fcos" {
       admin_pki_mount   = var.admin_pki_mount
       alertmanager_fqdn = var.alertmanager_fqdn
       # https://hub.docker.com/_/caddy
-      caddy_image     = "docker.io/library/caddy:2.8"
+      caddy_image     = "docker.io/library/caddy:2.9"
       fqdn            = var.fqdn
       grafana_fqdn    = var.grafana_fqdn
       ingress_fqdn    = var.ingress_fqdn
