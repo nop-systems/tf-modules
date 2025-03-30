@@ -1,10 +1,10 @@
 module "pretix" {
-  source = "git@github.com:nop-systems/tf-modules.git//base/fcos/stack?ref=fcos/v0.6.4"
+  source = "git@github.com:nop-systems/tf-modules.git//base/fcos/stack?ref=fcos/v0.6.5"
   # source = "../../base/fcos/stack"
 
   fqdn      = var.fqdn
-  desc      = "Pretix"
-  xo_tags   = var.xo_tags
+  desc      = "Pretix Ticket Shop"
+  xo_tags   = concat(var.xo_tags, ["service=pretix"])
   memory    = 8192
   cpu_cores = 4
   disk_size = 40
