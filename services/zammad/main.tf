@@ -16,7 +16,7 @@ module "fcos" {
     authentik_host  = var.authentik_host
 
     # https://github.com/zammad/zammad/pkgs/container/zammad
-    zammad_image = "ghcr.io/zammad/zammad:6.4"
+    zammad_image = "ghcr.io/zammad/zammad:6.5"
     # https://hub.docker.com/_/caddy
     caddy_image = "docker.io/library/caddy:2.9"
     # https://hub.docker.com/r/bitnami/elasticsearch
