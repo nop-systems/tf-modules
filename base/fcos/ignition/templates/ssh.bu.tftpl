@@ -44,7 +44,6 @@ systemd:
       contents: |
         [Unit]
         Description=Watch ssh host cert for changes
-        After=vault-agent.service
         [Path]
         PathChanged=/var/containers/secrets/ssh/ssh_host_ed25519_key-cert.pub
         [Install]
