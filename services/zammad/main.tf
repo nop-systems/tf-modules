@@ -18,7 +18,7 @@ module "fcos" {
     # https://github.com/zammad/zammad/pkgs/container/zammad
     zammad_image = "ghcr.io/zammad/zammad:6.5"
     # https://hub.docker.com/_/caddy
-    caddy_image = "docker.io/library/caddy:2.9"
+    caddy_image = "docker.io/library/caddy:2.10"
     # https://hub.docker.com/r/bitnami/elasticsearch
     elasticsearch_image = "docker.io/bitnami/elasticsearch:8"
     # https://hub.docker.com/_/postgres
@@ -26,9 +26,9 @@ module "fcos" {
     # https://hub.docker.com/_/memcached
     memcached_image = "docker.io/library/memcached:1.6-alpine"
     # https://hub.docker.com/r/valkey/valkey
-    valkey_image = "docker.io/valkey/valkey:8.0"
+    valkey_image = "docker.io/valkey/valkey:8.1"
     # https://ghcr.io/goauthentik/ldap
-    authentik_ldap_image = "ghcr.io/goauthentik/ldap:2025.2"
+    authentik_ldap_image = "ghcr.io/goauthentik/ldap:${var.authentik_version}"
   })]
 
   cloudflare_zone_id     = var.cloudflare_zone_id
