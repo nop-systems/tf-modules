@@ -8,7 +8,7 @@ locals {
 }
 
 module "fcos" {
-  source = "git@github.com:nop-systems/tf-modules.git//base/fcos/stack?ref=fcos/v0.6.5"
+  source = "git@github.com:nop-systems/tf-modules.git//base/fcos/stack?ref=fcos/v0.7.0"
 
   fqdn      = var.fqdn
   desc      = "Monitoring Stack"
@@ -42,8 +42,8 @@ module "fcos" {
     templatefile("${path.module}/loki.bu", {
       # https://github.com/grafana/loki/releases
       loki_image = "docker.io/grafana/loki:3.4.2"
-      # https://hub.docker.com/r/minio/minio/tags
-      minio_image  = "docker.io/minio/minio:RELEASE.2025-03-12T18-04-18Z"
+      # https://quay.io/repository/minio/minio?tab=tags&tag=latest
+      minio_image  = "quay.io/minio/minio:RELEASE.2025-04-03T14-56-28Z"
       service_fqdn = var.service_fqdn
     }),
     templatefile("${path.module}/caddy.bu", {

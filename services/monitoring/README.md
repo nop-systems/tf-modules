@@ -16,7 +16,7 @@ No providers.
 | Name | Source | Version |
 |------|--------|---------|
 | <a name="module_cname_records"></a> [cname\_records](#module\_cname\_records) | git@github.com:nop-systems/tf-modules.git//base/dns-record | dns-record/v0.2.0 |
-| <a name="module_fcos"></a> [fcos](#module\_fcos) | git@github.com:nop-systems/tf-modules.git//base/fcos/stack | fcos/v0.6.5 |
+| <a name="module_fcos"></a> [fcos](#module\_fcos) | git@github.com:nop-systems/tf-modules.git//base/fcos/stack | fcos/v0.7.0 |
 | <a name="module_internal_records"></a> [internal\_records](#module\_internal\_records) | git@github.com:nop-systems/tf-modules.git//base/dns-record | dns-record/v0.2.0 |
 | <a name="module_service_record"></a> [service\_record](#module\_service\_record) | git@github.com:nop-systems/tf-modules.git//base/dns-record | dns-record/v0.2.0 |
 
