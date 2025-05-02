@@ -1,11 +1,11 @@
 module "fcos" {
-  source = "git@github.com:nop-systems/tf-modules.git//base/fcos/stack?ref=fcos/v0.6.5"
+  source = "git@github.com:nop-systems/tf-modules.git//base/fcos/stack?ref=fcos/v0.7.0"
   # source = "../../base/fcos/stack"
 
   fqdn      = var.fqdn
   desc      = "OpenProject project managing software"
   xo_tags   = concat(var.xo_tags, ["service=openproject"])
-  memory    = 1024 * 4
+  memory    = 1024 * 6
   cpu_cores = 4
   disk_size = 40
 

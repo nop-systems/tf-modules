@@ -27,7 +27,7 @@ module "fcos" {
 }
 
 module "internal_cname" {
-  source = "git@github.com:nop-systems/tf-modules.git//base/dns-record?ref=dns-record/v0.1.0"
+  source = "git@github.com:nop-systems/tf-modules.git//base/dns-record?ref=dns-record/v0.2.0"
 
   name  = var.internal_fqdn
   type  = "CNAME"
@@ -37,7 +37,7 @@ module "internal_cname" {
 }
 
 module "service_cname" {
-  source = "git@github.com:nop-systems/tf-modules.git//base/dns-record?ref=dns-record/v0.1.0"
+  source = "git@github.com:nop-systems/tf-modules.git//base/dns-record?ref=dns-record/v0.2.0"
 
   name  = var.service_fqdn
   type  = "CNAME"

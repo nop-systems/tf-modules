@@ -15,7 +15,7 @@ No providers.
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_pretix"></a> [pretix](#module\_pretix) | git@github.com:nop-systems/tf-modules.git//base/fcos/stack | fcos/v0.6.5 |
+| <a name="module_pretix"></a> [pretix](#module\_pretix) | git@github.com:nop-systems/tf-modules.git//base/fcos/stack | fcos/v0.7.0 |
 | <a name="module_service_cname_record"></a> [service\_cname\_record](#module\_service\_cname\_record) | git@github.com:nop-systems/tf-modules.git//base/dns-record | dns-record/v0.2.0 |
 
 ## Resources
