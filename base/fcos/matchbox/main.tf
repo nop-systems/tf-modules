@@ -7,7 +7,7 @@ locals {
   # fcos_latest       = local.fcos_release_json.architectures.x86_64.artifacts.metal.release
   fcos_kernel    = local.fcos_release_json.architectures.x86_64.artifacts.metal.formats.pxe.kernel.location
   fcos_initramfs = local.fcos_release_json.architectures.x86_64.artifacts.metal.formats.pxe.initramfs.location
-  fcos_rootfs    = local.fcos_release_json.architectures.x86_64.artifacts.metal.formats.pxe.roots.location
+  fcos_rootfs    = local.fcos_release_json.architectures.x86_64.artifacts.metal.formats.pxe.rootfs.location
 }
 
 // Fedora CoreOS profile
