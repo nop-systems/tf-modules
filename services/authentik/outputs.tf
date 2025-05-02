@@ -1,4 +1,4 @@
 output "authentik_version" {
-  description = "deployed authentik version to query from state"
+  description = "deployed authentik version"
   value       = local.authentik_version
 }

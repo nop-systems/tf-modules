@@ -44,7 +44,7 @@ No resources.
 
 | Name | Description |
 |------|-------------|
-| <a name="output_authentik_version"></a> [authentik\_version](#output\_authentik\_version) | deployed authentik version to query from state |
+| <a name="output_authentik_version"></a> [authentik\_version](#output\_authentik\_version) | deployed authentik version |
 
 ## Usage
 
