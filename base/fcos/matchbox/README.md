@@ -35,7 +35,6 @@ No modules.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_fcos_stream"></a> [fcos\_stream](#input\_fcos\_stream) | Fedora CoreOS stream | `string` | `"stable"` | no |
-| <a name="input_fcos_version"></a> [fcos\_version](#input\_fcos\_version) | Fedora CoreOS version (defaults to latest) | `string` | `null` | no |
 | <a name="input_fqdn"></a> [fqdn](#input\_fqdn) | FQDN of the new Virtual Machine | `string` | n/a | yes |
 | <a name="input_ignition"></a> [ignition](#input\_ignition) | compiled ignition config | `string` | n/a | yes |
 | <a name="input_mac_address"></a> [mac\_address](#input\_mac\_address) | MAC address of VM | `string` | n/a | yes |
@@ -63,8 +62,6 @@ module "" {
   
   /* Fedora CoreOS stream (optional) */
   # fcos_stream = stable
-  /* Fedora CoreOS version (defaults to latest) (optional) */
-  # fcos_version = <no value>
 }
 
 module "" {

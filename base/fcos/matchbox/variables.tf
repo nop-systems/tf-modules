@@ -9,12 +9,6 @@ variable "fcos_stream" {
   default     = "stable"
 }
 
-variable "fcos_version" {
-  type        = string
-  description = "Fedora CoreOS version (defaults to latest)"
-  default     = null
-}
-
 variable "mac_address" {
   type        = string
   description = "MAC address of VM"
