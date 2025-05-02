@@ -16,7 +16,7 @@ No providers.
 | Name | Source | Version |
 |------|--------|---------|
 | <a name="module_collabora_service_cname_record"></a> [collabora\_service\_cname\_record](#module\_collabora\_service\_cname\_record) | git@github.com:nop-systems/tf-modules.git//base/dns-record | dns-record/v0.2.0 |
-| <a name="module_fcos"></a> [fcos](#module\_fcos) | git@github.com:nop-systems/tf-modules.git//base/fcos/stack | fcos/v0.6.5 |
+| <a name="module_fcos"></a> [fcos](#module\_fcos) | git@github.com:nop-systems/tf-modules.git//base/fcos/stack | fcos/v0.7.0 |
 | <a name="module_nextcloud_service_cname_record"></a> [nextcloud\_service\_cname\_record](#module\_nextcloud\_service\_cname\_record) | git@github.com:nop-systems/tf-modules.git//base/dns-record | dns-record/v0.2.0 |
 
 ## Resources
