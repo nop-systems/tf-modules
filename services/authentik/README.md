@@ -42,7 +42,9 @@ No resources.
 
 ## Outputs
 
-No outputs.
+| Name | Description |
+|------|-------------|
+| <a name="output_authentik_version"></a> [authentik\_version](#output\_authentik\_version) | deployed authentik version |
 
 ## Usage
 
