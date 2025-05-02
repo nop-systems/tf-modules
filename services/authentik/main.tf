@@ -1,10 +1,14 @@
+locals {
+  authentik_version = "2025.4.0"
+}
+
 module "fcos" {
   source = "git@github.com:nop-systems/tf-modules.git//base/fcos/stack?ref=fcos/v0.7.0"
   # source = "../../base/fcos/stack"
 
   fqdn      = var.fqdn
   desc      = "authentik"
-  xo_tags   = concat(var.xo_tags, ["service=authentik"])
+  xo_tags   = concat(var.xo_tags, ["service=authentik", "authentik_version=${local.authentik_version}"])
   memory    = 4096
   cpu_cores = 4
   disk_size = 100
@@ -12,7 +16,16 @@ module "fcos" {
   butane_snippets = [templatefile("${path.module}/authentik.bu", {
     service_fqdn        = var.service_fqdn
     trusted_proxy_cidrs = var.trusted_proxy_cidrs
-    authentik_version   = "2025.2.3"
+
+    # https://docs.goauthentik.io/docs/releases
+    # https://github.com/goauthentik/authentik/pkgs/container/server
+    authentik_image = "ghcr.io/goauthentik/server:${local.authentik_version}"
+    # https://github.com/goauthentik/authentik/pkgs/container/ldap
+    authentik_ldap_image = "ghcr.io/goauthentik/ldap:${local.authentik_version}"
+    # https://hub.docker.com/_/postgres
+    postgres_image = "docker.io/library/postgres:16-alpine"
+    # https://hub.docker.com/r/valkey/valkey
+    valkey_image = "docker.io/valkey/valkey:8.1"
   })]
 
   cloudflare_zone_id     = var.cloudflare_zone_id
