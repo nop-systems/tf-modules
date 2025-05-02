@@ -6,7 +6,7 @@ storage:
     - path: /var/containers/authentik/media
     - path: /var/containers/authentik/templates
     - path: /var/containers/postgres/data
-    - path: /var/containers/redis/data
+    - path: /var/containers/valkey/data
     - path: /var/containers/secrets/authentik/email
     - path: /var/containers/secrets/authentik/postgres
     - path: /var/containers/secrets/authentik_ldap
@@ -54,7 +54,7 @@ storage:
           Description=authentik server
           After=network-online.target local-fs.target vault-agent.service
           Wants=postgres.service
-          Wants=redis.service
+          Wants=valkey.service
 
           [Container]
           Image=authentik.image
@@ -65,7 +65,7 @@ storage:
           Environment=AUTHENTIK_POSTGRESQL__HOST=systemd-postgres
           Environment=AUTHENTIK_POSTGRESQL__NAME=authentik
           Environment=AUTHENTIK_POSTGRESQL__USER=authentik
-          Environment=AUTHENTIK_REDIS__HOST=systemd-redis
+          Environment=AUTHENTIK_REDIS__HOST=systemd-valkey
 
           Environment=AUTHENTIK_POSTGRESQL__PASSWORD=file:///secrets/postgres/password
           Environment=AUTHENTIK_EMAIL__USERNAME=file:///secrets/email/username
@@ -95,7 +95,7 @@ storage:
           Description=authentik worker
           After=network-online.target local-fs.target vault-agent.service
           Wants=postgres.service
-          Wants=redis.service
+          Wants=valkey.service
 
           [Container]
           Image=authentik.image
@@ -189,7 +189,7 @@ storage:
           UserNS=auto
           Notify=healthy
 
-          Volume=/var/containers/redis/data:/data:Z,U
+          Volume=/var/containers/valkey/data:/data:Z,U
 
           HealthCmd=valkey-cli ping | grep PONG
           HealthInterval=30s
