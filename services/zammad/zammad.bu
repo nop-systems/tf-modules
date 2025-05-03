@@ -24,6 +24,9 @@ storage:
 
           [Image]
           Image=${zammad_image}
+
+          [Service]
+          ExecStartPre=/usr/bin/podman volume rm --force systemd-zammad-image
     - path: /etc/containers/systemd/zammad.pod
       mode: 0644
       contents:
