@@ -44,6 +44,7 @@ No resources.
 | <a name="input_acme_ca"></a> [acme\_ca](#input\_acme\_ca) | URL to ACME directory for internal CA | `string` | n/a | yes |
 | <a name="input_admin_pki_mount"></a> [admin\_pki\_mount](#input\_admin\_pki\_mount) | vault mount whose default issuer should be used for validating admin client certificates | `string` | n/a | yes |
 | <a name="input_authentik_host"></a> [authentik\_host](#input\_authentik\_host) | (Internal) URL to authentik for Outposts | `string` | n/a | yes |
+| <a name="input_authentik_version"></a> [authentik\_version](#input\_authentik\_version) | Authentik version to use for LDAP outpost (image tag) | `string` | n/a | yes |
 | <a name="input_cloudflare_zone_id"></a> [cloudflare\_zone\_id](#input\_cloudflare\_zone\_id) | Cloudflare Zone ID | `string` | n/a | yes |
 | <a name="input_default_language"></a> [default\_language](#input\_default\_language) | Controls in which language basic data (such as types, status names, etc.) and demo data is being created in and sets the default fallback language for new users. | `string` | n/a | yes |
 | <a name="input_fqdn"></a> [fqdn](#input\_fqdn) | Fully Qualified Domain Name of VM | `string` | n/a | yes |
@@ -75,6 +76,8 @@ module "" {
   admin_pki_mount =
   /* (Internal) URL to authentik for Outposts (required) */
   authentik_host =
+  /* Authentik version to use for LDAP outpost (image tag) (required) */
+  authentik_version =
   /* Cloudflare Zone ID (required) */
   cloudflare_zone_id =
   /* Controls in which language basic data (such as types, status names, etc.) and demo data is being created in and sets the default fallback language for new users. (required) */
@@ -113,6 +116,7 @@ module "" {
   acme_ca =
   admin_pki_mount =
   authentik_host =
+  authentik_version =
   cloudflare_zone_id =
   default_language =
   fqdn =
