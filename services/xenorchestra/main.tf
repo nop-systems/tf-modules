@@ -13,11 +13,11 @@ module "fcos" {
     fqdn         = var.fqdn
     service_fqdn = var.service_fqdn
     # https://hub.docker.com/r/ezka77/xen-orchestra-ce
-    xenorchestra_image = "docker.io/ezka77/xen-orchestra-ce:latest"
+    xenorchestra_image = "docker.io/ezka77/xen-orchestra-ce:5.176"
     # https://hub.docker.com/r/valkey/valkey
-    valkey_image = "docker.io/valkey/valkey:8.0"
-    # https://ghcr.io/goauthentik/ldap
-    authentik_ldap_image = "ghcr.io/goauthentik/ldap:2025.2"
+    valkey_image = "docker.io/valkey/valkey:8.1"
+    # https://github.com/goauthentik/authentik/pkgs/container/ldap
+    authentik_ldap_image = "ghcr.io/goauthentik/ldap:${var.authentik_version}"
     authentik_host       = var.authentik_host
   })]
 
