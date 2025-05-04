@@ -110,11 +110,11 @@ module "fcos" {
       nextcloud_custom_config = jsonencode(merge({ system = {} }, var.config))
 
       # https://github.com/hoellen/docker-nextcloud/pkgs/container/nextcloud
-      nextcloud_image = "ghcr.io/hoellen/nextcloud:31.0.2"
+      nextcloud_image = "ghcr.io/hoellen/nextcloud:31.0.4"
       # https://hub.docker.com/_/postgres
       postgres_image = "docker.io/library/postgres:16-alpine"
       # https://hub.docker.com/r/valkey/valkey
-      valkey_image = "docker.io/valkey/valkey:8.0"
+      valkey_image = "docker.io/valkey/valkey:8.1"
     }),
     templatefile("${path.module}/caddy.bu", {
       fqdn                   = var.fqdn
@@ -123,7 +123,7 @@ module "fcos" {
       nextcloud_service_fqdn = var.nextcloud_service_fqdn
       collabora_service_fqdn = var.collabora_service_fqdn
       # https://hub.docker.com/_/caddy
-      caddy_image = "docker.io/library/caddy:2.9"
+      caddy_image = "docker.io/library/caddy:2.10"
     }),
     templatefile("${path.module}/collabora.bu", {
       fqdn                   = var.fqdn
@@ -132,9 +132,9 @@ module "fcos" {
       nextcloud_public_fqdn  = var.nextcloud_public_fqdn
       nextcloud_service_fqdn = var.nextcloud_service_fqdn
       # https://hub.docker.com/r/collabora/code/tags
-      collabora_code_image = "docker.io/collabora/code:24.04.13.2.1"
+      collabora_code_image = "docker.io/collabora/code:25.04.1.1.1"
       # https://hub.docker.com/r/elestio/languagetool/tags
-      languagetool_image = "docker.io/elestio/languagetool:latest"
+      languagetool_image = "docker.io/elestio/languagetool:v6.5"
     }),
     templatefile("${path.module}/helper-services.bu", {
       upload_limit_bytes     = local.upload_limit_bytes
