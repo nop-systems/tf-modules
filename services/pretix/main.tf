@@ -21,11 +21,11 @@ module "pretix" {
       timezone            = var.timezone
       currency            = var.currency
       # https://hub.docker.com/r/pretix/standalone
-      pretix_image = "docker.io/pretix/standalone:2025.3"
+      pretix_image = "docker.io/pretix/standalone:2025.6"
       # https://hub.docker.com/_/postgres
       postgres_image = "docker.io/library/postgres:16-alpine"
       # https://hub.docker.com/r/valkey/valkey
-      valkey_image                = "docker.io/valkey/valkey:8.0"
+      valkey_image                = "docker.io/valkey/valkey:8.1"
       oidc_title                  = var.oidc_title
       oidc_issuer                 = var.oidc_issuer
       oidc_authorization_endpoint = var.oidc_authorization_endpoint
@@ -41,7 +41,7 @@ module "pretix" {
       trusted_proxies = join(" ", var.trusted_proxies)
       service_fqdn    = var.service_fqdn
       # https://hub.docker.com/_/caddy
-      caddy_image = "docker.io/library/caddy:2.9"
+      caddy_image = "docker.io/library/caddy:2.10"
     })
   ]
 
