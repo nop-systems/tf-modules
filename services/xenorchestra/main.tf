@@ -13,7 +13,7 @@ module "fcos" {
     fqdn         = var.fqdn
     service_fqdn = var.service_fqdn
     # https://hub.docker.com/r/ezka77/xen-orchestra-ce
-    xenorchestra_image = "docker.io/ezka77/xen-orchestra-ce:5.176"
+    xenorchestra_image = "docker.io/ezka77/xen-orchestra-ce:5.181"
     # https://hub.docker.com/r/valkey/valkey
     valkey_image = "docker.io/valkey/valkey:8.1"
     # https://github.com/goauthentik/authentik/pkgs/container/ldap
