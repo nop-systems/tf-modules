@@ -1,5 +1,5 @@
 locals {
-  authentik_version = "2025.6.4"
+  authentik_version = "2025.8.1"
 }
 
 module "fcos" {
