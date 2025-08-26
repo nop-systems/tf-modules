@@ -99,7 +99,7 @@ storage:
             respond "Forbidden" 403
           }
 
-          https://${fqdn}, https://${nextcloud_service_fqdn}, https:// {
+          https://${fqdn}, https://${nextcloud_service_fqdn} {
             import common
 
             reverse_proxy /whiteboard/* systemd-whiteboard:3002

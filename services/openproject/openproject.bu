@@ -237,7 +237,7 @@ storage:
             fallback_sni ${service_fqdn}
           }
 
-          https://${fqdn}, https://${service_fqdn}, https:// {
+          https://${fqdn}, https://${service_fqdn} {
             tls {
               issuer acme {
                 # disable http challenge because only https port is published

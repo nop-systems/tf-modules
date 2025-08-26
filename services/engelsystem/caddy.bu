@@ -87,7 +87,7 @@ storage:
             log
           }
 
-          https://${fqdn}, https://${service_fqdn}, https:// {
+          https://${fqdn}, https://${service_fqdn} {
             import common
 
 

@@ -45,7 +45,7 @@ storage:
           }
 
           # Grafana
-          https://${fqdn}, https://grafana.${fqdn}, https://${grafana_fqdn}, https://${service_fqdn}, https:// {
+          https://${fqdn}, https://grafana.${fqdn}, https://${grafana_fqdn}, https://${service_fqdn} {
             import common
             reverse_proxy systemd-grafana:3000
           }
