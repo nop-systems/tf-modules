@@ -110,7 +110,7 @@ module "fcos" {
       nextcloud_custom_config = jsonencode(merge({ system = {} }, var.config))
 
       # https://github.com/hoellen/docker-nextcloud/pkgs/container/nextcloud
-      nextcloud_image = "ghcr.io/hoellen/nextcloud:31.0.7"
+      nextcloud_image = "ghcr.io/hoellen/nextcloud:31.0.8"
       # https://hub.docker.com/_/postgres
       postgres_image = "docker.io/library/postgres:16-alpine"
       # https://hub.docker.com/r/valkey/valkey
@@ -132,7 +132,7 @@ module "fcos" {
       nextcloud_public_fqdn  = var.nextcloud_public_fqdn
       nextcloud_service_fqdn = var.nextcloud_service_fqdn
       # https://hub.docker.com/r/collabora/code/tags
-      collabora_code_image = "docker.io/collabora/code:25.04.4.1.1"
+      collabora_code_image = "docker.io/collabora/code:25.04.5.1.1"
       # https://hub.docker.com/r/elestio/languagetool/tags
       languagetool_image = "docker.io/elestio/languagetool:v6.5"
     }),
