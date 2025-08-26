@@ -1,5 +1,5 @@
 locals {
-  openproject_version = "16.2"
+  openproject_version = "16.3"
 }
 
 module "fcos" {
