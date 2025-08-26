@@ -4,7 +4,7 @@ module "fcos" {
   fqdn      = var.fqdn
   desc      = "zammad"
   xo_tags   = concat(var.xo_tags, ["service=zammad"])
-  memory    = 1024 * 12
+  memory    = var.memory
   cpu_cores = 4
   disk_size = 200
 

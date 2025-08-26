@@ -78,3 +78,13 @@ variable "authentik_version" {
   type        = string
   description = "Authentik version to use for LDAP outpost (image tag)"
 }
+
+variable "memory" {
+  type        = number
+  description = "Memory in MB"
+  validation {
+    condition     = var.memory >= 8192
+    error_message = "Memory size must be 8192 MiB or more"
+  }
+  default = 1024 * 12
+}
