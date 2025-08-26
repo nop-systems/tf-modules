@@ -44,6 +44,7 @@ storage:
           OPENPROJECT_HTTPS=true
           OPENPROJECT_HSTS=true
           OPENPROJECT_HOST__NAME=${public_fqdn}
+          OPENPROJECT_ADDITIONAL__HOST__NAMES=["${service_fqdn}"]
           OPENPROJECT_DEFAULT__LANGUAGE=${default_language}
           RAILS_MIN_THREADS=4
           RAILS_MAX_THREADS=16
