@@ -67,7 +67,7 @@ storage:
           Pull=newer
           LogDriver=journald
           Notify=healthy
-          # UserNS=auto:size=65536
+          UserNS=auto:size=65536
 
           Volume=/var/containers/secrets/pretix:/etc/pretix:z,idmap,ro
 
