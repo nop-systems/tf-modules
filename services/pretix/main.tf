@@ -21,7 +21,7 @@ module "pretix" {
       timezone            = var.timezone
       currency            = var.currency
       # https://hub.docker.com/r/pretix/standalone
-      pretix_image = "docker.io/pretix/standalone:2025.6"
+      pretix_image = "docker.io/pretix/standalone:2025.7"
       # https://hub.docker.com/_/postgres
       postgres_image = "docker.io/library/postgres:16-alpine"
       # https://hub.docker.com/r/valkey/valkey
