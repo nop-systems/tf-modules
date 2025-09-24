@@ -5,7 +5,7 @@ storage:
   directories:
     - path: /var/containers/authentik/media
     - path: /var/containers/authentik/templates
-    - path: /var/containers/postgres/data
+    - path: /var/containers/postgres/data17
     - path: /var/containers/valkey/data
     - path: /var/containers/secrets/authentik/email
     - path: /var/containers/secrets/authentik/postgres
@@ -155,7 +155,7 @@ storage:
           Environment=POSTGRES_USER=authentik
           Environment=POSTGRES_DB=authentik
 
-          Volume=/var/containers/postgres/data:/var/lib/postgresql/data:Z,U
+          Volume=/var/containers/postgres/data17:/var/lib/postgresql/data:Z,U
           Volume=/var/containers/secrets/authentik/postgres:/secrets:z,idmap
 
           HealthCmd=pg_isready -d authentik -U authentik

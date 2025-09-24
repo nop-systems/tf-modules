@@ -1,5 +1,5 @@
 locals {
-  authentik_version = "2025.8.1"
+  authentik_version = "2025.8.3"
 }
 
 module "fcos" {
@@ -23,7 +23,7 @@ module "fcos" {
     # https://github.com/goauthentik/authentik/pkgs/container/ldap
     authentik_ldap_image = "ghcr.io/goauthentik/ldap:${local.authentik_version}"
     # https://hub.docker.com/_/postgres
-    postgres_image = "docker.io/library/postgres:16-alpine"
+    postgres_image = "docker.io/library/postgres:17-alpine"
     # https://hub.docker.com/r/valkey/valkey
     valkey_image = "docker.io/valkey/valkey:8.1"
   })]
